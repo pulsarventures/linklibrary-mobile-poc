@@ -157,6 +157,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 13B07F931A680F5B00A75B9A /* Build configuration list for PBXNativeTarget "linklibrary_mobile" */;
 			buildPhases = (
+				B2EBA0812E1B0504009E9B2E /* ShellScript */,
 				88EAD930244305F323768763 /* [CP] Check Pods Manifest.lock */,
 				FD10A7F022414F080027D42C /* Start Packager */,
 				13B07F871A680F5B00A75B9A /* Sources */,
@@ -259,9 +260,13 @@
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-linklibrary_mobile/Pods-linklibrary_mobile-frameworks-${CONFIGURATION}-input-files.xcfilelist",
 			);
+			inputPaths = (
+			);
 			name = "[CP] Embed Pods Frameworks";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-linklibrary_mobile/Pods-linklibrary_mobile-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -290,6 +295,23 @@
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
 		};
+		B2EBA0812E1B0504009E9B2E /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "#!/bin/sh\n\n# Only run in CI environment\nif [ \"${CI}\" = \"TRUE\" ] || [ \"${XCODE_CLOUD}\" = \"TRUE\" ]; then\n    echo \"Running in CI/Xcode Cloud environment\"\n    \n    # Go to project root\n    cd \"${SRCROOT}\"\n    \n    # Check if we're in the right place\n    if [ ! -f \"ios/Podfile\" ]; then\n        echo \"ERROR: Podfile not found at ios/Podfile\"\n        echo \"Current directory: $(pwd)\"\n        ls -la\n        exit 1\n    fi\n    \n    # Go to iOS directory and install pods\n    cd ios\n    echo \"Installing CocoaPods dependencies...\"\n    pod install --repo-update --verbose\n    \n    # Verify installation\n    if [ ! -d \"Pods\" ]; then\n        echo \"ERROR: Pods directory not created\"\n        exit 1\n    fi\n    \n    echo \"CocoaPods installation completed successfully\"\nelse\n    echo \"Not in CI environment, skipping pod install\"\nfi\n";
+		};
 		D4FF36D8B9C0E38D547A49BD /* [CP] Copy Pods Resources */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -298,9 +320,13 @@
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-linklibrary_mobile/Pods-linklibrary_mobile-resources-${CONFIGURATION}-input-files.xcfilelist",
 			);
+			inputPaths = (
+			);
 			name = "[CP] Copy Pods Resources";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-linklibrary_mobile/Pods-linklibrary_mobile-resources-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
