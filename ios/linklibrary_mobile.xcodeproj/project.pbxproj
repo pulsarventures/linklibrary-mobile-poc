@@ -8,8 +8,8 @@
 
 /* Begin PBXBuildFile section */
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
-		458B829DFCC143E8E735D87B /* libPods-linklibrary_mobile.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 02ADDB841E8F0AE39A440E03 /* libPods-linklibrary_mobile.a */; };
 		81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
+		E6A284FF78BF467CBB873C9D /* libPods-linklibrary_mobile.a in Frameworks */ = {isa = PBXBuildFile; fileRef = C8DD1A582B79948189FF2547 /* libPods-linklibrary_mobile.a */; };
 		F571B3882BD7A3F80014213C /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = F571B3872BD7A3F80014213C /* PrivacyInfo.xcprivacy */; };
 		F5DC7AB12D9D8A92004DB744 /* AppDelegade.swift in Sources */ = {isa = PBXBuildFile; fileRef = F5DC7AB02D9D8A92004DB744 /* AppDelegade.swift */; };
 /* End PBXBuildFile section */
@@ -24,15 +24,28 @@
 		};
 /* End PBXContainerItemProxy section */
 
+/* Begin PBXCopyFilesBuildPhase section */
+		B2EBA07C2E1AD1EE009E9B2E /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
 		00E356EE1AD99517003FC87E /* linklibrary_mobileTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = linklibrary_mobileTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		02ADDB841E8F0AE39A440E03 /* libPods-linklibrary_mobile.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-linklibrary_mobile.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		13B07F961A680F5B00A75B9A /* linklibrary_mobile.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = linklibrary_mobile.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		13B07FB51A68108700A75B9A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = linklibrary_mobile/Images.xcassets; sourceTree = "<group>"; };
 		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = linklibrary_mobile/Info.plist; sourceTree = "<group>"; };
-		186BACB0C0D873DD42544F5E /* Pods-linklibrary_mobile.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-linklibrary_mobile.release.xcconfig"; path = "Target Support Files/Pods-linklibrary_mobile/Pods-linklibrary_mobile.release.xcconfig"; sourceTree = "<group>"; };
+		5EAC4DCC832357E078426E45 /* Pods-linklibrary_mobile.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-linklibrary_mobile.release.xcconfig"; path = "Target Support Files/Pods-linklibrary_mobile/Pods-linklibrary_mobile.release.xcconfig"; sourceTree = "<group>"; };
 		81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = linklibrary_mobile/LaunchScreen.storyboard; sourceTree = "<group>"; };
-		977366748487FD0D086D5700 /* Pods-linklibrary_mobile.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-linklibrary_mobile.debug.xcconfig"; path = "Target Support Files/Pods-linklibrary_mobile/Pods-linklibrary_mobile.debug.xcconfig"; sourceTree = "<group>"; };
+		BFC7F502A3964DDA421F4246 /* Pods-linklibrary_mobile.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-linklibrary_mobile.debug.xcconfig"; path = "Target Support Files/Pods-linklibrary_mobile/Pods-linklibrary_mobile.debug.xcconfig"; sourceTree = "<group>"; };
+		C8DD1A582B79948189FF2547 /* libPods-linklibrary_mobile.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-linklibrary_mobile.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
 		F571B3872BD7A3F80014213C /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		F5DC7AB02D9D8A92004DB744 /* AppDelegade.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegade.swift; sourceTree = "<group>"; };
@@ -51,7 +64,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				458B829DFCC143E8E735D87B /* libPods-linklibrary_mobile.a in Frameworks */,
+				E6A284FF78BF467CBB873C9D /* libPods-linklibrary_mobile.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -75,7 +88,7 @@
 			isa = PBXGroup;
 			children = (
 				ED297162215061F000B7C4FE /* JavaScriptCore.framework */,
-				02ADDB841E8F0AE39A440E03 /* libPods-linklibrary_mobile.a */,
+				C8DD1A582B79948189FF2547 /* libPods-linklibrary_mobile.a */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -113,8 +126,8 @@
 		BBD78D7AC51CEA395F1C20DB /* Pods */ = {
 			isa = PBXGroup;
 			children = (
-				977366748487FD0D086D5700 /* Pods-linklibrary_mobile.debug.xcconfig */,
-				186BACB0C0D873DD42544F5E /* Pods-linklibrary_mobile.release.xcconfig */,
+				BFC7F502A3964DDA421F4246 /* Pods-linklibrary_mobile.debug.xcconfig */,
+				5EAC4DCC832357E078426E45 /* Pods-linklibrary_mobile.release.xcconfig */,
 			);
 			path = Pods;
 			sourceTree = "<group>";
@@ -144,14 +157,15 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 13B07F931A680F5B00A75B9A /* Build configuration list for PBXNativeTarget "linklibrary_mobile" */;
 			buildPhases = (
-				5F4D552CCD419FB2B5B05EF2 /* [CP] Check Pods Manifest.lock */,
+				88EAD930244305F323768763 /* [CP] Check Pods Manifest.lock */,
 				FD10A7F022414F080027D42C /* Start Packager */,
 				13B07F871A680F5B00A75B9A /* Sources */,
 				13B07F8C1A680F5B00A75B9A /* Frameworks */,
 				13B07F8E1A680F5B00A75B9A /* Resources */,
 				00DD1BFF1BD5951E006B06BC /* Bundle React Native code and images */,
-				BF675E7EE0CBD24317E7F6CB /* [CP] Embed Pods Frameworks */,
-				8B771F0D7E6513C92C13980B /* [CP] Copy Pods Resources */,
+				B2EBA07C2E1AD1EE009E9B2E /* Embed Foundation Extensions */,
+				0E2CE418CBD6570AA71C93FA /* [CP] Embed Pods Frameworks */,
+				D4FF36D8B9C0E38D547A49BD /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -168,7 +182,9 @@
 		83CBB9F71A601CBA00E9B192 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 1210;
+				BuildIndependentTargetsInParallel = YES;
+				LastSwiftUpdateCheck = 1640;
+				LastUpgradeCheck = 1640;
 				TargetAttributes = {
 					00E356ED1AD99517003FC87E = {
 						CreatedOnToolsVersion = 6.2;
@@ -235,7 +251,24 @@
 			shellPath = /bin/sh;
 			shellScript = "set -e\n\nWITH_ENVIRONMENT=\"../node_modules/react-native/scripts/xcode/with-environment.sh\"\nREACT_NATIVE_XCODE=\"../node_modules/react-native/scripts/react-native-xcode.sh\"\n\n/bin/sh -c \"$WITH_ENVIRONMENT $REACT_NATIVE_XCODE\"\n";
 		};
-		5F4D552CCD419FB2B5B05EF2 /* [CP] Check Pods Manifest.lock */ = {
+		0E2CE418CBD6570AA71C93FA /* [CP] Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-linklibrary_mobile/Pods-linklibrary_mobile-frameworks-${CONFIGURATION}-input-files.xcfilelist",
+			);
+			name = "[CP] Embed Pods Frameworks";
+			outputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-linklibrary_mobile/Pods-linklibrary_mobile-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-linklibrary_mobile/Pods-linklibrary_mobile-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		88EAD930244305F323768763 /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -257,7 +290,7 @@
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
 		};
-		8B771F0D7E6513C92C13980B /* [CP] Copy Pods Resources */ = {
+		D4FF36D8B9C0E38D547A49BD /* [CP] Copy Pods Resources */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -272,23 +305,6 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-linklibrary_mobile/Pods-linklibrary_mobile-resources.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
-		BF675E7EE0CBD24317E7F6CB /* [CP] Embed Pods Frameworks */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-linklibrary_mobile/Pods-linklibrary_mobile-frameworks-${CONFIGURATION}-input-files.xcfilelist",
-			);
-			name = "[CP] Embed Pods Frameworks";
-			outputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-linklibrary_mobile/Pods-linklibrary_mobile-frameworks-${CONFIGURATION}-output-files.xcfilelist",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-linklibrary_mobile/Pods-linklibrary_mobile-frameworks.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 		FD10A7F022414F080027D42C /* Start Packager */ = {
@@ -390,12 +406,12 @@
 		};
 		13B07F941A680F5B00A75B9A /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 977366748487FD0D086D5700 /* Pods-linklibrary_mobile.debug.xcconfig */;
+			baseConfigurationReference = BFC7F502A3964DDA421F4246 /* Pods-linklibrary_mobile.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = HH673SN3QR;
+				DEVELOPMENT_TEAM = 7836837UUW;
 				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = linklibrary_mobile/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -420,12 +436,12 @@
 		};
 		13B07F951A680F5B00A75B9A /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 186BACB0C0D873DD42544F5E /* Pods-linklibrary_mobile.release.xcconfig */;
+			baseConfigurationReference = 5EAC4DCC832357E078426E45 /* Pods-linklibrary_mobile.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = HH673SN3QR;
+				DEVELOPMENT_TEAM = 7836837UUW;
 				INFOPLIST_FILE = linklibrary_mobile/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -605,6 +621,7 @@
 				OTHER_LDFLAGS = "$(inherited)";
 				REACT_NATIVE_PATH = "${PODS_ROOT}/../../node_modules/react-native";
 				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
 				USE_HERMES = true;
 				VALIDATE_PRODUCT = YES;
 			};

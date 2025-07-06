@@ -1,4 +1,7 @@
-export { default as Example } from './Example/Example';
+export * from './Landing/Landing';
+export * from './Login/Login';
+export * from './SignUp/SignUp';
+export * from './Startup/Startup';
 export { default as Links } from './Links/Links';
 export { default as Collections } from './Collections/Collections';
 export { default as Tags } from './Tags/Tags';
