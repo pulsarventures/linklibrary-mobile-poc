@@ -8,8 +8,8 @@ import {
   ViewProps,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { PRIMARY_COLORS } from '@/theme/styles/colors';
 import { SPACING } from '@/theme/styles/spacing';
+import { useTheme } from '@/theme/ThemeProvider/ThemeProvider';
 
 interface ContainerProps extends ViewProps {
   children: React.ReactNode;
@@ -26,6 +26,8 @@ export function Container({
   style,
   ...props
 }: ContainerProps) {
+  const { colors } = useTheme();
+
   const content = scrollable ? (
     <ScrollView
       contentContainerStyle={styles.scrollContent}
@@ -52,7 +54,14 @@ export function Container({
 
   if (variant === 'screen') {
     return (
-      <SafeAreaView style={[styles.screen, style]} {...props}>
+      <SafeAreaView 
+        style={[
+          styles.screen, 
+          { backgroundColor: colors.background.primary },
+          style
+        ]} 
+        {...props}
+      >
         {containerContent}
       </SafeAreaView>
     );
@@ -68,7 +77,6 @@ export function Container({
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: PRIMARY_COLORS.background,
     padding: SPACING.lg,
   },
   container: {

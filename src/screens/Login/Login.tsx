@@ -1,14 +1,18 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, Pressable } from 'react-native';
+import { View, StyleSheet, Pressable, Alert } from 'react-native';
 import { Button, Container, Input, Text, StatusIndicator } from '@/components/ui';
-import type { RootScreenProps } from '@/navigation/types';
-import { Paths } from '@/navigation/paths';
+import type { NativeStackScreenProps } from '@react-navigation/native-stack';
+import type { RootStackParamList } from '@/navigation/types';
 import { IconByVariant } from '@/components/atoms';
 import { useAuthStore } from '@/hooks/domain/user/useAuthStore';
-import { PRIMARY_COLORS } from '@/theme/styles/colors';
+import { signInWithGoogle } from '@/services/auth/googleAuth';
+import { useTheme } from '@/theme/ThemeProvider/ThemeProvider';
 import { SPACING } from '@/theme/styles/spacing';
 
-function Login({ navigation }: RootScreenProps<Paths.Login>) {
+type Props = NativeStackScreenProps<RootStackParamList, 'Login'>;
+
+function Login({ navigation }: Props) {
+  const { colors } = useTheme();
   const [credentials, setCredentials] = useState({
     username: '',
     password: '',
@@ -16,7 +20,7 @@ function Login({ navigation }: RootScreenProps<Paths.Login>) {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const { login } = useAuthStore();
+  const { login, socialAuth } = useAuthStore();
 
   const handleLogin = async () => {
     try {
@@ -30,11 +34,35 @@ function Login({ navigation }: RootScreenProps<Paths.Login>) {
     }
   };
 
+  const handleGoogleSignIn = async () => {
+    try {
+      setLoading(true);
+      setError('');
+      
+      const googleUser = await signInWithGoogle();
+      await socialAuth({
+        provider: 'google',
+        token: googleUser.token,
+        email: googleUser.email,
+        name: googleUser.name,
+      });
+    } catch (err) {
+      if (err instanceof Error && err.message === 'Sign in cancelled') {
+        // User cancelled the sign-in, don't show error
+        return;
+      }
+      setError(err instanceof Error ? err.message : 'Failed to sign in with Google');
+      Alert.alert('Sign In Failed', 'Could not sign in with Google. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <Container>
       <View style={styles.header}>
-        <Text variant="title" weight="bold">Welcome Back</Text>
-        <Text variant="subtitle">Sign in to continue</Text>
+        <Text variant="title" weight="bold" style={{ color: colors.text.primary }}>Welcome Back</Text>
+        <Text variant="subtitle" style={{ color: colors.text.secondary }}>Sign in to continue</Text>
       </View>
 
       {error && (
@@ -45,7 +73,7 @@ function Login({ navigation }: RootScreenProps<Paths.Login>) {
         label="Email"
         value={credentials.username}
         onChangeText={(text) => setCredentials({ ...credentials, username: text })}
-        icon={<IconByVariant name="mail" color={PRIMARY_COLORS.text.muted} />}
+        icon={<IconByVariant name="mail" color={colors.text.tertiary} />}
         placeholder="Enter your email"
         keyboardType="email-address"
         autoCapitalize="none"
@@ -56,7 +84,7 @@ function Login({ navigation }: RootScreenProps<Paths.Login>) {
           label="Password"
           value={credentials.password}
           onChangeText={(text) => setCredentials({ ...credentials, password: text })}
-          icon={<IconByVariant name="lock" color={PRIMARY_COLORS.text.muted} />}
+          icon={<IconByVariant name="lock" color={colors.text.tertiary} />}
           placeholder="Enter your password"
           secureTextEntry={!showPassword}
         />
@@ -64,7 +92,7 @@ function Login({ navigation }: RootScreenProps<Paths.Login>) {
           onPress={() => setShowPassword(!showPassword)}
           style={styles.eyeIcon}
         >
-          <IconByVariant name="eye" color={PRIMARY_COLORS.text.muted} />
+          <IconByVariant name="eye" color={colors.text.tertiary} />
         </Pressable>
       </View>
 
@@ -72,39 +100,44 @@ function Login({ navigation }: RootScreenProps<Paths.Login>) {
         onPress={handleLogin}
         loading={loading}
         disabled={!credentials.username || !credentials.password}
+        style={styles.signInButton}
       >
         Sign In
       </Button>
 
       <View style={styles.divider}>
-        <View style={styles.dividerLine} />
-        <Text variant="caption" style={styles.dividerText}>or continue with</Text>
-        <View style={styles.dividerLine} />
+        <View style={[styles.dividerLine, { backgroundColor: colors.border.primary }]} />
+        <Text variant="caption" style={[styles.dividerText, { color: colors.text.secondary }]}>
+          or continue with
+        </Text>
+        <View style={[styles.dividerLine, { backgroundColor: colors.border.primary }]} />
       </View>
 
       <View style={styles.socialButtons}>
         <Button
           variant="social"
-          onPress={() => {}}
-          style={styles.googleButton}
+          onPress={handleGoogleSignIn}
+          style={[styles.googleButton, { borderColor: colors.border.primary }]}
           icon={<IconByVariant name="google" size={20} />}
+          disabled={loading}
         >
           Google
         </Button>
         <Button
-          variant="apple"
+          variant="social"
           onPress={() => {}}
           style={styles.appleButton}
-          icon={<IconByVariant name="apple" size={20} color="#FFFFFF" />}
+          icon={<IconByVariant name="apple" size={20} />}
+          disabled={loading}
         >
           Apple
         </Button>
       </View>
 
       <View style={styles.footer}>
-        <Text variant="body">Don't have an account?</Text>
-        <Pressable onPress={() => navigation.navigate(Paths.SignUp)}>
-          <Text variant="body" color={PRIMARY_COLORS.primary}>Sign Up</Text>
+        <Text variant="body" style={{ color: colors.text.primary }}>Don't have an account?</Text>
+        <Pressable onPress={() => navigation.navigate('SignUp')}>
+          <Text variant="body" style={{ color: colors.accent.primary }}>Sign Up</Text>
         </Pressable>
       </View>
     </Container>
@@ -121,11 +154,15 @@ const styles = StyleSheet.create({
   },
   passwordContainer: {
     position: 'relative',
+    marginBottom: SPACING.xl,
+  },
+  signInButton: {
+    marginTop: SPACING.md,
   },
   eyeIcon: {
     position: 'absolute',
     right: SPACING.md,
-    top: 38, // Adjust based on your layout
+    top: 38,
     zIndex: 1,
   },
   divider: {
@@ -136,11 +173,9 @@ const styles = StyleSheet.create({
   dividerLine: {
     flex: 1,
     height: 1,
-    backgroundColor: PRIMARY_COLORS.border,
   },
   dividerText: {
     marginHorizontal: SPACING.md,
-    color: PRIMARY_COLORS.text.secondary,
   },
   socialButtons: {
     flexDirection: 'row',
@@ -149,16 +184,8 @@ const styles = StyleSheet.create({
   },
   googleButton: {
     flex: 1,
+    justifyContent: 'center',
     borderWidth: 1,
-    borderColor: '#E5E7EB',
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 1,
-    },
-    shadowOpacity: 0.08,
-    shadowRadius: 2,
-    elevation: 2,
   },
   appleButton: {
     flex: 1,

@@ -2,7 +2,7 @@ import React from 'react';
 import { Text as RNText, StyleSheet, TextProps } from 'react-native';
 import { PRIMARY_COLORS, TYPOGRAPHY } from '@/theme/styles';
 
-type TextVariant = 'title' | 'subtitle' | 'body' | 'caption';
+type TextVariant = 'title' | 'subtitle' | 'body' | 'small' | 'caption';
 type TextWeight = 'regular' | 'medium' | 'semibold' | 'bold';
 
 interface CustomTextProps extends TextProps {
@@ -52,9 +52,13 @@ const styles = StyleSheet.create({
     fontSize: TYPOGRAPHY.sizes.md,
     lineHeight: TYPOGRAPHY.sizes.md * TYPOGRAPHY.lineHeights.normal,
   },
-  caption: {
+  small: {
     fontSize: TYPOGRAPHY.sizes.sm,
     lineHeight: TYPOGRAPHY.sizes.sm * TYPOGRAPHY.lineHeights.normal,
+  },
+  caption: {
+    fontSize: TYPOGRAPHY.sizes.xs,
+    lineHeight: TYPOGRAPHY.sizes.xs * TYPOGRAPHY.lineHeights.normal,
   },
   // Weights
   regular: {

@@ -1,34 +1,42 @@
 import type { RootScreenProps } from '@/navigation/types';
-
-import { useQuery } from '@tanstack/react-query';
 import { useEffect } from 'react';
-import { useTranslation } from 'react-i18next';
-import { ActivityIndicator, Text, View } from 'react-native';
-
+import { ActivityIndicator, View } from 'react-native';
 import { Paths } from '@/navigation/paths';
 import { useTheme } from '@/theme';
-
 import { AssetByVariant } from '@/components/atoms';
 import { SafeScreen } from '@/components/templates';
+import { useAuthStore } from '@/hooks/domain/user/useAuthStore';
 
-function Startup({ navigation }: RootScreenProps<Paths.Startup>) {
-  const { fonts, gutters, layout } = useTheme();
-  const { t } = useTranslation();
+function Startup({ navigation }: RootScreenProps<'Startup'>) {
+  const { layout, colors } = useTheme();
+  const { initializeAuth, isAuthenticated, initialized, isLoading } = useAuthStore();
 
-  const { isError, isFetching, isSuccess } = useQuery({
-    queryFn: () => {
-      return Promise.resolve(true);
-    },
-    queryKey: ['startup'],
-    retry: false,
-  });
-
+  // Run initialization only once on mount
   useEffect(() => {
-    if (isSuccess) {
-      // Navigate to Landing page instead of Example
-      navigation.replace(Paths.Landing);
+    const initialize = async () => {
+      try {
+        await initializeAuth();
+      } catch (error) {
+        console.error('Initialization error:', error);
+        // Even if initialization fails, we should mark it as initialized
+        // to move past the splash screen
+        navigation.replace(Paths.Login);
+      }
+    };
+
+    initialize();
+  }, []); // Only run on mount
+
+  // Handle navigation after initialization
+  useEffect(() => {
+    if (initialized && !isLoading) {
+      if (isAuthenticated) {
+        navigation.replace(Paths.Main, { screen: Paths.Links });
+      } else {
+        navigation.replace(Paths.Login);
+      }
     }
-  }, [isSuccess, navigation]);
+  }, [initialized, isAuthenticated, isLoading, navigation]);
 
   return (
     <SafeScreen>
@@ -45,12 +53,11 @@ function Startup({ navigation }: RootScreenProps<Paths.Startup>) {
           resizeMode="contain"
           style={{ height: 300, width: 300 }}
         />
-        {isFetching ? (
-          <ActivityIndicator size="large" style={[gutters.marginVertical_24]} />
-        ) : undefined}
-        {isError ? (
-          <Text style={[fonts.size_16, fonts.red500]}>{t('common_error')}</Text>
-        ) : undefined}
+        <ActivityIndicator 
+          size="large" 
+          style={{ marginTop: 24 }} 
+          color={colors.accent.primary}
+        />
       </View>
     </SafeScreen>
   );

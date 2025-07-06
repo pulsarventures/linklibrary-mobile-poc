@@ -3,9 +3,10 @@ import { TouchableOpacity, Text, StyleSheet, ActivityIndicator, View } from 'rea
 import LinearGradient from 'react-native-linear-gradient';
 import { PRIMARY_COLORS } from '@/theme/styles/colors';
 import { SPACING } from '@/theme/styles/spacing';
-import { GRADIENTS, createGradientStyle } from '@/theme/styles/gradients';
+import { createGradientStyle } from '@/theme/styles/gradients';
+import { useTheme } from '@/theme/ThemeProvider/ThemeProvider';
 
-type ButtonVariant = 'primary' | 'social' | 'google' | 'apple';
+type ButtonVariant = 'primary' | 'social' | 'google' | 'apple' | 'danger' | 'gradient';
 
 interface ButtonProps {
   children: React.ReactNode;
@@ -26,25 +27,32 @@ export function Button({
   icon,
   style,
 }: ButtonProps) {
+  const { colors } = useTheme();
   
   const getTextColor = () => {
-    if (variant === 'google') return '#1F2937';
-    if (variant === 'apple') return '#FFFFFF';
-    return PRIMARY_COLORS.text.primary;
+    if (variant === 'google') return colors.text.primary;
+    if (variant === 'apple') return colors.text.inverse;
+    if (variant === 'danger') return colors.text.inverse;
+    if (variant === 'primary') return colors.text.inverse;
+    if (variant === 'gradient') return colors.text.inverse;
+    return colors.text.primary;
   };
 
   const renderContent = () => (
-    <View style={[styles.contentContainer, loading && styles.loadingContainer]}>
+    <View style={styles.contentContainer}>
       {loading ? (
         <ActivityIndicator color={getTextColor()} size="small" />
       ) : (
         <>
-          {icon && <View style={styles.icon}>{icon}</View>}
-          <Text style={[
-            styles.text,
-            { color: getTextColor() },
-            variant === 'social' && styles.socialText
-          ]}>
+          {icon && <View style={styles.iconContainer}>{icon}</View>}
+          <Text 
+            style={[
+              styles.text,
+              { color: getTextColor() },
+              variant === 'social' && styles.socialText
+            ]}
+            numberOfLines={1}
+          >
             {children}
           </Text>
         </>
@@ -52,53 +60,93 @@ export function Button({
     </View>
   );
 
+  // Gradient button
+  if (variant === 'gradient') {
+    const gradientConfig = createGradientStyle('primary');
+    
+    return (
+      <TouchableOpacity
+        onPress={onPress}
+        disabled={disabled || loading}
+        activeOpacity={disabled || loading ? 1 : 0.8}
+        style={[styles.container, style]}
+      >
+        <LinearGradient
+          colors={['#6366F1', '#4F46E5']}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 0 }}
+          style={styles.gradient}
+        >
+          {renderContent()}
+        </LinearGradient>
+      </TouchableOpacity>
+    );
+  }
+
+  // Danger button with gradient
+  if (variant === 'danger') {
+    return (
+      <TouchableOpacity
+        onPress={onPress}
+        disabled={disabled || loading}
+        activeOpacity={disabled || loading ? 1 : 0.8}
+        style={[styles.container, disabled && styles.disabled, style]}
+      >
+        <LinearGradient
+          colors={disabled ? [colors.text.tertiary, colors.text.tertiary] : [colors.error, colors.error]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 0 }}
+          style={styles.gradient}
+        >
+          {renderContent()}
+        </LinearGradient>
+      </TouchableOpacity>
+    );
+  }
+
   // Primary button with gradient
   if (variant === 'primary') {
     const gradientConfig = createGradientStyle(disabled ? 'disabled' : 'primary');
     
     return (
-      <View style={[styles.container, style]}>
-        <TouchableOpacity
-          onPress={onPress}
-          disabled={disabled || loading}
-          activeOpacity={loading ? 1 : 0.8}
-          style={styles.touchable}
+      <TouchableOpacity
+        onPress={onPress}
+        disabled={disabled || loading}
+        activeOpacity={disabled || loading ? 1 : 0.8}
+        style={[styles.container, style]}
+      >
+        <LinearGradient
+          colors={gradientConfig.colors}
+          start={gradientConfig.start}
+          end={gradientConfig.end}
+          style={styles.gradient}
         >
-          <LinearGradient
-            colors={gradientConfig.colors}
-            start={gradientConfig.start}
-            end={gradientConfig.end}
-            style={[styles.gradient, gradientConfig.style]}
-          >
-            {renderContent()}
-          </LinearGradient>
-        </TouchableOpacity>
-      </View>
+          {renderContent()}
+        </LinearGradient>
+      </TouchableOpacity>
     );
   }
 
-  // Google button with gradient
+  // Google button
   if (variant === 'google') {
-    const gradientConfig = createGradientStyle('google');
-    
     return (
-      <View style={[styles.container, styles.socialContainer, style]}>
-        <TouchableOpacity
-          onPress={onPress}
-          disabled={disabled || loading}
-          activeOpacity={loading ? 1 : 0.8}
-          style={styles.touchable}
-        >
-          <LinearGradient
-            colors={gradientConfig.colors}
-            start={gradientConfig.start}
-            end={gradientConfig.end}
-            style={[styles.gradient, gradientConfig.style, styles.socialGradient]}
-          >
-            {renderContent()}
-          </LinearGradient>
-        </TouchableOpacity>
-      </View>
+      <TouchableOpacity
+        onPress={onPress}
+        disabled={disabled || loading}
+        activeOpacity={disabled || loading ? 1 : 0.8}
+        style={[
+          styles.container,
+          {
+            backgroundColor: colors.background.primary,
+            borderColor: colors.border.primary,
+          },
+          styles.socialButton,
+          disabled && styles.disabled,
+          style
+        ]}
+      >
+        {renderContent()}
+      </TouchableOpacity>
     );
   }
 
@@ -107,35 +155,37 @@ export function Button({
     const gradientConfig = createGradientStyle('apple');
     
     return (
-      <View style={[styles.container, styles.socialContainer, style]}>
-        <TouchableOpacity
-          onPress={onPress}
-          disabled={disabled || loading}
-          activeOpacity={loading ? 1 : 0.8}
-          style={styles.touchable}
+      <TouchableOpacity
+        onPress={onPress}
+        disabled={disabled || loading}
+        activeOpacity={disabled || loading ? 1 : 0.8}
+        style={[styles.container, disabled && styles.disabled, style]}
+      >
+        <LinearGradient
+          colors={gradientConfig.colors}
+          start={gradientConfig.start}
+          end={gradientConfig.end}
+          style={styles.gradient}
         >
-          <LinearGradient
-            colors={gradientConfig.colors}
-            start={gradientConfig.start}
-            end={gradientConfig.end}
-            style={[styles.gradient, gradientConfig.style]}
-          >
-            {renderContent()}
-          </LinearGradient>
-        </TouchableOpacity>
-      </View>
+          {renderContent()}
+        </LinearGradient>
+      </TouchableOpacity>
     );
   }
 
-  // Fallback social button (non-gradient)
+  // Fallback social button
   return (
     <TouchableOpacity
       onPress={onPress}
       disabled={disabled || loading}
-      activeOpacity={loading ? 1 : 0.8}
+      activeOpacity={disabled || loading ? 1 : 0.8}
       style={[
         styles.container,
-        styles.social,
+        {
+          backgroundColor: colors.background.primary,
+          borderColor: colors.border.primary,
+        },
+        styles.socialButton,
         disabled && styles.disabled,
         style,
       ]}
@@ -150,12 +200,21 @@ const styles = StyleSheet.create({
     height: 48,
     borderRadius: 12,
     width: '100%',
-    marginBottom: SPACING.md,
+    justifyContent: 'center',
+    alignItems: 'center',
     overflow: 'hidden',
   },
-  socialContainer: {
+  gradient: {
     flex: 1,
-    marginBottom: 0,
+    width: '100%',
+    height: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 12,
+  },
+  socialButton: {
+    borderWidth: 1,
+    paddingHorizontal: SPACING.md,
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
@@ -165,54 +224,22 @@ const styles = StyleSheet.create({
     shadowRadius: 2,
     elevation: 2,
   },
-  touchable: {
-    flex: 1,
-    borderRadius: 12,
-  },
-  gradient: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: SPACING.md,
-  },
-  socialGradient: {
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
-    borderRadius: 12,
-  },
   contentContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    minHeight: 24,
-    gap: SPACING.xs,
   },
-  loadingContainer: {
-    position: 'relative',
-    height: 24,
-  },
-  social: {
-    backgroundColor: PRIMARY_COLORS.social?.google?.background || '#FFFFFF',
-    borderWidth: 1,
-    borderColor: PRIMARY_COLORS.social?.google?.border || '#E5E7EB',
-    flex: 1,
-    marginBottom: 0,
-    paddingHorizontal: SPACING.md,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  disabled: {
-    opacity: 0.5,
+  iconContainer: {
+    marginRight: SPACING.sm,
   },
   text: {
     fontSize: 16,
     fontWeight: '600',
-    textAlign: 'center',
   },
   socialText: {
     fontWeight: '500',
   },
-  icon: {
-    marginRight: 0,
+  disabled: {
+    opacity: 0.5,
   },
 });

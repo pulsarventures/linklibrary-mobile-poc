@@ -1,10 +1,10 @@
 import type { PropsWithChildren } from 'react';
 import type { SafeAreaViewProps } from 'react-native-safe-area-context';
 
-import { StatusBar } from 'react-native';
+import { StatusBar, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { useTheme } from '@/theme';
+import { useTheme } from '@/theme/ThemeProvider/ThemeProvider';
 
 type Properties = PropsWithChildren<
   {
@@ -20,17 +20,31 @@ function SafeScreen({
   style,
   ...props
 }: Properties) {
-  const { layout, navigationTheme, variant } = useTheme();
+  const { colors, isDark } = useTheme();
 
   return (
-    <SafeAreaView {...props} mode="padding" style={[layout.flex_1, style]}>
+    <SafeAreaView 
+      {...props} 
+      mode="padding" 
+      style={[
+        styles.container,
+        { backgroundColor: colors.background.primary },
+        style
+      ]}
+    >
       <StatusBar
-        backgroundColor={navigationTheme.colors.background}
-        barStyle={variant === 'dark' ? 'light-content' : 'dark-content'}
+        backgroundColor={colors.background.primary}
+        barStyle={isDark ? 'light-content' : 'dark-content'}
       />
       {children}
     </SafeAreaView>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+});
 
 export default SafeScreen;

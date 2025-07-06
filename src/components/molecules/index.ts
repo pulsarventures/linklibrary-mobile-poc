@@ -1,1 +1,3 @@
-export { default as DefaultError } from './DefaultError/DefaultError';
+export * from './CollectionItem/CollectionItem';
+export * from './DefaultError/DefaultError';
+export * from './TagItem/TagItem';

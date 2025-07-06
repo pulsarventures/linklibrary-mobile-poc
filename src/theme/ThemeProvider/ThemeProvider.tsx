@@ -1,147 +1,104 @@
-import type {
-  FulfilledThemeConfiguration,
-  Variant,
-} from '@/theme/types/config';
-import type { ComponentTheme, Theme } from '@/theme/types/theme';
-import type { PropsWithChildren } from 'react';
-import type { MMKV } from 'react-native-mmkv';
+import React, { createContext, useContext, useEffect, useState } from 'react';
+import { useColorScheme, ActivityIndicator, View } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { LIGHT_COLORS, DARK_COLORS } from '../styles/colors';
+import type { ThemeColors } from '../types/theme';
+import { storageService } from '@/services/storage';
+import layout from '../layout';
 
-import { DarkTheme, DefaultTheme } from '@react-navigation/native';
-import {
-  createContext,
-  useCallback,
-  useEffect,
-  useMemo,
-  useState,
-} from 'react';
+export type ColorTheme = 'light' | 'dark' | 'system';
 
-import {
-  generateBackgrounds,
-  staticBackgroundStyles,
-} from '@/theme/backgrounds';
-import {
-  generateBorderColors,
-  generateBorderRadius,
-  generateBorderWidths,
-  staticBorderStyles,
-} from '@/theme/borders';
-import componentsGenerator from '@/theme/components';
-import {
-  generateFontColors,
-  generateFontSizes,
-  staticFontStyles,
-} from '@/theme/fonts';
-import { generateGutters, staticGutterStyles } from '@/theme/gutters';
-import layout from '@/theme/layout';
-import generateConfig from '@/theme/ThemeProvider/generateConfig';
-
-type Context = {
-  changeTheme: (variant: Variant) => void;
-} & Theme;
-
-export const ThemeContext = createContext<Context | undefined>(undefined);
-
-type Properties = PropsWithChildren<{
-  readonly storage: MMKV;
-}>;
-
-function ThemeProvider({ children = false, storage }: Properties) {
-  // Current theme variant
-  const [variant, setVariant] = useState(
-    (storage.getString('theme') ?? 'default') as Variant,
-  );
-
-  // Initialize theme at default if not defined
-  useEffect(() => {
-    const appHasThemeDefined = storage.contains('theme');
-    if (!appHasThemeDefined) {
-      storage.set('theme', 'default');
-      setVariant('default');
-    }
-  }, [storage]);
-
-  const changeTheme = useCallback(
-    (nextVariant: Variant) => {
-      setVariant(nextVariant);
-      storage.set('theme', nextVariant);
-    },
-    [storage],
-  );
-
-  // Flatten config with current variant
-  const fullConfig = useMemo(() => {
-    return generateConfig(variant) satisfies FulfilledThemeConfiguration;
-  }, [variant]);
-
-  const fonts = useMemo(() => {
-    return {
-      ...generateFontSizes(),
-      ...generateFontColors(fullConfig),
-      ...staticFontStyles,
-    };
-  }, [fullConfig]);
-
-  const backgrounds = useMemo(() => {
-    return {
-      ...generateBackgrounds(fullConfig),
-      ...staticBackgroundStyles,
-    };
-  }, [fullConfig]);
-
-  const gutters = useMemo(() => {
-    return {
-      ...generateGutters(fullConfig),
-      ...staticGutterStyles,
-    };
-  }, [fullConfig]);
-
-  const borders = useMemo(() => {
-    return {
-      ...generateBorderColors(fullConfig),
-      ...generateBorderRadius(),
-      ...generateBorderWidths(),
-      ...staticBorderStyles,
-    };
-  }, [fullConfig]);
-
-  const navigationTheme = useMemo(() => {
-    if (variant === 'dark') {
-      return {
-        ...DarkTheme,
-        colors: fullConfig.navigationColors,
-        dark: true,
-      };
-    }
-    return {
-      ...DefaultTheme,
-      colors: fullConfig.navigationColors,
-      dark: false,
-    };
-  }, [variant, fullConfig.navigationColors]);
-
-  const theme = useMemo(() => {
-    return {
-      backgrounds,
-      borders,
-      colors: fullConfig.colors,
-      fonts,
-      gutters,
-      layout,
-      variant,
-    } satisfies ComponentTheme;
-  }, [variant, fonts, backgrounds, borders, fullConfig.colors, gutters]);
-
-  const components = useMemo(() => {
-    return componentsGenerator(theme);
-  }, [theme]);
-
-  const value = useMemo(() => {
-    return { ...theme, changeTheme, components, navigationTheme };
-  }, [theme, components, navigationTheme, changeTheme]);
-
-  return (
-    <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>
-  );
+interface ThemeContextType {
+  colors: ThemeColors;
+  isDark: boolean;
+  theme: ColorTheme;
+  toggleTheme: () => void;
+  setTheme: (theme: ColorTheme) => void;
+  layout: typeof layout;
 }
 
-export default ThemeProvider;
+const ThemeContext = createContext<ThemeContextType>({
+  colors: LIGHT_COLORS,
+  isDark: false,
+  theme: 'system',
+  toggleTheme: () => {},
+  setTheme: () => {},
+  layout,
+});
+
+const THEME_STORAGE_KEY = '@theme';
+
+export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const systemColorScheme = useColorScheme();
+  const [isLoading, setIsLoading] = useState(true);
+  const [theme, setThemeState] = useState<ColorTheme>('system');
+
+  useEffect(() => {
+    const initTheme = async () => {
+      try {
+        const savedTheme = await AsyncStorage.getItem(THEME_STORAGE_KEY);
+        if (savedTheme) {
+          setThemeState(savedTheme as ColorTheme);
+        }
+      } catch (error: unknown) {
+        console.warn('Failed to load theme from storage:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    initTheme();
+  }, []);
+
+  // Determine if dark mode should be active based on theme setting and system preference
+  const isDark = theme === 'system' ? systemColorScheme === 'dark' : theme === 'dark';
+
+  useEffect(() => {
+    // Save theme changes to storage
+    AsyncStorage.setItem(THEME_STORAGE_KEY, theme).catch((error: unknown) => {
+      console.warn('Failed to save theme to storage:', error);
+    });
+  }, [theme]);
+
+  const toggleTheme = () => {
+    const newTheme = isDark ? 'light' : 'dark';
+    setThemeState(newTheme);
+  };
+
+  const setTheme = (newTheme: ColorTheme) => {
+    setThemeState(newTheme);
+  };
+
+  const colors = isDark ? DARK_COLORS : LIGHT_COLORS;
+
+  if (isLoading) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <ActivityIndicator size="large" />
+      </View>
+    );
+  }
+
+  return (
+    <ThemeContext.Provider
+      value={{
+        colors,
+        isDark,
+        theme,
+        toggleTheme,
+        setTheme,
+        layout,
+      }}
+    >
+      {children}
+    </ThemeContext.Provider>
+  );
+};
+
+export const useTheme = () => {
+  const context = useContext(ThemeContext);
+  if (!context) {
+    throw new Error('useTheme must be used within a ThemeProvider');
+  }
+  return context;
+};

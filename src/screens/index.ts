@@ -1,9 +1,9 @@
-export * from './Example/Example';
-export * from './Landing/Landing';
-export * from './Login/Login';
-export * from './SignUp/SignUp';
-export * from './Startup/Startup';
-export * from './Links/Links';
-export * from './Collections/Collections';
-export * from './Tags/Tags';
-export * from './Settings/Settings';
+export { default as Example } from './Example/Example';
+export { default as Links } from './Links/Links';
+export { default as Collections } from './Collections/Collections';
+export { default as Tags } from './Tags/Tags';
+export { default as Settings } from './Settings/Settings';
+export { default as Login } from './Login/Login';
+export { default as SignUp } from './SignUp/SignUp';
+export { default as Landing } from './Landing/Landing';
+export { default as Startup } from './Startup/Startup';

@@ -6,19 +6,22 @@ export type RootScreenProps<
   S extends keyof RootStackParamList = keyof RootStackParamList,
 > = StackScreenProps<RootStackParamList, S>;
 
-export type TabParamList = {
+export type RootTabParamList = {
   Links: undefined;
   Collections: undefined;
+  Add: undefined;
   Tags: undefined;
   Settings: undefined;
 };
 
 export type RootStackParamList = {
-  Auth: undefined;
-  Main: NavigatorScreenParams<TabParamList>;
-  [Paths.Login]: undefined;
-  [Paths.Landing]: undefined;
-  [Paths.SignUp]: undefined;
+  Startup: undefined;
+  Landing: undefined;
+  Login: undefined;
+  SignUp: undefined;
+  ForgotPassword: undefined;
+  Main: NavigatorScreenParams<RootTabParamList>;
+  Dashboard: { collection: number };
 };
 
 declare global {

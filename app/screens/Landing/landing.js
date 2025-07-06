@@ -3,8 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity, SafeAreaView, StatusBar, Imag
 import { useTheme } from '../../theme';
 import { Text as CustomText } from '../../components/text';
 import { Button } from '../../components/button';
-import CheckIcon from '../../assets/images/check.svg';
-import AddIcon from '../../assets/images/add.svg';
+import { IconByVariant } from '../../components/atoms';
 
 const NavItem = ({ title }) => {
   const { colors } = useTheme();
@@ -241,7 +240,7 @@ const Landing = ({ navigation }) => {
             </View>
 
             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-              <CheckIcon width={16} height={16} style={styles.checkIcon} />
+              <IconByVariant name="check" size={16} style={styles.checkIcon} />
               <CustomText style={styles.noCardText}>No credit card required</CustomText>
             </View>
           </View>
@@ -251,7 +250,7 @@ const Landing = ({ navigation }) => {
             <View style={styles.mockupContainer}>
               <View style={styles.mockupTopBar} />
               <View style={styles.mockupContent}>
-                <AddIcon width={48} height={48} style={styles.addIcon} />
+                <IconByVariant name="add" size={48} style={styles.addIcon} />
                 <View style={{ width: '80%' }}>
                   <View style={styles.mockupLines} />
                   <View style={styles.mockupLines} />

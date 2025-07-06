@@ -1,0 +1,49 @@
+import { create } from 'zustand';
+import type { Link } from '@/types/link.types';
+import { apiClient } from '@/services/api/client';
+import { API_ENDPOINTS } from '@/config/api';
+
+interface LinksState {
+  links: Link[];
+  total: number;
+  isLoading: boolean;
+  error: Error | null;
+  fetchLinks: () => Promise<void>;
+}
+
+export const useLinksStore = create<LinksState>((set) => ({
+  links: [],
+  total: 0,
+  isLoading: false,
+  error: null,
+  fetchLinks: async () => {
+    try {
+      set({ isLoading: true, error: null });
+      
+      const response = await apiClient.get<{
+        items: Link[];
+        total: number;
+        skip: number;
+        limit: number;
+        has_more: boolean;
+      }>(API_ENDPOINTS.links.list, {
+        params: {
+          sort_by: 'created_at',
+          sort_desc: true,
+          skip: 0,
+          limit: 100,
+        },
+      });
+
+      set({ 
+        links: response.items,
+        total: response.total,
+        isLoading: false 
+      });
+    } catch (error) {
+      console.error('Failed to fetch links:', error);
+      set({ error: error as Error, isLoading: false });
+      throw error;
+    }
+  },
+})); 

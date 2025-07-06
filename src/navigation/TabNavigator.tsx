@@ -1,52 +1,98 @@
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { TabParamList } from './types';
-import Links from '@/screens/Links/Links';
-import Collections from '@/screens/Collections/Collections';
-import Tags from '@/screens/Tags/Tags';
-import Settings from '@/screens/Settings/Settings';
-import CustomTabBar from '@/components/navigation/CustomTabBar';
+import { IconByVariant } from '@/components/atoms';
+import { useTheme } from '@/theme/ThemeProvider/ThemeProvider';
+import { Links, Collections, Tags, Settings } from '@/screens';
+import { Add } from '@/screens/Add/Add';
+import { RootTabParamList } from './types';
+import { IconName } from '@/theme/assets/icons';
+import { View, StyleSheet } from 'react-native';
+import { SPACING } from '@/theme/styles/spacing';
 
-const Tab = createBottomTabNavigator<TabParamList>();
+const Tab = createBottomTabNavigator<RootTabParamList>();
 
-function TabNavigator() {
+const TAB_ICONS: Record<keyof RootTabParamList, IconName> = {
+  Links: 'link',
+  Collections: 'library-big',
+  Add: 'add',
+  Tags: 'hash',
+  Settings: 'settings',
+};
+
+export default function TabNavigator() {
+  const { colors } = useTheme();
+
   return (
     <Tab.Navigator
-      screenOptions={{
+      screenOptions={({ route }) => ({
         headerShown: false,
-      }}
-      tabBar={(props) => <CustomTabBar {...props} />}
+        tabBarIcon: ({ color, size }) => {
+          // Special styling for the Add button
+          if (route.name === 'Add') {
+            return (
+              <View style={[styles.addButton, { backgroundColor: colors.accent.primary }]}>
+                <IconByVariant
+                  name={TAB_ICONS[route.name]}
+                  size={24}
+                  color={colors.background.primary}
+                />
+              </View>
+            );
+          }
+          return (
+            <IconByVariant
+              name={TAB_ICONS[route.name]}
+              size={size}
+              color={color}
+            />
+          );
+        },
+        tabBarActiveTintColor: colors.accent.primary,
+        tabBarInactiveTintColor: colors.text.tertiary,
+        tabBarStyle: {
+          backgroundColor: colors.background.primary,
+          borderTopColor: colors.border.primary,
+        },
+        // Hide label for Add button
+        tabBarLabel: route.name === 'Add' ? '' : route.name,
+      })}
     >
-      <Tab.Screen
-        name="Links"
+      <Tab.Screen 
+        name="Links" 
         component={Links}
-        options={{
-          title: 'Links',
-        }}
+        options={{ title: 'Links' }}
       />
-      <Tab.Screen
-        name="Collections"
+      <Tab.Screen 
+        name="Collections" 
         component={Collections}
-        options={{
-          title: 'Collections',
-        }}
+        options={{ title: 'Collections' }}
       />
-      <Tab.Screen
-        name="Tags"
+      <Tab.Screen 
+        name="Add" 
+        component={Add}
+        options={{ title: '' }}
+      />
+      <Tab.Screen 
+        name="Tags" 
         component={Tags}
-        options={{
-          title: 'Tags',
-        }}
+        options={{ title: 'Tags' }}
       />
-      <Tab.Screen
-        name="Settings"
+      <Tab.Screen 
+        name="Settings" 
         component={Settings}
-        options={{
-          title: 'Settings',
-        }}
+        options={{ title: 'Settings' }}
       />
     </Tab.Navigator>
   );
 }
 
-export default TabNavigator; 
+const styles = StyleSheet.create({
+  addButton: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: SPACING.md, // Lift it up a bit
+  },
+}); 

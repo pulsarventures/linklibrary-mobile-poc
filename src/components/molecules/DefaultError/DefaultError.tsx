@@ -1,6 +1,6 @@
 import { useErrorBoundary } from 'react-error-boundary';
 import { useTranslation } from 'react-i18next';
-import { Text, TouchableOpacity, View } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 import { useTheme } from '@/theme';
 
@@ -11,30 +11,58 @@ type Properties = {
 };
 
 function DefaultErrorScreen({ onReset = undefined }: Properties) {
-  const { colors, fonts, gutters, layout } = useTheme();
+  const { colors, layout } = useTheme();
   const { t } = useTranslation();
   const { resetBoundary } = useErrorBoundary();
 
+  // Fallback texts in case translations are not available
+  const fallbackTexts = {
+    title: 'Oops! Something went wrong.',
+    description: 'We are sorry for the inconvenience. Please try again later.',
+    cta: 'Reload the screen',
+  };
+
+  // Try to get translations, fall back to default text if not available
+  const title = t('error_boundary.title', { defaultValue: fallbackTexts.title });
+  const description = t('error_boundary.description', { defaultValue: fallbackTexts.description });
+  const ctaText = t('error_boundary.cta', { defaultValue: fallbackTexts.cta });
+
+  const styles = StyleSheet.create({
+    container: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+      padding: 16,
+      gap: 16,
+    },
+    title: {
+      fontSize: 16,
+      fontWeight: 'bold',
+      color: colors.text.primary,
+    },
+    description: {
+      fontSize: 12,
+      textAlign: 'center',
+      color: colors.text.primary,
+    },
+    cta: {
+      fontSize: 16,
+      color: colors.text.primary,
+    },
+  });
+
   return (
-    <View
-      style={[
-        layout.flex_1,
-        layout.justifyCenter,
-        layout.itemsCenter,
-        gutters.gap_16,
-        gutters.padding_16,
-      ]}
-    >
+    <View style={styles.container}>
       <IconByVariant
         size={42}
         name="fire"
-        color={colors.red500}
+        color={colors.error}
       />
-      <Text style={[fonts.gray800, fonts.bold, fonts.size_16]}>
-        {t('error_boundary.title')}
+      <Text style={styles.title}>
+        {title}
       </Text>
-      <Text style={[fonts.gray800, fonts.size_12, fonts.alignCenter]}>
-        {t('error_boundary.description')}
+      <Text style={styles.description}>
+        {description}
       </Text>
 
       {onReset ? (
@@ -44,8 +72,8 @@ function DefaultErrorScreen({ onReset = undefined }: Properties) {
             onReset();
           }}
         >
-          <Text style={[fonts.gray800, fonts.size_16]}>
-            {t('error_boundary.cta')}
+          <Text style={styles.cta}>
+            {ctaText}
           </Text>
         </TouchableOpacity>
       ) : undefined}

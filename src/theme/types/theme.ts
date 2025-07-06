@@ -21,3 +21,31 @@ export type Theme = {
   navigationTheme: NavigationTheme;
   variant: Variant;
 };
+
+export interface ThemeColors {
+  text: {
+    primary: string;
+    secondary: string;
+    tertiary: string;
+    inverse: string;
+    error: string;
+  };
+  background: {
+    primary: string;
+    secondary: string;
+    tertiary: string;
+    error: string;
+    surface: string;
+    subtle: string;
+  };
+  border: {
+    primary: string;
+  };
+  accent: {
+    primary: string;
+  };
+  card: string;
+  muted: string;
+  error: string;
+  success: string;
+}
