@@ -1892,6 +1892,8 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
+  - RNShareMenu (6.0.0):
+    - React
   - RNSVG (15.12.0):
     - DoubleConversion
     - glog
@@ -2015,6 +2017,7 @@ DEPENDENCIES:
   - "RNGoogleSignin (from `../node_modules/@react-native-google-signin/google-signin`)"
   - RNReanimated (from `../node_modules/react-native-reanimated`)
   - RNScreens (from `../node_modules/react-native-screens`)
+  - RNShareMenu (from `../node_modules/react-native-share-menu`)
   - RNSVG (from `../node_modules/react-native-svg`)
   - Yoga (from `../node_modules/react-native/ReactCommon/yoga`)
 
@@ -2179,6 +2182,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-reanimated"
   RNScreens:
     :path: "../node_modules/react-native-screens"
+  RNShareMenu:
+    :path: "../node_modules/react-native-share-menu"
   RNSVG:
     :path: "../node_modules/react-native-svg"
   Yoga:
@@ -2266,6 +2271,7 @@ SPEC CHECKSUMS:
   RNGoogleSignin: a6fda355562bea2ec97f678fe7879fd1b10902f7
   RNReanimated: 6d25b4dcb540228c6ec8b7d1dae54c464b90a2f6
   RNScreens: 8aec64fb213fd52a64445e2e470f7a9b546c5df3
+  RNShareMenu: e1cdfa3b9af89416afc75a80377cfd0de4f30ded
   RNSVG: 4aaeac3fdc7c5bc88ca801e228f62fb469be37e9
   SocketRocket: d4aabe649be1e368d1318fdf28a022d714d65748
   Yoga: e14bad835e12b6c7e2260fc320bd00e0f4b45add
