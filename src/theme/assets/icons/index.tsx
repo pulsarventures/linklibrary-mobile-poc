@@ -28,7 +28,8 @@ export type IconName =
   | 'device'
   | 'trash'
   | 'library'
-  | 'library-big';
+  | 'library-big'
+  | 'star';
 
 const createIcon = (renderPaths: (color: ColorValue) => React.ReactNode) => {
   return ({ color = '#000', ...props }: SvgProps) => (
@@ -545,5 +546,15 @@ export const icons: Record<IconName, React.FC<SvgProps>> = {
       <Path d="M7 3v18" stroke={color as string} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" fill="none" />
       <Path d="M20.4 18.9c.2.5-.1 1.1-.6 1.3l-1.9.7c-.5.2-1.1-.1-1.3-.6L11.1 5.1c-.2-.5.1-1.1.6-1.3l1.9-.7c.5-.2 1.1.1 1.3.6Z" stroke={color as string} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" fill="none" />
     </>
+  )),
+  star: createIcon((color) => (
+    <Path
+      d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"
+      stroke={color as string}
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      fill="none"
+    />
   )),
 }; 

@@ -1,7 +1,7 @@
 import 'react-native-gesture-handler';
 
 import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, View } from 'react-native';
+import { ActivityIndicator, View, TextInput, StyleSheet, Button, ScrollView, Alert, Text, Switch, TouchableOpacity, FlatList } from 'react-native';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { enableScreens } from 'react-native-screens';
@@ -11,7 +11,7 @@ import i18n from 'i18next';
 
 import { ErrorBoundary } from '@/components/organisms';
 import ApplicationNavigator from '@/navigation/Application';
-import { ThemeProvider } from '@/theme';
+import { ThemeProvider, useTheme } from '@/theme';
 import { setupErrorHandling } from '@/utils/errorHandler';
 import { initializeI18n } from '@/translations';
 

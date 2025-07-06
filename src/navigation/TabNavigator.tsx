@@ -3,7 +3,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { IconByVariant } from '@/components/atoms';
 import { useTheme } from '@/theme/ThemeProvider/ThemeProvider';
 import { Links, Collections, Tags, Settings } from '@/screens';
-import { Add } from '@/screens/Add/Add';
+import AddLinkScreen from '@/screens/Add/AddLinkScreen';
 import { RootTabParamList } from './types';
 import { IconName } from '@/theme/assets/icons';
 import { View, StyleSheet } from 'react-native';
@@ -69,7 +69,7 @@ export default function TabNavigator() {
       />
       <Tab.Screen 
         name="Add" 
-        component={Add}
+        component={AddLinkScreen}
         options={{ title: '' }}
       />
       <Tab.Screen 
