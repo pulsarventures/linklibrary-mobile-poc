@@ -157,7 +157,6 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 13B07F931A680F5B00A75B9A /* Build configuration list for PBXNativeTarget "linklibrary_mobile" */;
 			buildPhases = (
-				B2EBA0812E1B0504009E9B2E /* ShellScript */,
 				88EAD930244305F323768763 /* [CP] Check Pods Manifest.lock */,
 				FD10A7F022414F080027D42C /* Start Packager */,
 				13B07F871A680F5B00A75B9A /* Sources */,
@@ -167,6 +166,7 @@
 				B2EBA07C2E1AD1EE009E9B2E /* Embed Foundation Extensions */,
 				0E2CE418CBD6570AA71C93FA /* [CP] Embed Pods Frameworks */,
 				D4FF36D8B9C0E38D547A49BD /* [CP] Copy Pods Resources */,
+				B2EBA0812E1B0504009E9B2E /* ShellScript */,
 			);
 			buildRules = (
 			);
