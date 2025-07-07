@@ -1,13 +1,22 @@
 #!/bin/bash
 set -e
-echo "Current directory: $(pwd)"
-echo "Repository contents:"
+
+echo "=== Xcode Cloud Pre-build Script ==="
+echo "Current working directory: $(pwd)"
+echo "Repository structure:"
 ls -la
-echo "iOS directory contents:"
-ls -la ios/
-echo "Installing pods..."
+
+echo "=== Installing CocoaPods ==="
 cd ios
+echo "Now in ios directory: $(pwd)"
+echo "Podfile contents:"
+cat Podfile
+
+echo "Running pod install..."
 pod install
-echo "Pods installed successfully"
-echo "Pods directory contents:"
+
+echo "=== Pod install completed ==="
+echo "Checking Pods directory:"
 ls -la Pods/
+
+echo "=== Script completed successfully ==="
