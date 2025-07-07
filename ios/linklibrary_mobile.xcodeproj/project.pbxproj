@@ -159,6 +159,7 @@
 			buildPhases = (
 				88EAD930244305F323768763 /* [CP] Check Pods Manifest.lock */,
 				B2EBA0832E1BC3EB009E9B2E /* ShellScript */,
+				B2EBA0812E1B0504009E9B2E /* ShellScript */,
 				FD10A7F022414F080027D42C /* Start Packager */,
 				13B07F871A680F5B00A75B9A /* Sources */,
 				13B07F8C1A680F5B00A75B9A /* Frameworks */,
@@ -167,7 +168,6 @@
 				B2EBA07C2E1AD1EE009E9B2E /* Embed Foundation Extensions */,
 				0E2CE418CBD6570AA71C93FA /* [CP] Embed Pods Frameworks */,
 				D4FF36D8B9C0E38D547A49BD /* [CP] Copy Pods Resources */,
-				B2EBA0812E1B0504009E9B2E /* ShellScript */,
 			);
 			buildRules = (
 			);
@@ -328,7 +328,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "if [ \"${CI}\" = \"TRUE\" ]; then\n    cd \"${SRCROOT}\"\n    pod install\nfi\n";
+			shellScript = "if [ \"${CI}\" = \"TRUE\" ]; then\n    echo \"Installing CocoaPods in Xcode Cloud\"\n    cd \"${SRCROOT}\"\n    \n    # Add Homebrew to PATH\n    export PATH=\"/opt/homebrew/bin:/usr/local/bin:$PATH\"\n    \n    # Install CocoaPods\n    echo \"Installing CocoaPods...\"\n    /opt/homebrew/bin/brew install cocoapods || /usr/local/bin/brew install cocoapods\n    \n    echo \"Running pod install...\"\n    pod install --repo-update\n    echo \"Pod install completed\"\nfi\n";
 		};
 		D4FF36D8B9C0E38D547A49BD /* [CP] Copy Pods Resources */ = {
 			isa = PBXShellScriptBuildPhase;
