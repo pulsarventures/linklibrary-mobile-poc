@@ -1,0 +1,47 @@
+version: 1.0
+
+workflows:
+  ios-main:
+    name: iOS CI Workflow
+    environment:
+      xcode: latest
+      vars:
+        APP_NAME: "linklibrary_mobile"
+        CI_PLATFORM: "Xcode Cloud"
+      enable_automatic_code_signing: true  # Xcode Managed signing
+
+    triggers:
+      - type: commit
+        branch: main  # Change if you're using 'develop' or other branches
+
+    actions:
+      - name: Post Clone Script
+        script: ci_scripts/ci_post_clone.sh
+
+      - name: Pre Xcode Build Script
+        script: ci_scripts/ci_pre_xcodebuild.sh
+
+      - name: Build App
+        build:
+          project: ios/linklibrary_mobile.xcodeproj
+          scheme: linklibrary_mobile
+          configuration: Debug
+          destination: "platform=iOS Simulator,name=iPhone 15"  # Optional: iOS simulator for CI
+
+      - name: Run Unit Tests
+        test:
+          project: ios/linklibrary_mobile.xcodeproj
+          scheme: linklibrary_mobile
+          configuration: Debug
+          destination: "platform=iOS Simulator,name=iPhone 15"
+
+      # Uncomment below to enable TestFlight deployment
+      # - name: Distribute via TestFlight
+      #   archive:
+      #     project: ios/linklibrary_mobile.xcodeproj
+      #     scheme: linklibrary_mobile
+      #     configuration: Release
+      #   export:
+      #     method: app-store
+      #   upload:
+      #     destination: testflight
