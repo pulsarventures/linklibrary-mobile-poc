@@ -19,7 +19,14 @@ class StorageService {
     const accessTokenExpiry = now + tokenData.access_token_expires_in * 1000; // Convert to milliseconds
     const refreshTokenExpiry = now + tokenData.refresh_token_expires_in * 1000;
 
+    // Store both individual keys (for initializeAuth compatibility) and JSON object
     await Promise.all([
+      // Individual keys for backward compatibility
+      AsyncStorage.setItem('access_token', tokenData.access_token),
+      AsyncStorage.setItem('refresh_token', tokenData.refresh_token),
+      AsyncStorage.setItem('token_type', tokenData.token_type),
+      AsyncStorage.setItem('token_expires_at', accessTokenExpiry.toString()),
+      // JSON object for modern access
       AsyncStorage.setItem(StorageService.TOKEN_KEY, JSON.stringify(tokenData)),
       AsyncStorage.setItem(StorageService.ACCESS_TOKEN_EXPIRY, accessTokenExpiry.toString()),
       AsyncStorage.setItem(StorageService.REFRESH_TOKEN_EXPIRY, refreshTokenExpiry.toString()),
@@ -60,6 +67,12 @@ class StorageService {
 
   async clearTokens(): Promise<void> {
     await AsyncStorage.multiRemove([
+      // Individual keys
+      'access_token',
+      'refresh_token',
+      'token_type',
+      'token_expires_at',
+      // JSON object keys
       StorageService.TOKEN_KEY,
       StorageService.ACCESS_TOKEN_EXPIRY,
       StorageService.REFRESH_TOKEN_EXPIRY,

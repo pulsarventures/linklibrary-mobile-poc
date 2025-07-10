@@ -58,6 +58,7 @@ export function useAuth() {
         isAuthenticated: true,
         isLoading: false,
         error: null,
+        initialized: true,
       });
       setUser(response.user);
     } catch (error) {
@@ -89,6 +90,7 @@ export function useAuth() {
         isAuthenticated: true,
         isLoading: false,
         error: null,
+        initialized: true,
       });
       setUser(response.user);
     } catch (error) {
@@ -137,6 +139,7 @@ export function useAuth() {
         isAuthenticated: true,
         isLoading: false,
         error: null,
+        initialized: true,
       });
       setUser(response.user);
     } catch (error) {
@@ -159,6 +162,7 @@ export function useAuth() {
         isAuthenticated: true,
         isLoading: false,
         error: null,
+        initialized: true,
       });
       setUser(response.user);
     } catch (error) {
