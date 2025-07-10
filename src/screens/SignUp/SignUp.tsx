@@ -63,14 +63,23 @@ export function SignUp() {
 
   const handleGoogleSignUp = async () => {
     try {
+      console.log('🔵 Starting Google Sign-Up process...');
       setIsGoogleLoading(true);
       setAuthTransition(true);
       
       // Add a small delay to ensure the loading state is visible
       await new Promise(resolve => setTimeout(resolve, 300));
       
+      console.log('🔵 Calling signInWithGoogle...');
       const googleResult = await signInWithGoogle();
+      console.log('🔵 Google Sign-In successful, result:', { 
+        hasToken: !!googleResult.token, 
+        email: googleResult.email 
+      });
+      
+      console.log('🔵 Calling backend Google Sign-In API...');
       const authResult = await authApiService.googleSignIn(googleResult.token);
+      console.log('🔵 Backend API successful, storing tokens...');
 
       await storageService.storeTokens({
         access_token: authResult.access_token,
@@ -80,6 +89,7 @@ export function SignUp() {
         refresh_token_expires_in: authResult.refresh_token_expires_in,
         is_revoked: authResult.is_revoked,
       });
+      console.log('🔵 Tokens stored successfully');
 
       const user: User = {
         id: parseInt(authResult.user.id.toString()),
@@ -99,13 +109,23 @@ export function SignUp() {
         error: null,
         initialized: true,
       });
+      console.log('🔵 Auth store updated successfully');
 
       // Keep the loading state for a smooth transition
       await new Promise(resolve => setTimeout(resolve, 500));
+      console.log('🔵 Google Sign-Up process completed successfully');
       
     } catch (error) {
-      console.error('Google Sign-Up failed:', error);
-      Alert.alert('Google Sign-Up Failed', 'Please try again');
+      console.error('🔴 Google Sign-Up failed at step:', error);
+      
+      // Log more details about the error
+      if (error instanceof Error) {
+        console.error('🔴 Error name:', error.name);
+        console.error('🔴 Error message:', error.message);
+        console.error('🔴 Error stack:', error.stack);
+      }
+      
+      Alert.alert('Google Sign-Up Failed', `Please try again. Error: ${error instanceof Error ? error.message : 'Unknown error'}`);
       setAuthTransition(false);
     } finally {
       setIsGoogleLoading(false);

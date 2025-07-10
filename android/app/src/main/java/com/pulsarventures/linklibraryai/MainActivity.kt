@@ -1,6 +1,8 @@
 package com.pulsarventures.linklibraryai
 
-import android.os.Bundle;
+import android.content.Intent
+import android.os.Bundle
+import android.util.Log
 import com.facebook.react.ReactActivity
 import com.facebook.react.ReactActivityDelegate
 import com.facebook.react.defaults.DefaultNewArchitectureEntryPoint.fabricEnabled
@@ -23,6 +25,23 @@ class MainActivity : ReactActivity() {
 
   //react-native-screens override
   override fun onCreate(savedInstanceState: Bundle?) {
-    super.onCreate(null);
+    super.onCreate(null)
+    handleShareIntent(intent)
+  }
+
+  override fun onNewIntent(intent: Intent?) {
+    super.onNewIntent(intent)
+    setIntent(intent)
+    handleShareIntent(intent)
+  }
+
+  private fun handleShareIntent(intent: Intent?) {
+    if (intent?.action == Intent.ACTION_SEND) {
+      val sharedText = intent.getStringExtra(Intent.EXTRA_TEXT)
+      if (sharedText != null) {
+        Log.d("SHARE_DEBUG", "🎯 Received share intent with text: $sharedText")
+        // The react-native-receive-sharing-intent library should pick this up
+      }
+    }
   }
 } 

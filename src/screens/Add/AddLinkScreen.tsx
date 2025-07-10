@@ -1,13 +1,19 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { View, TextInput, StyleSheet, Button, ScrollView, Alert, Text, TouchableOpacity, Modal, FlatList, ActivityIndicator, Platform } from 'react-native';
+import { useRoute, RouteProp } from '@react-navigation/native';
+import Toast from 'react-native-toast-message';
 import { SafeScreen } from '@/components/templates';
 import { useTheme } from '@/theme';
 import { IconByVariant } from '@/components/atoms';
 import { useCollectionsStore } from '@/hooks/domain/collections/useCollectionsStore';
 import { useTagsStore } from '@/hooks/domain/tags/useTagsStore';
 import { extractURLMetadata } from '@/utils/extractURLMetadata';
+import type { RootTabParamList } from '@/navigation/types';
+
+type AddLinkScreenRouteProp = RouteProp<RootTabParamList, 'Add'>;
 
 export default function AddLinkScreen() {
+  const route = useRoute<AddLinkScreenRouteProp>();
   const { colors, isDark } = useTheme();
   const [url, setUrl] = useState('');
   const [title, setTitle] = useState('');
@@ -27,6 +33,25 @@ export default function AddLinkScreen() {
   // Real collections and tags from store
   const { collections, fetchCollections, loading: collectionsLoading, loaded: collectionsLoaded } = useCollectionsStore();
   const { tags, isLoading: tagsLoading } = useTagsStore();
+
+  // Handle shared URL from route params
+  useEffect(() => {
+    if (route.params?.sharedUrl) {
+      console.log('📤 Processing shared URL:', route.params.sharedUrl);
+      setUrl(route.params.sharedUrl);
+      
+      // Show toast notification
+      Toast.show({
+        type: 'success',
+        text1: 'URL Received',
+        text2: 'Shared link has been added to the form',
+        position: 'top',
+      });
+      
+      // Auto-extract metadata for shared URLs
+      handleUrlBlur(route.params.sharedUrl);
+    }
+  }, [route.params?.sharedUrl]);
 
   useEffect(() => {
     if (!collectionsLoaded) {
@@ -337,8 +362,8 @@ export default function AddLinkScreen() {
             <IconByVariant name="send" size={20} color={'#fff'} />
           </TouchableOpacity>
         </View>
-      </ScrollView>
-    </SafeScreen>
+              </ScrollView>
+      </SafeScreen>
   );
 }
 

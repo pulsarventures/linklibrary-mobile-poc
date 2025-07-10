@@ -7,7 +7,7 @@ import TabNavigator from './TabNavigator';
 import { RootStackParamList } from './types';
 import { useAuthStore } from '@/hooks/domain/user/useAuthStore';
 import { Login, SignUp, Landing, Startup } from '@/screens';
-import { Paths } from './paths';
+import { Paths, navigationRef } from './paths';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -33,7 +33,7 @@ function Application() {
 
   return (
     <SafeAreaProvider>
-      <NavigationContainer theme={navigationTheme}>
+      <NavigationContainer ref={navigationRef} theme={navigationTheme}>
         <Stack.Navigator 
           screenOptions={{ 
             headerShown: false,

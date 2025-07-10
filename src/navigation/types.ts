@@ -9,7 +9,7 @@ export type RootScreenProps<
 export type RootTabParamList = {
   Links: undefined;
   Collections: undefined;
-  Add: undefined;
+  Add: { sharedUrl?: string };
   Tags: undefined;
   Settings: undefined;
 };

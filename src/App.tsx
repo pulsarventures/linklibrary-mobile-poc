@@ -1,7 +1,7 @@
 import 'react-native-gesture-handler';
 
-import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, View, TextInput, StyleSheet, Button, ScrollView, Alert, Text, Switch, TouchableOpacity, FlatList } from 'react-native';
+import React, { useEffect, useState, useRef } from 'react';
+import { ActivityIndicator, View } from 'react-native';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { enableScreens } from 'react-native-screens';
@@ -11,9 +11,12 @@ import i18n from 'i18next';
 
 import { ErrorBoundary } from '@/components/organisms';
 import ApplicationNavigator from '@/navigation/Application';
-import { ThemeProvider, useTheme } from '@/theme';
+import { ThemeProvider } from '@/theme';
 import { setupErrorHandling } from '@/utils/errorHandler';
 import { initializeI18n } from '@/translations';
+import ShareReceiver from '@/share/ShareReceiver';
+import { navigationRef, Paths } from '@/navigation/paths';
+import { useAuthStore } from '@/hooks/domain/user/useAuthStore';
 
 // Enable Reanimated layout animations
 import { UIManager } from 'react-native';
@@ -24,22 +27,22 @@ if (UIManager.setLayoutAnimationEnabledExperimental) {
 // Set up error handling
 setupErrorHandling();
 
-// Enable native screens for better performance
+// Enable screens optimization
 enableScreens();
 
-export const queryClient = new QueryClient({
+// Create query client with proper config
+const queryClient = new QueryClient({
   defaultOptions: {
-    mutations: {
-      retry: false,
-    },
     queries: {
-      retry: false,
+      retry: 2,
+      staleTime: 5 * 60 * 1000, // 5 minutes
     },
   },
 });
 
 function App() {
   const [isI18nInitialized, setIsI18nInitialized] = useState(false);
+  const pendingSharedUrl = useRef<string | null>(null);
 
   useEffect(() => {
     initializeI18n()
@@ -49,6 +52,96 @@ function App() {
         // Still set as initialized to not block the app, but translations might not work
         setIsI18nInitialized(true);
       });
+  }, []);
+
+  const handleSharedUrl = (url: string) => {
+    console.log('📤 🎯 SHARE HANDLER CALLED! Received shared URL:', url);
+    
+    // Validate URL first
+    if (!url || !url.startsWith('http')) {
+      console.log('📤 Invalid URL received:', url);
+      return;
+    }
+    
+    // Check if user is authenticated
+    const { isAuthenticated, initialized } = useAuthStore.getState();
+    
+    console.log('📤 Auth state - initialized:', initialized, 'authenticated:', isAuthenticated);
+    
+    if (!initialized) {
+      // Store the URL to process later when auth is initialized
+      pendingSharedUrl.current = url;
+      console.log('📤 Auth not initialized, storing URL for later');
+      return;
+    }
+    
+    if (!isAuthenticated) {
+      // Store the URL to process after user logs in
+      pendingSharedUrl.current = url;
+      console.log('📤 User not authenticated, storing URL for later');
+      return;
+    }
+    
+    // Navigate to Add screen with shared URL
+    navigateToAddScreen(url);
+  };
+
+  const navigateToAddScreen = (url: string) => {
+    console.log('📤 Attempting to navigate to Add screen with URL:', url);
+    
+    if (navigationRef.isReady()) {
+      console.log('📤 Navigation is ready, navigating...');
+      try {
+        // Navigate to the Main tab navigator first, then to the Add tab
+        navigationRef.navigate(Paths.Main as any);
+        console.log('📤 Navigated to Main');
+        
+        // Use setTimeout to ensure the tab navigator is ready
+        setTimeout(() => {
+          try {
+            navigationRef.navigate('Add' as any, { sharedUrl: url });
+            console.log('📤 Navigated to Add screen with URL');
+          } catch (error) {
+            console.error('📤 Error navigating to Add screen:', error);
+          }
+        }, 100);
+      } catch (error) {
+        console.error('📤 Error navigating to Main:', error);
+      }
+    } else {
+      console.log('📤 Navigation not ready, waiting...');
+      // If navigation isn't ready, wait for it
+      const unsubscribe = navigationRef.addListener('state', () => {
+        console.log('📤 Navigation state changed, attempting navigation...');
+        try {
+          navigationRef.navigate(Paths.Main as any);
+          setTimeout(() => {
+            try {
+              navigationRef.navigate('Add' as any, { sharedUrl: url });
+              console.log('📤 Navigated to Add screen with URL (delayed)');
+            } catch (error) {
+              console.error('📤 Error navigating to Add screen (delayed):', error);
+            }
+          }, 100);
+          unsubscribe();
+        } catch (error) {
+          console.error('📤 Error in delayed navigation:', error);
+        }
+      });
+    }
+  };
+
+  // Monitor auth state and process pending URL when user becomes authenticated
+  useEffect(() => {
+    const unsubscribe = useAuthStore.subscribe((state) => {
+      if (state.isAuthenticated && state.initialized && pendingSharedUrl.current) {
+        console.log('📤 User authenticated, processing pending URL:', pendingSharedUrl.current);
+        navigateToAddScreen(pendingSharedUrl.current);
+        pendingSharedUrl.current = null;
+      }
+    });
+
+    return unsubscribe;
   }, []);
 
   if (!isI18nInitialized) {
@@ -65,6 +158,7 @@ function App() {
         <GestureHandlerRootView style={{ flex: 1 }}>
           <QueryClientProvider client={queryClient}>
             <ThemeProvider>
+              <ShareReceiver onUrl={handleSharedUrl} />
               <ApplicationNavigator />
               <Toast />
             </ThemeProvider>

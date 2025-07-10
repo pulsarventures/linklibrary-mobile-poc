@@ -3,7 +3,7 @@ import { API_URL_DEV, API_URL_PROD } from '@env';
 const isDevelopment = __DEV__;
 
 // Default development URL if environment variable is not set
-const DEFAULT_DEV_URL = 'http://10.0.2.2/api/v1';
+const DEFAULT_DEV_URL = 'https://api.linklibrary.ai/api/v1';
 const DEFAULT_PROD_URL = 'https://api.linklibrary.ai/api/v1';
 
 // Use environment variables if available, otherwise fall back to defaults
