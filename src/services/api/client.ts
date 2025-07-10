@@ -1,7 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { API_BASE_URL } from '@/config/api';
 import { storageService } from '../storage';
-import { AuthApiService } from '../auth-api.service';
 
 class ApiClient {
   private static instance: ApiClient;
@@ -31,10 +30,13 @@ class ApiClient {
       'Content-Type': 'application/json',
     });
 
+    console.log('🔑 Token from storage:', token ? `${token.substring(0, 20)}...` : 'null');
+
     if (token) {
       headers.append('Authorization', `Bearer ${token}`);
     }
 
+    console.log('📤 Request headers:', Object.fromEntries(headers.entries()));
     return headers;
   }
 
@@ -78,7 +80,20 @@ class ApiClient {
         throw new Error('No refresh token available');
       }
 
-      const response = await AuthApiService.refreshToken(refreshToken);
+      // Import authApiService dynamically to avoid circular imports
+      const { authApiService } = await import('../auth-api.service');
+      const response = await authApiService.refreshToken(refreshToken);
+      
+      // Store new tokens
+      await storageService.storeTokens({
+        access_token: response.access_token,
+        refresh_token: response.refresh_token || refreshToken,
+        token_type: response.token_type,
+        access_token_expires_in: response.access_token_expires_in,
+        refresh_token_expires_in: response.refresh_token_expires_in,
+        is_revoked: false,
+      });
+
       this.processQueue();
       return response;
     } catch (error) {
@@ -94,10 +109,18 @@ class ApiClient {
     try {
       data = await response.json();
     } catch (error) {
+      console.error('Failed to parse response:', error);
       throw new Error('Invalid response format');
     }
 
     if (!response.ok) {
+      console.error('API Error:', {
+        status: response.status,
+        statusText: response.statusText,
+        data,
+        url: response.url,
+      });
+
       if (response.status === 401 && !retryAttempt) {
         // Check if refresh token is still valid
         const isRefreshTokenValid = await storageService.isRefreshTokenValid();
@@ -122,7 +145,10 @@ class ApiClient {
           throw new Error('Authentication required. Please log in.');
         }
       }
-      throw new Error(data.detail || data.message || `HTTP ${response.status}: ${response.statusText}`);
+
+      // Extract error message from response
+      const errorMessage = data?.detail || data?.message || data?.error || `HTTP ${response.status}: ${response.statusText}`;
+      throw new Error(errorMessage);
     }
 
     return data as T;
@@ -146,14 +172,39 @@ class ApiClient {
   }
 
   public async post<T>(endpoint: string, data?: any): Promise<T> {
+    const url = `${this.baseUrl}${endpoint}`;
     const headers = await this.getAuthHeaders();
-    const response = await fetch(`${this.baseUrl}${endpoint}`, {
+
+    console.log('📡 Making API request:', {
       method: 'POST',
-      headers,
-      body: data ? JSON.stringify(data) : undefined,
+      url,
+      headers: Object.fromEntries(headers.entries()),
+      data: data ? { ...data, token: data.token ? `${data.token.substring(0, 10)}...` : undefined } : undefined
     });
 
-    return this.handleResponse<T>(response);
+    try {
+      const response = await fetch(url, {
+        method: 'POST',
+        headers,
+        body: data ? JSON.stringify(data) : undefined,
+      });
+
+      // If you want to log the response body, do it inside handleResponse, or clone the response
+      console.log('📥 API response:', {
+        status: response.status,
+        statusText: response.statusText,
+        headers: Object.fromEntries(response.headers.entries())
+      });
+
+      return this.handleResponse<T>(response);
+    } catch (error) {
+      console.error('🚨 API request failed:', {
+        message: error instanceof Error ? error.message : 'Unknown error',
+        name: error instanceof Error ? error.name : 'Unknown',
+        ...(error instanceof Error && error.stack ? { stack: error.stack } : {})
+      });
+      throw error;
+    }
   }
 
   public async put<T>(endpoint: string, data: any): Promise<T> {

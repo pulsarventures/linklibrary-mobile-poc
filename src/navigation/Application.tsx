@@ -15,6 +15,7 @@ function Application() {
   const { colors, isDark } = useTheme();
   const isAuthenticated = useAuthStore(state => state.isAuthenticated);
   const initialized = useAuthStore(state => state.initialized);
+  const isLoading = useAuthStore(state => state.isLoading);
 
   const navigationTheme = {
     ...DefaultTheme,
@@ -33,16 +34,47 @@ function Application() {
   return (
     <SafeAreaProvider>
       <NavigationContainer theme={navigationTheme}>
-        <Stack.Navigator screenOptions={{ headerShown: false }}>
-          {!initialized ? (
-            <Stack.Screen name={Paths.Startup} component={Startup} />
+        <Stack.Navigator 
+          screenOptions={{ 
+            headerShown: false,
+            animation: 'fade',
+            animationDuration: 200,
+          }}
+        >
+          {!initialized || isLoading ? (
+            <Stack.Screen 
+              name={Paths.Startup} 
+              component={Startup}
+              options={{
+                animation: 'none',
+              }}
+            />
           ) : !isAuthenticated ? (
             <>
-              <Stack.Screen name={Paths.Login} component={Login} />
-              <Stack.Screen name={Paths.SignUp} component={SignUp} />
+              <Stack.Screen 
+                name={Paths.Login} 
+                component={Login}
+                options={{
+                  animation: 'fade',
+                }}
+              />
+              <Stack.Screen 
+                name={Paths.SignUp} 
+                component={SignUp}
+                options={{
+                  animation: 'slide_from_right',
+                }}
+              />
             </>
           ) : (
-            <Stack.Screen name={Paths.Main} component={TabNavigator} />
+            <Stack.Screen 
+              name={Paths.Main} 
+              component={TabNavigator}
+              options={{
+                animation: 'fade',
+                animationDuration: 300,
+              }}
+            />
           )}
         </Stack.Navigator>
       </NavigationContainer>

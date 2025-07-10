@@ -1,4 +1,4 @@
-package com.linklibrary_mobile
+package com.pulsarventures.linklibraryai
 
 import android.os.Bundle;
 import com.facebook.react.ReactActivity
@@ -25,4 +25,4 @@ class MainActivity : ReactActivity() {
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(null);
   }
-}
+} 

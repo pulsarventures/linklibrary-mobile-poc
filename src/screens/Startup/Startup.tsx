@@ -7,7 +7,7 @@ import { AssetByVariant } from '@/components/atoms';
 import { SafeScreen } from '@/components/templates';
 import { useAuthStore } from '@/hooks/domain/user/useAuthStore';
 
-function Startup({ navigation }: RootScreenProps<'Startup'>) {
+export function Startup({ navigation }: RootScreenProps<'Startup'>) {
   const { layout, colors } = useTheme();
   const { initializeAuth, isAuthenticated, initialized, isLoading } = useAuthStore();
 
@@ -62,5 +62,3 @@ function Startup({ navigation }: RootScreenProps<'Startup'>) {
     </SafeScreen>
   );
 }
-
-export default Startup;

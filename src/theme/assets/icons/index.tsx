@@ -137,11 +137,7 @@ export const icons: Record<IconName, React.FC<SvgProps>> = {
   apple: createIcon((color) => (
     <Path
       d="M17.05 12.3c-.03-2.05 1.63-3.1 1.7-3.15-.93-1.4-2.38-1.59-2.9-1.6-1.23-.13-2.4.74-3.03.74-.62 0-1.58-.72-2.6-.7-1.34.02-2.57.8-3.26 2.03-1.4 2.49-.36 6.19 1 8.21.67.98 1.47 2.1 2.5 2.05 1.01-.04 1.4-.66 2.62-.66 1.22 0 1.57.66 2.63.64 1.09-.02 1.77-.99 2.44-1.98.77-1.13 1.08-2.23 1.1-2.29-.02-.01-2.11-.83-2.13-3.28zM15.22 6.17c.56-.7.93-1.66.83-2.62-.8.04-1.77.55-2.34 1.23-.51.61-.96 1.58-.84 2.51.89.07 1.8-.45 2.35-1.12z"
-      stroke={color}
-      strokeWidth={2}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      fill="none"
+      fill={color}
     />
   )),
   check: createIcon((color) => (
@@ -183,39 +179,23 @@ export const icons: Record<IconName, React.FC<SvgProps>> = {
       fill="none"
     />
   )),
-  google: createIcon((color) => (
+  google: createIcon(() => (
     <>
       <Path
         d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-        stroke={color}
-        strokeWidth={2}
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        fill="none"
+        fill="#4285F4"
       />
       <Path
         d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-        stroke={color}
-        strokeWidth={2}
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        fill="none"
+        fill="#34A853"
       />
       <Path
         d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
-        stroke={color}
-        strokeWidth={2}
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        fill="none"
+        fill="#FBBC05"
       />
       <Path
         d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
-        stroke={color}
-        strokeWidth={2}
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        fill="none"
+        fill="#EA4335"
       />
     </>
   )),

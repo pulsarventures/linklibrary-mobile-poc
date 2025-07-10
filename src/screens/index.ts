@@ -6,7 +6,3 @@ export { default as Links } from './Links/Links';
 export { default as Collections } from './Collections/Collections';
 export { default as Tags } from './Tags/Tags';
 export { default as Settings } from './Settings/Settings';
-export { default as Login } from './Login/Login';
-export { default as SignUp } from './SignUp/SignUp';
-export { default as Landing } from './Landing/Landing';
-export { default as Startup } from './Startup/Startup';

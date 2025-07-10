@@ -1,7 +1,6 @@
 apply plugin: "com.android.application"
 apply plugin: "org.jetbrains.kotlin.android"
 apply plugin: "com.facebook.react"
-apply plugin: 'com.google.gms.google-services'
 
 /**
  * This is the configuration block to customize your React Native Android app.
@@ -78,9 +77,9 @@ android {
     buildToolsVersion rootProject.ext.buildToolsVersion
     compileSdk rootProject.ext.compileSdkVersion
 
-    namespace "com.linklibrary_mobile"
+    namespace "com.pulsarventures.linklibraryai"
     defaultConfig {
-        applicationId "com.linklibrary_mobile"
+        applicationId "com.pulsarventures.linklibraryai"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1
@@ -89,6 +88,11 @@ android {
             'android.app.lib_name': 'app-name'
         ]
     }
+
+    buildFeatures {
+        buildConfig true
+    }
+
     signingConfigs {
         debug {
             storeFile file('debug.keystore')
@@ -123,4 +127,24 @@ dependencies {
 
     // Add Google Sign-In dependency
     implementation 'com.google.android.gms:play-services-auth:20.7.0'
+    // Add Firebase Auth dependency
+    implementation 'com.google.firebase:firebase-auth:22.3.1'
 }
+
+// Force all React Native libraries to use SDK 35
+subprojects {
+    afterEvaluate { project ->
+        if (project.hasProperty('android')) {
+            project.android {
+                compileSdkVersion 35
+                buildToolsVersion "35.0.0"
+                if (project.android.hasProperty('defaultConfig')) {
+                    project.android.defaultConfig.targetSdkVersion 35
+                }
+            }
+        }
+    }
+}
+
+// Apply Google Services plugin at the bottom
+apply plugin: 'com.google.gms.google-services'

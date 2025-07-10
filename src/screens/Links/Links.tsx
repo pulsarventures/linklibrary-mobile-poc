@@ -15,16 +15,14 @@ export default function Links() {
   const { colors } = useTheme();
   const { links, isLoading, error, fetchLinks } = useLinksStore();
   const { fetchCollections } = useCollectionsStore();
-  const { isAuthenticated, initialized, initializeAuth } = useAuthStore();
+  const { isAuthenticated } = useAuthStore();
   const [refreshing, setRefreshing] = React.useState(false);
 
   useEffect(() => {
-    if (!initialized) {
-      initializeAuth();
-    } else if (isAuthenticated) {
+    if (isAuthenticated) {
       loadInitialData();
     }
-  }, [initialized, isAuthenticated]);
+  }, [isAuthenticated]);
 
   const loadInitialData = async () => {
     try {
@@ -61,7 +59,7 @@ export default function Links() {
     console.log('Create new link');
   };
 
-  if (!initialized || (isLoading && !refreshing)) {
+  if (isLoading && !refreshing) {
     return (
       <SafeScreen>
         <View style={[styles.container, styles.centered]}>

@@ -1,10 +1,35 @@
 export interface User {
-  id: string;
+  id: number;
   email: string;
-  name: string;
-  avatar?: string;
+  name: string | null;
+  full_name: string | null;
+  avatar: string | null;
+  is_active: boolean;
+  is_verified: boolean;
   created_at: string;
   updated_at: string;
+}
+
+export interface LoginRequest {
+  username: string;
+  password: string;
+}
+
+export interface RegisterRequest {
+  full_name: string;
+  email: string;
+  password: string;
+}
+
+export interface AuthResponse {
+  access_token: string;
+  refresh_token: string;
+  token_type: string;
+  access_token_expires_in: number;
+  refresh_token_expires_in: number;
+  is_revoked: boolean;
+  user: User;
+  message?: string;
 }
 
 export interface SocialAuthRequest {
@@ -14,10 +39,10 @@ export interface SocialAuthRequest {
   email?: string;
 }
 
-export interface SocialAuthResponse {
-  access_token: string;
-  token_type: string;
-  expires_in: number;
-  refresh_token?: string;
-  user: User;
+export interface SocialAuthResponse extends AuthResponse {}
+
+export interface ApiError {
+  message: string;
+  code?: string;
+  status?: number;
 } 

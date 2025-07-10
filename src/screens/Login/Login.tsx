@@ -1,201 +1,507 @@
-import React, { useState } from 'react';
-import { View, StyleSheet, Pressable, Alert } from 'react-native';
-import { Button, Container, Input, Text, StatusIndicator } from '@/components/ui';
-import type { NativeStackScreenProps } from '@react-navigation/native-stack';
+import React from 'react';
+import { View, StyleSheet, TouchableOpacity, Alert, ActivityIndicator, ScrollView } from 'react-native';
+import { useTranslation } from 'react-i18next';
+import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '@/navigation/types';
-import { IconByVariant } from '@/components/atoms';
+import { useTheme } from '@/theme';
+import { Button, Container, Input, Text } from '@/components/ui';
+import { SafeScreen } from '@/components/templates';
+import { useAuth } from '@/hooks/useAuth';
 import { useAuthStore } from '@/hooks/domain/user/useAuthStore';
 import { signInWithGoogle } from '@/services/auth/googleAuth';
-import { useTheme } from '@/theme/ThemeProvider/ThemeProvider';
-import { SPACING } from '@/theme/styles/spacing';
+import { authApiService } from '@/services/auth-api.service';
+import type { User } from '@/hooks/domain/user/schema';
+import { storageService } from '@/services/storage';
+import { AssetByVariant } from '@/components/atoms';
+import { IconByVariant } from '@/components/atoms';
 
-type Props = NativeStackScreenProps<RootStackParamList, 'Login'>;
+type LoginScreenNavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
-function Login({ navigation }: Props) {
-  const { colors } = useTheme();
-  const [credentials, setCredentials] = useState({
-    username: '',
-    password: '',
-  });
-  const [showPassword, setShowPassword] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  const { login, socialAuth } = useAuthStore();
+export function Login() {
+  const { t } = useTranslation();
+  const navigation = useNavigation<LoginScreenNavigationProp>();
+  const { login } = useAuth();
+  const { colors, layout } = useTheme();
+  const [email, setEmail] = React.useState('');
+  const [password, setPassword] = React.useState('');
+  const [isLoading, setIsLoading] = React.useState(false);
+  const [isGoogleLoading, setIsGoogleLoading] = React.useState(false);
+  const [rememberMe, setRememberMe] = React.useState(false);
+  const [showPassword, setShowPassword] = React.useState(false);
+  const [authTransition, setAuthTransition] = React.useState(false);
 
   const handleLogin = async () => {
+    if (!email || !password) {
+      Alert.alert('Error', 'Please fill in all fields');
+      return;
+    }
+
     try {
-      setLoading(true);
-      setError('');
-      await login(credentials);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to login');
+      setIsLoading(true);
+      await login({ username: email, password });
+    } catch (error) {
+      console.error('Login failed:', error);
+      Alert.alert('Login Failed', 'Please check your credentials and try again');
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
   };
 
   const handleGoogleSignIn = async () => {
     try {
-      setLoading(true);
-      setError('');
+      setIsGoogleLoading(true);
+      setAuthTransition(true);
       
-      const googleUser = await signInWithGoogle();
-      await socialAuth({
-        provider: 'google',
-        token: googleUser.token,
-        email: googleUser.email,
-        name: googleUser.name,
+      // Add a small delay to ensure the loading state is visible
+      await new Promise(resolve => setTimeout(resolve, 300));
+      
+      const googleResult = await signInWithGoogle();
+      const authResult = await authApiService.googleSignIn(googleResult.token);
+
+      await storageService.storeTokens({
+        access_token: authResult.access_token,
+        refresh_token: authResult.refresh_token,
+        token_type: authResult.token_type,
+        access_token_expires_in: authResult.access_token_expires_in,
+        refresh_token_expires_in: authResult.refresh_token_expires_in,
+        is_revoked: authResult.is_revoked,
       });
-    } catch (err) {
-      if (err instanceof Error && err.message === 'Sign in cancelled') {
-        // User cancelled the sign-in, don't show error
-        return;
-      }
-      setError(err instanceof Error ? err.message : 'Failed to sign in with Google');
-      Alert.alert('Sign In Failed', 'Could not sign in with Google. Please try again.');
+
+      const user: User = {
+        id: parseInt(authResult.user.id.toString()),
+        email: authResult.user.email,
+        full_name: authResult.user.full_name,
+        avatar: authResult.user.avatar || null,
+        is_active: authResult.user.is_active,
+        is_verified: authResult.user.is_verified,
+        created_at: authResult.user.created_at,
+      };
+
+      // Update auth store
+      useAuthStore.setState({
+        user,
+        isAuthenticated: true,
+        isLoading: false,
+        error: null,
+        initialized: true,
+      });
+
+      // Keep the loading state for a smooth transition
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+    } catch (error) {
+      console.error('Google Sign-In failed:', error);
+      Alert.alert('Google Sign-In Failed', 'Please try again');
+      setAuthTransition(false);
     } finally {
-      setLoading(false);
+      setIsGoogleLoading(false);
     }
   };
 
+  // Render loading overlay during auth transition
+  if (authTransition) {
+    return (
+      <SafeScreen>
+        <View style={[styles.loadingOverlay, { backgroundColor: colors.background.primary }]}>
+          <View style={styles.loadingContent}>
+            <View style={[styles.logoWrapper, { backgroundColor: colors.accent.primary }]}>
+              <AssetByVariant path="tom" style={styles.logo} resizeMode="contain" />
+            </View>
+            <ActivityIndicator 
+              size="large" 
+              color={colors.accent.primary}
+              style={styles.loadingSpinner}
+            />
+            <Text style={[styles.loadingText, { color: colors.text.primary }]}>
+              Signing you in...
+            </Text>
+          </View>
+        </View>
+      </SafeScreen>
+    );
+  }
+
   return (
-    <Container>
-      <View style={styles.header}>
-        <Text variant="title" weight="bold" style={{ color: colors.text.primary }}>Welcome Back</Text>
-        <Text variant="subtitle" style={{ color: colors.text.secondary }}>Sign in to continue</Text>
-      </View>
-
-      {error && (
-        <StatusIndicator type="error" message={error} style={styles.error} />
-      )}
-
-      <Input
-        label="Email"
-        value={credentials.username}
-        onChangeText={(text) => setCredentials({ ...credentials, username: text })}
-        icon={<IconByVariant name="mail" color={colors.text.tertiary} />}
-        placeholder="Enter your email"
-        keyboardType="email-address"
-        autoCapitalize="none"
-      />
-
-      <View style={styles.passwordContainer}>
-        <Input
-          label="Password"
-          value={credentials.password}
-          onChangeText={(text) => setCredentials({ ...credentials, password: text })}
-          icon={<IconByVariant name="lock" color={colors.text.tertiary} />}
-          placeholder="Enter your password"
-          secureTextEntry={!showPassword}
-        />
-        <Pressable 
-          onPress={() => setShowPassword(!showPassword)}
-          style={styles.eyeIcon}
-        >
-          <IconByVariant name="eye" color={colors.text.tertiary} />
-        </Pressable>
-      </View>
-
-      <Button
-        onPress={handleLogin}
-        loading={loading}
-        disabled={!credentials.username || !credentials.password}
-        style={styles.signInButton}
+    <SafeScreen>
+      <ScrollView 
+        style={[styles.container, { backgroundColor: colors.background.primary }]}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
       >
-        Sign In
-      </Button>
+        <View style={styles.content}>
+          {/* Logo */}
+          <View style={styles.logoContainer}>
+            <View style={[styles.logoWrapper, { backgroundColor: colors.accent.primary }]}>
+              <AssetByVariant path="tom" style={styles.logo} resizeMode="contain" />
+            </View>
+          </View>
 
-      <View style={styles.divider}>
-        <View style={[styles.dividerLine, { backgroundColor: colors.border.primary }]} />
-        <Text variant="caption" style={[styles.dividerText, { color: colors.text.secondary }]}>
-          or continue with
-        </Text>
-        <View style={[styles.dividerLine, { backgroundColor: colors.border.primary }]} />
-      </View>
+          {/* Title */}
+          <Text style={[styles.title, { color: colors.text.primary }]}>
+            Welcome back!
+          </Text>
+          <Text style={[styles.subtitle, { color: colors.text.secondary }]}>
+            Sign in to continue
+          </Text>
 
-      <View style={styles.socialButtons}>
-        <Button
-          variant="social"
-          onPress={handleGoogleSignIn}
-          style={[styles.googleButton, { borderColor: colors.border.primary }]}
-          icon={<IconByVariant name="google" size={20} />}
-          disabled={loading}
-        >
-          Google
-        </Button>
-        <Button
-          variant="social"
-          onPress={() => {}}
-          style={styles.appleButton}
-          icon={<IconByVariant name="apple" size={20} />}
-          disabled={loading}
-        >
-          Apple
-        </Button>
-      </View>
+          {/* Connection Status */}
+          <View style={[styles.statusBar, { backgroundColor: colors.success + '15' }]}>
+            <View style={[styles.statusDot, { backgroundColor: colors.success }]} />
+            <Text style={[styles.statusText, { color: colors.success }]}>
+              Connected to https://api.linklibrary.ai/api/v1
+            </Text>
+          </View>
 
-      <View style={styles.footer}>
-        <Text variant="body" style={{ color: colors.text.primary }}>Don't have an account?</Text>
-        <Pressable onPress={() => navigation.navigate('SignUp')}>
-          <Text variant="body" style={{ color: colors.accent.primary }}>Sign Up</Text>
-        </Pressable>
-      </View>
-    </Container>
+          {/* Form */}
+          <View style={styles.form}>
+            {/* Email */}
+            <View style={styles.fieldContainer}>
+              <Text style={[styles.label, { color: colors.text.primary }]}>Email</Text>
+              <View style={styles.inputContainer}>
+                <IconByVariant name="mail" size={20} color={colors.text.tertiary} style={styles.inputIcon} />
+                <Input
+                  placeholder="Enter your e-mail"
+                  placeholderTextColor={colors.text.tertiary}
+                  value={email}
+                  onChangeText={setEmail}
+                  autoCapitalize="none"
+                  keyboardType="email-address"
+                  style={[styles.textInput, { 
+                    borderColor: colors.border.primary,
+                    backgroundColor: colors.background.secondary,
+                    color: colors.text.primary
+                  }]}
+                />
+              </View>
+            </View>
+
+            {/* Password */}
+            <View style={styles.fieldContainer}>
+              <Text style={[styles.label, { color: colors.text.primary }]}>Password</Text>
+              <View style={styles.inputContainer}>
+                <IconByVariant name="lock" size={20} color={colors.text.tertiary} style={styles.inputIcon} />
+                <Input
+                  placeholder="Enter your password"
+                  placeholderTextColor={colors.text.tertiary}
+                  value={password}
+                  onChangeText={setPassword}
+                  secureTextEntry={!showPassword}
+                  style={[styles.textInput, { 
+                    borderColor: colors.border.primary,
+                    backgroundColor: colors.background.secondary,
+                    color: colors.text.primary
+                  }]}
+                />
+                <TouchableOpacity 
+                  onPress={() => setShowPassword(!showPassword)}
+                  style={styles.eyeIcon}
+                >
+                  <IconByVariant name="eye" size={20} color={colors.text.tertiary} />
+                </TouchableOpacity>
+              </View>
+            </View>
+
+            {/* Remember Me & Forgot Password */}
+            <View style={styles.optionsRow}>
+              <TouchableOpacity 
+                style={styles.checkboxRow}
+                onPress={() => setRememberMe(!rememberMe)}
+              >
+                <View style={[
+                  styles.checkbox,
+                  { borderColor: colors.border.primary },
+                  rememberMe && { backgroundColor: colors.accent.primary, borderColor: colors.accent.primary }
+                ]}>
+                  {rememberMe && <IconByVariant name="check" size={12} color={colors.text.inverse} />}
+                </View>
+                <Text style={[styles.checkboxLabel, { color: colors.text.primary }]}>
+                  Remember me
+                </Text>
+              </TouchableOpacity>
+              
+              <TouchableOpacity>
+                <Text style={[styles.forgotLink, { color: colors.accent.primary }]}>
+                  Forgot password?
+                </Text>
+              </TouchableOpacity>
+            </View>
+
+            {/* Sign In Button */}
+            <TouchableOpacity
+              onPress={handleLogin}
+              disabled={isLoading}
+              style={[
+                styles.signInButton,
+                { backgroundColor: colors.accent.primary },
+                isLoading && { opacity: 0.7 }
+              ]}
+            >
+              {isLoading ? (
+                <ActivityIndicator size="small" color={colors.text.inverse} />
+              ) : (
+                <Text style={[styles.signInButtonText, { color: colors.text.inverse }]}>
+                  Sign in
+                </Text>
+              )}
+            </TouchableOpacity>
+
+            {/* Divider */}
+            <View style={styles.divider}>
+              <View style={[styles.dividerLine, { backgroundColor: colors.border.primary }]} />
+              <Text style={[styles.dividerText, { color: colors.text.secondary }]}>Or</Text>
+              <View style={[styles.dividerLine, { backgroundColor: colors.border.primary }]} />
+            </View>
+
+            {/* Social Buttons */}
+            <View style={styles.socialButtons}>
+              <TouchableOpacity
+                onPress={handleGoogleSignIn}
+                disabled={isGoogleLoading}
+                style={[styles.socialButton, { 
+                  borderColor: colors.border.primary,
+                  backgroundColor: colors.background.secondary
+                }]}
+              >
+                {isGoogleLoading ? (
+                  <ActivityIndicator size="small" color="#4285F4" />
+                ) : (
+                  <>
+                    <IconByVariant name="google" size={20} />
+                    <Text style={[styles.socialButtonText, { color: colors.text.primary }]}>
+                      Sign in
+                    </Text>
+                  </>
+                )}
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[styles.socialButton, { 
+                  borderColor: colors.border.primary,
+                  backgroundColor: colors.background.secondary
+                }]}
+              >
+                <IconByVariant name="apple" size={20} color={colors.text.primary} />
+                <Text style={[styles.socialButtonText, { color: colors.text.primary }]}>
+                  Sign in
+                </Text>
+              </TouchableOpacity>
+            </View>
+
+            {/* Sign Up Link */}
+            <View style={styles.signUpRow}>
+              <Text style={[styles.signUpText, { color: colors.text.secondary }]}>
+                Don't have an account?{' '}
+              </Text>
+              <TouchableOpacity onPress={() => navigation.navigate('SignUp')}>
+                <Text style={[styles.signUpLink, { color: colors.accent.primary }]}>
+                  Sign up
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </ScrollView>
+    </SafeScreen>
   );
 }
 
 const styles = StyleSheet.create({
-  header: {
+  container: {
+    flex: 1,
+  },
+  scrollContent: {
+    flexGrow: 1,
+    justifyContent: 'center',
+    paddingHorizontal: 24,
+    paddingVertical: 20,
+  },
+  content: {
+    maxWidth: 400,
+    alignSelf: 'center',
+    width: '100%',
+  },
+  loadingOverlay: {
+    flex: 1,
+    justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: SPACING.xxl,
+    paddingHorizontal: 24,
   },
-  error: {
-    marginBottom: SPACING.md,
+  loadingContent: {
+    alignItems: 'center',
   },
-  passwordContainer: {
+  logoContainer: {
+    alignItems: 'center',
+    marginBottom: 24,
+  },
+  logoWrapper: {
+    width: 64,
+    height: 64,
+    borderRadius: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  logo: {
+    width: 32,
+    height: 32,
+  },
+  loadingSpinner: {
+    marginTop: 24,
+    marginBottom: 16,
+  },
+  loadingText: {
+    fontSize: 16,
+    fontWeight: '500',
+    textAlign: 'center',
+  },
+  title: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    marginBottom: 6,
+  },
+  subtitle: {
+    fontSize: 16,
+    textAlign: 'center',
+    marginBottom: 20,
+  },
+  statusBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 12,
+    marginBottom: 24,
+  },
+  statusDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    marginRight: 8,
+  },
+  statusText: {
+    fontSize: 14,
+    fontWeight: '500',
+  },
+  form: {
+    width: '100%',
+  },
+  fieldContainer: {
+    marginBottom: 16,
+  },
+  label: {
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: 8,
+  },
+  inputContainer: {
     position: 'relative',
-    marginBottom: SPACING.xl,
   },
-  signInButton: {
-    marginTop: SPACING.md,
+  inputIcon: {
+    position: 'absolute',
+    left: 16,
+    top: 14,
+    zIndex: 1,
+  },
+  textInput: {
+    height: 48,
+    borderWidth: 1,
+    borderRadius: 12,
+    paddingLeft: 48,
+    paddingRight: 48,
+    fontSize: 16,
   },
   eyeIcon: {
     position: 'absolute',
-    right: SPACING.md,
-    top: 38,
+    right: 16,
+    top: 14,
     zIndex: 1,
+  },
+  optionsRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  checkboxRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  checkbox: {
+    width: 20,
+    height: 20,
+    borderWidth: 2,
+    borderRadius: 4,
+    marginRight: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  checkboxLabel: {
+    fontSize: 14,
+    fontWeight: '500',
+  },
+  forgotLink: {
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  signInButton: {
+    height: 48,
+    borderRadius: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  signInButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
   },
   divider: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginVertical: SPACING.xl,
+    marginBottom: 20,
   },
   dividerLine: {
     flex: 1,
     height: 1,
   },
   dividerText: {
-    marginHorizontal: SPACING.md,
+    paddingHorizontal: 16,
+    fontSize: 14,
+    fontWeight: '500',
   },
   socialButtons: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    gap: SPACING.md,
+    marginBottom: 24,
+    gap: 12,
   },
-  googleButton: {
+  socialButton: {
     flex: 1,
-    justifyContent: 'center',
+    height: 48,
     borderWidth: 1,
-  },
-  appleButton: {
-    flex: 1,
-  },
-  footer: {
+    borderRadius: 12,
     flexDirection: 'row',
     justifyContent: 'center',
-    gap: SPACING.xs,
-    marginTop: SPACING.xl,
+    alignItems: 'center',
+    gap: 8,
+  },
+  socialButtonText: {
+    fontSize: 16,
+    fontWeight: '500',
+  },
+  signUpRow: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingBottom: 20,
+  },
+  signUpText: {
+    fontSize: 14,
+  },
+  signUpLink: {
+    fontSize: 14,
+    fontWeight: '600',
   },
 });
-
-export default Login;

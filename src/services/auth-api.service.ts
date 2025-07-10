@@ -1,93 +1,66 @@
-import type { 
-  LoginCredentials, 
-  RegisterCredentials, 
-  AuthResponse,
-  User,
-  PasswordResetRequest,
-  PasswordResetConfirm
-} from '@/hooks/domain/user/schema';
 import { apiClient } from './api/client';
-import { storageService } from './storage';
 import { API_ENDPOINTS } from '@/config/api';
+import type { 
+  LoginRequest, 
+  RegisterRequest, 
+  AuthResponse, 
+  SocialAuthRequest, 
+  SocialAuthResponse 
+} from './api/types';
 
-export class AuthApiService {
-  static async login(data: LoginCredentials): Promise<AuthResponse> {
-    const bodyData = 'grant_type=password' +
-      `&username=${encodeURIComponent(data.username)}` +
-      `&password=${encodeURIComponent(data.password)}` +
-      '&scope=' +
-      '&client_id=string' +
-      '&client_secret=string';
+class AuthApiService {
+  private static instance: AuthApiService;
 
-    try {
-      const response = await apiClient.postForm<AuthResponse>(API_ENDPOINTS.auth.login, bodyData);
-      await storageService.storeTokens(response);
-      return response;
-    } catch (error) {
-      console.error('Login Error:', error);
-      throw error;
+  private constructor() {}
+
+  public static getInstance(): AuthApiService {
+    if (!AuthApiService.instance) {
+      AuthApiService.instance = new AuthApiService();
     }
+    return AuthApiService.instance;
   }
 
-  static async register(data: RegisterCredentials): Promise<AuthResponse> {
-    const response = await apiClient.post<AuthResponse>(API_ENDPOINTS.auth.register, data);
-
-    if (response.user.is_verified && !response.is_revoked) {
-      await storageService.storeTokens(response);
-    }
-
-    return response;
+  public async login(data: LoginRequest): Promise<AuthResponse> {
+    return apiClient.post<AuthResponse>(API_ENDPOINTS.auth.login, data);
   }
 
-  static async refreshToken(refreshToken: string): Promise<AuthResponse> {
-    if (!refreshToken) {
-      throw new Error('Refresh token is required');
-    }
-
-    console.log('🔄 Attempting token refresh...');
-    const bodyData = 'grant_type=refresh_token' +
-      `&refresh_token=${encodeURIComponent(refreshToken)}` +
-      '&scope=' +
-      '&client_id=string' +
-      '&client_secret=string';
-
-    try {
-      const response = await apiClient.postForm<AuthResponse>(API_ENDPOINTS.auth.refreshToken, bodyData);
-      console.log('✅ Token refresh successful');
-      await storageService.storeTokens(response);
-      return response;
-    } catch (error) {
-      console.error('❌ Token refresh error:', error);
-      throw error;
-    }
+  public async register(data: RegisterRequest): Promise<AuthResponse> {
+    return apiClient.post<AuthResponse>(API_ENDPOINTS.auth.register, data);
   }
 
-  static async logout(): Promise<void> {
+  public async logout(): Promise<void> {
     try {
-      const refreshToken = await storageService.getRefreshToken();
-      if (refreshToken) {
-        await apiClient.post(API_ENDPOINTS.auth.logout, { refresh_token: refreshToken });
+      const refreshToken = await import('../services/storage').then(m => m.storageService.getRefreshToken());
+      console.log('🔐 Logout with refresh token:', refreshToken ? `${refreshToken.substring(0, 20)}...` : 'null');
+      
+      if (!refreshToken) {
+        console.warn('No refresh token found, skipping backend logout');
+        return;
       }
-    } finally {
-      await storageService.clearTokens();
+      
+      // Send refresh_token as query parameter
+      return apiClient.post(`${API_ENDPOINTS.auth.logout}?refresh_token=${encodeURIComponent(refreshToken)}`);
+    } catch (error) {
+      console.error('Logout API call failed:', error);
+      throw error;
     }
   }
 
-  static async getUser(): Promise<User> {
-    return apiClient.get(API_ENDPOINTS.user.me);
+  public async me(): Promise<AuthResponse> {
+    return apiClient.get<AuthResponse>(API_ENDPOINTS.user.me);
   }
 
-  static async socialAuth(data: { provider: string; token: string; email?: string; name?: string }): Promise<AuthResponse> {
-    const response = await apiClient.post<AuthResponse>(API_ENDPOINTS.auth.social, data);
-    await storageService.storeTokens(response);
-    return response;
+  public async googleSignIn(token: string): Promise<SocialAuthResponse> {
+    const data: SocialAuthRequest = {
+      provider: 'google',
+      token,
+    };
+    return apiClient.post<SocialAuthResponse>(API_ENDPOINTS.auth.googleAuth, data);
   }
 
-  static async forgotPassword(data: PasswordResetRequest): Promise<void> {
-    return apiClient.post(API_ENDPOINTS.auth.forgotPassword, data);
+  public async refreshToken(refreshToken: string): Promise<AuthResponse> {
+    return apiClient.post<AuthResponse>(API_ENDPOINTS.auth.refreshToken, { refresh_token: refreshToken });
   }
+}
 
-  static async resetPassword(data: PasswordResetConfirm): Promise<void> {
-    return apiClient.post(API_ENDPOINTS.auth.resetPassword, data);
-  }
-} 
+export const authApiService = AuthApiService.getInstance(); 

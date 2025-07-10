@@ -21,3 +21,8 @@ declare module '@env' {
   export const API_URL_PROD: string;
   export const GOOGLE_CLIENT_ID: string;
 }
+
+console.log('isDevelopment:', isDevelopment);
+console.log('API_URL:', API_URL);
+console.log('API_URL_DEV:', API_URL_DEV);
+console.log('API_URL_PROD:', API_URL_PROD);

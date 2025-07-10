@@ -3,9 +3,10 @@ import { API_URL_DEV, API_URL_PROD } from '@env';
 const isDevelopment = __DEV__;
 
 // Default development URL if environment variable is not set
-const DEFAULT_DEV_URL = 'http://localhost:8000/api/v1';
-const DEFAULT_PROD_URL = 'https://api.linklibrary.app/api/v1';
+const DEFAULT_DEV_URL = 'http://10.0.2.2/api/v1';
+const DEFAULT_PROD_URL = 'https://api.linklibrary.ai/api/v1';
 
+// Use environment variables if available, otherwise fall back to defaults
 export const API_URL = isDevelopment 
   ? (API_URL_DEV || DEFAULT_DEV_URL)
   : (API_URL_PROD || DEFAULT_PROD_URL);
@@ -17,6 +18,7 @@ export const API_ENDPOINTS = {
     refreshToken: `/auth/refresh`,
     logout: `/auth/logout`,
     social: `/auth/social`,
+    googleAuth: `/auth/google/chrome-extension`,
     forgotPassword: `/auth/forgot-password`,
     resetPassword: `/auth/reset-password`,
   },

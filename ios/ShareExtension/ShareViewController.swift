@@ -1,30 +1,64 @@
 //
 //  ShareViewController.swift
-//  LinkLibraryAI
+//  ShareExtension
 //
-//  Created by Balaji Nagisetty on 06.07.25.
+//  Created by Balaji Nagisetty on 07.07.25.
 //
 
 import UIKit
-import Social
+import MobileCoreServices
+import UniformTypeIdentifiers
 
-class ShareViewController: SLComposeServiceViewController {
-
-    override func isContentValid() -> Bool {
-        // Do validation of contentText and/or NSExtensionContext attachments here
-        return true
-    }
-
-    override func didSelectPost() {
-        // This is called after the user selects Post. Do the upload of contentText and/or NSExtensionContext attachments.
+class ShareViewController: UIViewController {
     
-        // Inform the host that we're done, so it un-blocks its UI. Note: Alternatively you could call super's -didSelectPost, which will similarly complete the extension context.
-        self.extensionContext!.completeRequest(returningItems: [], completionHandler: nil)
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        handleSharedContent()
     }
-
-    override func configurationItems() -> [Any]! {
-        // To add configuration options via table cells at the bottom of the sheet, return an array of SLComposeSheetConfigurationItem here.
-        return []
+    
+    func handleSharedContent() {
+        guard let extensionItem = extensionContext?.inputItems.first as? NSExtensionItem,
+              let itemProvider = extensionItem.attachments?.first else {
+            closeExtension()
+            return
+        }
+        
+        if itemProvider.hasItemConformingToTypeIdentifier(UTType.url.identifier) {
+            handleURL(itemProvider: itemProvider)
+        } else if itemProvider.hasItemConformingToTypeIdentifier(UTType.text.identifier) {
+            handleText(itemProvider: itemProvider)
+        } else {
+            closeExtension()
+        }
     }
-
+    
+    func handleURL(itemProvider: NSItemProvider) {
+        itemProvider.loadItem(forTypeIdentifier: UTType.url.identifier, options: nil) { (url, error) in
+            if let shareURL = url as? URL {
+                self.saveSharedData(["type": "url", "data": shareURL.absoluteString])
+            }
+            self.closeExtension()
+        }
+    }
+    
+    func handleText(itemProvider: NSItemProvider) {
+        itemProvider.loadItem(forTypeIdentifier: UTType.text.identifier, options: nil) { (text, error) in
+            if let shareText = text as? String {
+                self.saveSharedData(["type": "text", "data": shareText])
+            }
+            self.closeExtension()
+        }
+    }
+    
+    func saveSharedData(_ data: [String: Any]) {
+        let userDefaults = UserDefaults(suiteName: "group.com.linklibraryai.shared")
+        userDefaults?.set(data, forKey: "SharedData")
+        userDefaults?.synchronize()
+    }
+    
+    func closeExtension() {
+        DispatchQueue.main.async {
+            self.extensionContext?.completeRequest(returningItems: [], completionHandler: nil)
+        }
+    }
 }

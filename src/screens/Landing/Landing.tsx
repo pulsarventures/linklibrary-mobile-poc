@@ -13,7 +13,7 @@ import { Container } from '@/components/ui';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Landing'>;
 
-function Landing({ navigation }: Props) {
+export function Landing({ navigation }: Props) {
   const { colors, isDark } = useTheme();
 
   return (
@@ -150,6 +150,4 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
   },
-});
-
-export default Landing; 
+}); 

@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>linklibrary_mobile.ipa</key>
+	<array>
+		<dict>
+			<key>architectures</key>
+			<array>
+				<string>arm64</string>
+			</array>
+			<key>buildNumber</key>
+			<string>1</string>
+			<key>certificate</key>
+			<dict>
+				<key>SHA1</key>
+				<string>7D16114D873C7D30B907052B9DE244103BF9AA08</string>
+				<key>dateExpires</key>
+				<string>07.07.26</string>
+				<key>type</key>
+				<string>Cloud Managed Apple Distribution</string>
+			</dict>
+			<key>embeddedBinaries</key>
+			<array>
+				<dict>
+					<key>architectures</key>
+					<array>
+						<string>arm64</string>
+					</array>
+					<key>buildNumber</key>
+					<string>0.12.0</string>
+					<key>certificate</key>
+					<dict>
+						<key>SHA1</key>
+						<string>7D16114D873C7D30B907052B9DE244103BF9AA08</string>
+						<key>dateExpires</key>
+						<string>07.07.26</string>
+						<key>type</key>
+						<string>Cloud Managed Apple Distribution</string>
+					</dict>
+					<key>name</key>
+					<string>hermes.framework</string>
+					<key>team</key>
+					<dict>
+						<key>id</key>
+						<string>7836837UUW</string>
+						<key>name</key>
+						<string>Balaji nagisetty</string>
+					</dict>
+					<key>versionNumber</key>
+					<string>0.12.0</string>
+				</dict>
+			</array>
+			<key>entitlements</key>
+			<dict>
+				<key>application-identifier</key>
+				<string>7836837UUW.com.pulsarventures.linklibraryai</string>
+				<key>com.apple.developer.team-identifier</key>
+				<string>7836837UUW</string>
+				<key>get-task-allow</key>
+				<false/>
+			</dict>
+			<key>name</key>
+			<string>linklibrary_mobile.app</string>
+			<key>profile</key>
+			<dict>
+				<key>UUID</key>
+				<string>d9d806ab-555b-4d2a-b600-5b4b1b332b70</string>
+				<key>dateExpires</key>
+				<string>07.07.26</string>
+				<key>name</key>
+				<string>iOS Team Ad Hoc Provisioning Profile: com.pulsarventures.linklibraryai</string>
+			</dict>
+			<key>team</key>
+			<dict>
+				<key>id</key>
+				<string>7836837UUW</string>
+				<key>name</key>
+				<string>Balaji nagisetty</string>
+			</dict>
+			<key>versionNumber</key>
+			<string>1.0</string>
+		</dict>
+	</array>
+</dict>
+</plist>
