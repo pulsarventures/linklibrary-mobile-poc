@@ -15,6 +15,7 @@ import type { User } from '@/hooks/domain/user/schema';
 import { storageService } from '@/services/storage';
 import { AssetByVariant } from '@/components/atoms';
 import { IconByVariant } from '@/components/atoms';
+import { safeErrorLog } from '@/utils/errorHandler';
 
 type LoginScreenNavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
@@ -41,7 +42,7 @@ export function Login() {
       setIsLoading(true);
       await login({ username: email, password });
     } catch (error) {
-      console.error('Login failed:', error);
+      safeErrorLog('Login failed', error);
       Alert.alert('Login Failed', 'Please check your credentials and try again');
     } finally {
       setIsLoading(false);
@@ -103,14 +104,7 @@ export function Login() {
       console.log('🔵 Google Sign-In process completed successfully');
       
     } catch (error) {
-      console.error('🔴 Google Sign-In failed at step:', error);
-      
-      // Log more details about the error
-      if (error instanceof Error) {
-        console.error('🔴 Error name:', error.name);
-        console.error('🔴 Error message:', error.message);
-        console.error('🔴 Error stack:', error.stack);
-      }
+      safeErrorLog('🔴 Google Sign-In failed at step', error);
       
       Alert.alert('Google Sign-In Failed', `Please try again. Error: ${error instanceof Error ? error.message : 'Unknown error'}`);
       setAuthTransition(false);

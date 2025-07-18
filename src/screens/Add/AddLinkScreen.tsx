@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { View, TextInput, StyleSheet, Button, ScrollView, Alert, Text, TouchableOpacity, Modal, FlatList, ActivityIndicator, Platform } from 'react-native';
-import { useRoute, RouteProp } from '@react-navigation/native';
+import { useRoute, RouteProp, useNavigation } from '@react-navigation/native';
 import Toast from 'react-native-toast-message';
 import { SafeScreen } from '@/components/templates';
 import { useTheme } from '@/theme';
@@ -8,12 +8,14 @@ import { IconByVariant } from '@/components/atoms';
 import { useCollectionsStore } from '@/hooks/domain/collections/useCollectionsStore';
 import { useTagsStore } from '@/hooks/domain/tags/useTagsStore';
 import { extractURLMetadata } from '@/utils/extractURLMetadata';
+import { useCreateLink } from '@/hooks/api/useLinks';
 import type { RootTabParamList } from '@/navigation/types';
 
 type AddLinkScreenRouteProp = RouteProp<RootTabParamList, 'Add'>;
 
 export default function AddLinkScreen() {
   const route = useRoute<AddLinkScreenRouteProp>();
+  const navigation = useNavigation();
   const { colors, isDark } = useTheme();
   const [url, setUrl] = useState('');
   const [title, setTitle] = useState('');
@@ -33,6 +35,9 @@ export default function AddLinkScreen() {
   // Real collections and tags from store
   const { collections, fetchCollections, loading: collectionsLoading, loaded: collectionsLoaded } = useCollectionsStore();
   const { tags, isLoading: tagsLoading } = useTagsStore();
+
+  // Create link mutation
+  const createLinkMutation = useCreateLink();
 
   // Handle shared URL from route params
   useEffect(() => {
@@ -160,9 +165,50 @@ export default function AddLinkScreen() {
     return true;
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!validateForm()) return;
-    Alert.alert('Link created!', `Collection: ${selectedCollection}, Tags: ${selectedTags.join(', ')}, Favorite: ${isFavorite}`);
+    
+    try {
+      const linkData = {
+        url: url.trim(),
+        title: title.trim(),
+        summary: summary.trim(),
+        notes: notes.trim(),
+        collection_id: selectedCollection,
+        tag_ids: selectedTags,
+        is_favorite: isFavorite,
+        input_source: 'mobile',
+      };
+
+      console.log('📝 Creating link with data:', linkData);
+
+      await createLinkMutation.mutateAsync(linkData);
+      
+      // Show success message
+      Toast.show({
+        type: 'success',
+        text1: 'Link Created!',
+        text2: 'Your link has been saved successfully',
+        position: 'top',
+      });
+
+      // Reset form
+      handleClear();
+      
+      // Navigate to links screen
+      navigation.navigate('Links' as never);
+      
+    } catch (error) {
+      console.error('❌ Failed to create link:', error);
+      
+      // Show error message
+      Toast.show({
+        type: 'error',
+        text1: 'Error',
+        text2: error instanceof Error ? error.message : 'Failed to create link',
+        position: 'top',
+      });
+    }
   };
 
   // Filtered collections for search
@@ -177,8 +223,11 @@ export default function AddLinkScreen() {
     setSummary('');
     setNotes('');
     setIsFavorite(false);
-    setSelectedCollection(null);
     setSelectedTags([]);
+    
+    // Reset to default collection
+    const defaultCol = collections.find(c => c.name.toLowerCase() === 'default');
+    setSelectedCollection(defaultCol ? defaultCol.id : null);
   };
 
   return (
@@ -355,11 +404,21 @@ export default function AddLinkScreen() {
             <IconByVariant name="trash" size={20} color={colors.text.secondary} />
           </TouchableOpacity>
           <TouchableOpacity
-            style={[styles.iconButton, styles.createIconButton, { backgroundColor: colors.accent.primary, shadowColor: colors.accent.primary }]}
+            style={[
+              styles.iconButton, 
+              styles.createIconButton, 
+              { backgroundColor: colors.accent.primary, shadowColor: colors.accent.primary },
+              createLinkMutation.isPending && { opacity: 0.7 }
+            ]}
             onPress={handleSubmit}
             activeOpacity={0.7}
+            disabled={createLinkMutation.isPending}
           >
-            <IconByVariant name="send" size={20} color={'#fff'} />
+            {createLinkMutation.isPending ? (
+              <ActivityIndicator size="small" color={'#fff'} />
+            ) : (
+              <IconByVariant name="send" size={20} color={'#fff'} />
+            )}
           </TouchableOpacity>
         </View>
               </ScrollView>

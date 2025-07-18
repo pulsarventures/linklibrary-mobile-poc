@@ -9,6 +9,7 @@ import { SafeScreen } from '@/components/templates';
 import { useAuthStore } from '@/hooks/domain/user/useAuthStore';
 import { AssetByVariant } from '@/components/atoms';
 import { IconByVariant } from '@/components/atoms';
+import { safeErrorLog } from '@/utils/errorHandler';
 import { signInWithGoogle } from '@/services/auth/googleAuth';
 import { authApiService } from '@/services/auth-api.service';
 import type { User } from '@/hooks/domain/user/schema';
@@ -54,7 +55,7 @@ export function SignUp() {
       setIsLoading(true);
       await register(formData);
     } catch (error) {
-      console.error('Sign up failed:', error);
+      safeErrorLog('Sign up failed', error);
       Alert.alert('Sign Up Failed', 'Please try again');
     } finally {
       setIsLoading(false);
@@ -116,14 +117,7 @@ export function SignUp() {
       console.log('🔵 Google Sign-Up process completed successfully');
       
     } catch (error) {
-      console.error('🔴 Google Sign-Up failed at step:', error);
-      
-      // Log more details about the error
-      if (error instanceof Error) {
-        console.error('🔴 Error name:', error.name);
-        console.error('🔴 Error message:', error.message);
-        console.error('🔴 Error stack:', error.stack);
-      }
+      safeErrorLog('🔴 Google Sign-Up failed at step', error);
       
       Alert.alert('Google Sign-Up Failed', `Please try again. Error: ${error instanceof Error ? error.message : 'Unknown error'}`);
       setAuthTransition(false);

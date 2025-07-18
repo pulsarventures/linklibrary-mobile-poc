@@ -1,0 +1,381 @@
+
+Welcome to React Native v0.80
+Starting dev server on http://localhost:8081
+
+
+                        ▒▒▓▓▓▓▒▒
+                     ▒▓▓▓▒▒░░▒▒▓▓▓▒
+                  ▒▓▓▓▓░░░▒▒▒▒░░░▓▓▓▓▒
+                 ▓▓▒▒▒▓▓▓▓▓▓▓▓▓▓▓▓▒▒▒▓▓
+                 ▓▓░░░░░▒▓▓▓▓▓▓▒░░░░░▓▓
+                 ▓▓░░▓▓▒░░░▒▒░░░▒▓▒░░▓▓
+                 ▓▓░░▓▓▓▓▓▒▒▒▒▓▓▓▓▒░░▓▓
+                 ▓▓░░▓▓▓▓▓▓▓▓▓▓▓▓▓▒░░▓▓
+                 ▓▓▒░░▒▒▓▓▓▓▓▓▓▓▒░░░▒▓▓
+                  ▒▓▓▓▒░░░▒▓▓▒░░░▒▓▓▓▒
+                     ▒▓▓▓▒░░░░▒▓▓▓▒
+                        ▒▒▓▓▓▓▒▒
+
+
+ WARN  the transform cache was reset.
+                Welcome to Metro v0.82.5
+              Fast - Scalable - Integrated
+
+
+ INFO  Dev server ready. Press Ctrl+C to exit.
+ INFO  Interactive mode is not supported in this environment
+ BUNDLE  ../index.js ░░░░░░░░░░░░░░░░ 0.0% (0/1)
+ BUNDLE  ../index.js 
+ ERROR  Error: Unable to resolve module ./ios/src/reactotron.config from /Users/balajinagisetty/Documents/LinkLibraryAI/linklibrary_mobile/index.js: 
+
+None of these files exist:
+  * ios/src/reactotron.config(.ios.js|.native.js|.js|.ios.jsx|.native.jsx|.jsx|.ios.json|.native.json|.json|.ios.ts|.native.ts|.ts|.ios.tsx|.native.tsx|.tsx)
+  * ios/src/reactotron.config
+   5 |
+   6 | if (__DEV__) {
+>  7 |   void import('@/reactotron.config');
+     |        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   8 | }
+   9 |
+  10 | AppRegistry.registerComponent(appName, () => App);
+    at ModuleResolver.resolveDependency (/Users/balajinagisetty/Documents/LinkLibraryAI/linklibrary_mobile/node_modules/metro/src/node-haste/DependencyGraph/ModuleResolution.js:114:15)
+    at DependencyGraph.resolveDependency (/Users/balajinagisetty/Documents/LinkLibraryAI/linklibrary_mobile/node_modules/metro/src/node-haste/DependencyGraph.js:239:43)
+    at /Users/balajinagisetty/Documents/LinkLibraryAI/linklibrary_mobile/node_modules/metro/src/lib/transformHelpers.js:161:21
+    at resolveDependencies (/Users/balajinagisetty/Documents/LinkLibraryAI/linklibrary_mobile/node_modules/metro/src/DeltaBundler/buildSubgraph.js:43:25)
+    at visit (/Users/balajinagisetty/Documents/LinkLibraryAI/linklibrary_mobile/node_modules/metro/src/DeltaBundler/buildSubgraph.js:81:30)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async Promise.all (index 0)
+    at async buildSubgraph (/Users/balajinagisetty/Documents/LinkLibraryAI/linklibrary_mobile/node_modules/metro/src/DeltaBundler/buildSubgraph.js:105:3)
+    at async Graph._buildDelta (/Users/balajinagisetty/Documents/LinkLibraryAI/linklibrary_mobile/node_modules/metro/src/DeltaBundler/Graph.js:158:22)
+    at async Graph.initialTraverseDependencies (/Users/balajinagisetty/Documents/LinkLibraryAI/linklibrary_mobile/node_modules/metro/src/DeltaBundler/Graph.js:141:19)
+ BUNDLE  ../index.js ░░░░░░░░░░░░░░░░ 0.0% (0/1)
+ BUNDLE  ../index.js 
+ ERROR  Error: Unable to resolve module ./ios/src/reactotron.config from /Users/balajinagisetty/Documents/LinkLibraryAI/linklibrary_mobile/index.js: 
+
+None of these files exist:
+  * ios/src/reactotron.config(.ios.js|.native.js|.js|.ios.jsx|.native.jsx|.jsx|.ios.json|.native.json|.json|.ios.ts|.native.ts|.ts|.ios.tsx|.native.tsx|.tsx)
+  * ios/src/reactotron.config
+   5 |
+   6 | if (__DEV__) {
+>  7 |   void import('@/reactotron.config');
+     |        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   8 | }
+   9 |
+  10 | AppRegistry.registerComponent(appName, () => App);
+    at ModuleResolver.resolveDependency (/Users/balajinagisetty/Documents/LinkLibraryAI/linklibrary_mobile/node_modules/metro/src/node-haste/DependencyGraph/ModuleResolution.js:114:15)
+    at DependencyGraph.resolveDependency (/Users/balajinagisetty/Documents/LinkLibraryAI/linklibrary_mobile/node_modules/metro/src/node-haste/DependencyGraph.js:239:43)
+    at /Users/balajinagisetty/Documents/LinkLibraryAI/linklibrary_mobile/node_modules/metro/src/lib/transformHelpers.js:161:21
+    at resolveDependencies (/Users/balajinagisetty/Documents/LinkLibraryAI/linklibrary_mobile/node_modules/metro/src/DeltaBundler/buildSubgraph.js:43:25)
+    at visit (/Users/balajinagisetty/Documents/LinkLibraryAI/linklibrary_mobile/node_modules/metro/src/DeltaBundler/buildSubgraph.js:81:30)
+    at async Promise.all (index 0)
+    at async buildSubgraph (/Users/balajinagisetty/Documents/LinkLibraryAI/linklibrary_mobile/node_modules/metro/src/DeltaBundler/buildSubgraph.js:105:3)
+    at async Graph._buildDelta (/Users/balajinagisetty/Documents/LinkLibraryAI/linklibrary_mobile/node_modules/metro/src/DeltaBundler/Graph.js:158:22)
+    at async Graph.initialTraverseDependencies (/Users/balajinagisetty/Documents/LinkLibraryAI/linklibrary_mobile/node_modules/metro/src/DeltaBundler/Graph.js:141:19)
+    at async DeltaCalculator._getChangedDependencies (/Users/balajinagisetty/Documents/LinkLibraryAI/linklibrary_mobile/node_modules/metro/src/DeltaBundler/DeltaCalculator.js:151:25)
+ BUNDLE  ../index.js ░░░░░░░░░░░░░░░░ 0.0% (0/1)
+ BUNDLE  ../index.js 
+ ERROR  Error: Unable to resolve module ./ios/src/reactotron.config from /Users/balajinagisetty/Documents/LinkLibraryAI/linklibrary_mobile/index.js: 
+
+None of these files exist:
+  * ios/src/reactotron.config(.ios.js|.native.js|.js|.ios.jsx|.native.jsx|.jsx|.ios.json|.native.json|.json|.ios.ts|.native.ts|.ts|.ios.tsx|.native.tsx|.tsx)
+  * ios/src/reactotron.config
+   5 |
+   6 | if (__DEV__) {
+>  7 |   void import('@/reactotron.config');
+     |        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   8 | }
+   9 |
+  10 | AppRegistry.registerComponent(appName, () => App);
+    at ModuleResolver.resolveDependency (/Users/balajinagisetty/Documents/LinkLibraryAI/linklibrary_mobile/node_modules/metro/src/node-haste/DependencyGraph/ModuleResolution.js:114:15)
+    at DependencyGraph.resolveDependency (/Users/balajinagisetty/Documents/LinkLibraryAI/linklibrary_mobile/node_modules/metro/src/node-haste/DependencyGraph.js:239:43)
+    at /Users/balajinagisetty/Documents/LinkLibraryAI/linklibrary_mobile/node_modules/metro/src/lib/transformHelpers.js:161:21
+    at resolveDependencies (/Users/balajinagisetty/Documents/LinkLibraryAI/linklibrary_mobile/node_modules/metro/src/DeltaBundler/buildSubgraph.js:43:25)
+    at visit (/Users/balajinagisetty/Documents/LinkLibraryAI/linklibrary_mobile/node_modules/metro/src/DeltaBundler/buildSubgraph.js:81:30)
+    at async Promise.all (index 0)
+    at async buildSubgraph (/Users/balajinagisetty/Documents/LinkLibraryAI/linklibrary_mobile/node_modules/metro/src/DeltaBundler/buildSubgraph.js:105:3)
+    at async Graph._buildDelta (/Users/balajinagisetty/Documents/LinkLibraryAI/linklibrary_mobile/node_modules/metro/src/DeltaBundler/Graph.js:158:22)
+    at async Graph.initialTraverseDependencies (/Users/balajinagisetty/Documents/LinkLibraryAI/linklibrary_mobile/node_modules/metro/src/DeltaBundler/Graph.js:141:19)
+    at async DeltaCalculator._getChangedDependencies (/Users/balajinagisetty/Documents/LinkLibraryAI/linklibrary_mobile/node_modules/metro/src/DeltaBundler/DeltaCalculator.js:151:25)
+ BUNDLE  ../index.js ░░░░░░░░░░░░░░░░ 0.0% (0/1)
+ BUNDLE  ../index.js 
+ ERROR  Error: Unable to resolve module ./ios/src/reactotron.config from /Users/balajinagisetty/Documents/LinkLibraryAI/linklibrary_mobile/index.js: 
+
+None of these files exist:
+  * ios/src/reactotron.config(.ios.js|.native.js|.js|.ios.jsx|.native.jsx|.jsx|.ios.json|.native.json|.json|.ios.ts|.native.ts|.ts|.ios.tsx|.native.tsx|.tsx)
+  * ios/src/reactotron.config
+   5 |
+   6 | if (__DEV__) {
+>  7 |   void import('@/reactotron.config');
+     |        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   8 | }
+   9 |
+  10 | AppRegistry.registerComponent(appName, () => App);
+    at ModuleResolver.resolveDependency (/Users/balajinagisetty/Documents/LinkLibraryAI/linklibrary_mobile/node_modules/metro/src/node-haste/DependencyGraph/ModuleResolution.js:114:15)
+    at DependencyGraph.resolveDependency (/Users/balajinagisetty/Documents/LinkLibraryAI/linklibrary_mobile/node_modules/metro/src/node-haste/DependencyGraph.js:239:43)
+    at /Users/balajinagisetty/Documents/LinkLibraryAI/linklibrary_mobile/node_modules/metro/src/lib/transformHelpers.js:161:21
+    at resolveDependencies (/Users/balajinagisetty/Documents/LinkLibraryAI/linklibrary_mobile/node_modules/metro/src/DeltaBundler/buildSubgraph.js:43:25)
+    at visit (/Users/balajinagisetty/Documents/LinkLibraryAI/linklibrary_mobile/node_modules/metro/src/DeltaBundler/buildSubgraph.js:81:30)
+    at async Promise.all (index 0)
+    at async buildSubgraph (/Users/balajinagisetty/Documents/LinkLibraryAI/linklibrary_mobile/node_modules/metro/src/DeltaBundler/buildSubgraph.js:105:3)
+    at async Graph._buildDelta (/Users/balajinagisetty/Documents/LinkLibraryAI/linklibrary_mobile/node_modules/metro/src/DeltaBundler/Graph.js:158:22)
+    at async Graph.initialTraverseDependencies (/Users/balajinagisetty/Documents/LinkLibraryAI/linklibrary_mobile/node_modules/metro/src/DeltaBundler/Graph.js:141:19)
+    at async DeltaCalculator._getChangedDependencies (/Users/balajinagisetty/Documents/LinkLibraryAI/linklibrary_mobile/node_modules/metro/src/DeltaBundler/DeltaCalculator.js:151:25)
+ BUNDLE  ../index.js 
+ ERROR  Error: Unable to resolve module ./ios/src/reactotron.config from /Users/balajinagisetty/Documents/LinkLibraryAI/linklibrary_mobile/index.js: 
+
+None of these files exist:
+  * ios/src/reactotron.config(.ios.js|.native.js|.js|.ios.jsx|.native.jsx|.jsx|.ios.json|.native.json|.json|.ios.ts|.native.ts|.ts|.ios.tsx|.native.tsx|.tsx)
+  * ios/src/reactotron.config
+   5 |
+   6 | if (__DEV__) {
+>  7 |   void import('@/reactotron.config');
+     |        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   8 | }
+   9 |
+  10 | AppRegistry.registerComponent(appName, () => App);
+    at ModuleResolver.resolveDependency (/Users/balajinagisetty/Documents/LinkLibraryAI/linklibrary_mobile/node_modules/metro/src/node-haste/DependencyGraph/ModuleResolution.js:114:15)
+    at DependencyGraph.resolveDependency (/Users/balajinagisetty/Documents/LinkLibraryAI/linklibrary_mobile/node_modules/metro/src/node-haste/DependencyGraph.js:239:43)
+    at /Users/balajinagisetty/Documents/LinkLibraryAI/linklibrary_mobile/node_modules/metro/src/lib/transformHelpers.js:161:21
+    at resolveDependencies (/Users/balajinagisetty/Documents/LinkLibraryAI/linklibrary_mobile/node_modules/metro/src/DeltaBundler/buildSubgraph.js:43:25)
+    at visit (/Users/balajinagisetty/Documents/LinkLibraryAI/linklibrary_mobile/node_modules/metro/src/DeltaBundler/buildSubgraph.js:81:30)
+    at async Promise.all (index 0)
+    at async buildSubgraph (/Users/balajinagisetty/Documents/LinkLibraryAI/linklibrary_mobile/node_modules/metro/src/DeltaBundler/buildSubgraph.js:105:3)
+    at async Graph._buildDelta (/Users/balajinagisetty/Documents/LinkLibraryAI/linklibrary_mobile/node_modules/metro/src/DeltaBundler/Graph.js:158:22)
+    at async Graph.initialTraverseDependencies (/Users/balajinagisetty/Documents/LinkLibraryAI/linklibrary_mobile/node_modules/metro/src/DeltaBundler/Graph.js:141:19)
+    at async DeltaCalculator._getChangedDependencies (/Users/balajinagisetty/Documents/LinkLibraryAI/linklibrary_mobile/node_modules/metro/src/DeltaBundler/DeltaCalculator.js:151:25)
+ BUNDLE  ../index.js 
+ ERROR  Error: Unable to resolve module ./ios/src/reactotron.config from /Users/balajinagisetty/Documents/LinkLibraryAI/linklibrary_mobile/index.js: 
+
+None of these files exist:
+  * ios/src/reactotron.config(.ios.js|.native.js|.js|.ios.jsx|.native.jsx|.jsx|.ios.json|.native.json|.json|.ios.ts|.native.ts|.ts|.ios.tsx|.native.tsx|.tsx)
+  * ios/src/reactotron.config
+   5 |
+   6 | if (__DEV__) {
+>  7 |   void import('@/reactotron.config');
+     |        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   8 | }
+   9 |
+  10 | AppRegistry.registerComponent(appName, () => App);
+    at ModuleResolver.resolveDependency (/Users/balajinagisetty/Documents/LinkLibraryAI/linklibrary_mobile/node_modules/metro/src/node-haste/DependencyGraph/ModuleResolution.js:114:15)
+    at DependencyGraph.resolveDependency (/Users/balajinagisetty/Documents/LinkLibraryAI/linklibrary_mobile/node_modules/metro/src/node-haste/DependencyGraph.js:239:43)
+    at /Users/balajinagisetty/Documents/LinkLibraryAI/linklibrary_mobile/node_modules/metro/src/lib/transformHelpers.js:161:21
+    at resolveDependencies (/Users/balajinagisetty/Documents/LinkLibraryAI/linklibrary_mobile/node_modules/metro/src/DeltaBundler/buildSubgraph.js:43:25)
+    at visit (/Users/balajinagisetty/Documents/LinkLibraryAI/linklibrary_mobile/node_modules/metro/src/DeltaBundler/buildSubgraph.js:81:30)
+    at async Promise.all (index 0)
+    at async buildSubgraph (/Users/balajinagisetty/Documents/LinkLibraryAI/linklibrary_mobile/node_modules/metro/src/DeltaBundler/buildSubgraph.js:105:3)
+    at async Graph._buildDelta (/Users/balajinagisetty/Documents/LinkLibraryAI/linklibrary_mobile/node_modules/metro/src/DeltaBundler/Graph.js:158:22)
+    at async Graph.initialTraverseDependencies (/Users/balajinagisetty/Documents/LinkLibraryAI/linklibrary_mobile/node_modules/metro/src/DeltaBundler/Graph.js:141:19)
+    at async DeltaCalculator._getChangedDependencies (/Users/balajinagisetty/Documents/LinkLibraryAI/linklibrary_mobile/node_modules/metro/src/DeltaBundler/DeltaCalculator.js:151:25)
+ BUNDLE  ../index.js 
+ ERROR  Error: Unable to resolve module ./ios/src/reactotron.config from /Users/balajinagisetty/Documents/LinkLibraryAI/linklibrary_mobile/index.js: 
+
+None of these files exist:
+  * ios/src/reactotron.config(.ios.js|.native.js|.js|.ios.jsx|.native.jsx|.jsx|.ios.json|.native.json|.json|.ios.ts|.native.ts|.ts|.ios.tsx|.native.tsx|.tsx)
+  * ios/src/reactotron.config
+   5 |
+   6 | if (__DEV__) {
+>  7 |   void import('@/reactotron.config');
+     |        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   8 | }
+   9 |
+  10 | AppRegistry.registerComponent(appName, () => App);
+    at ModuleResolver.resolveDependency (/Users/balajinagisetty/Documents/LinkLibraryAI/linklibrary_mobile/node_modules/metro/src/node-haste/DependencyGraph/ModuleResolution.js:114:15)
+    at DependencyGraph.resolveDependency (/Users/balajinagisetty/Documents/LinkLibraryAI/linklibrary_mobile/node_modules/metro/src/node-haste/DependencyGraph.js:239:43)
+    at /Users/balajinagisetty/Documents/LinkLibraryAI/linklibrary_mobile/node_modules/metro/src/lib/transformHelpers.js:161:21
+    at resolveDependencies (/Users/balajinagisetty/Documents/LinkLibraryAI/linklibrary_mobile/node_modules/metro/src/DeltaBundler/buildSubgraph.js:43:25)
+    at visit (/Users/balajinagisetty/Documents/LinkLibraryAI/linklibrary_mobile/node_modules/metro/src/DeltaBundler/buildSubgraph.js:81:30)
+    at async Promise.all (index 0)
+    at async buildSubgraph (/Users/balajinagisetty/Documents/LinkLibraryAI/linklibrary_mobile/node_modules/metro/src/DeltaBundler/buildSubgraph.js:105:3)
+    at async Graph._buildDelta (/Users/balajinagisetty/Documents/LinkLibraryAI/linklibrary_mobile/node_modules/metro/src/DeltaBundler/Graph.js:158:22)
+    at async Graph.initialTraverseDependencies (/Users/balajinagisetty/Documents/LinkLibraryAI/linklibrary_mobile/node_modules/metro/src/DeltaBundler/Graph.js:141:19)
+    at async DeltaCalculator._getChangedDependencies (/Users/balajinagisetty/Documents/LinkLibraryAI/linklibrary_mobile/node_modules/metro/src/DeltaBundler/DeltaCalculator.js:151:25)
+ BUNDLE  ../index.js ░░░░░░░░░░░░░░░░ 0.0% (0/1)
+ BUNDLE  ../index.js 
+ ERROR  Error: Unable to resolve module ./ios/src/reactotron.config from /Users/balajinagisetty/Documents/LinkLibraryAI/linklibrary_mobile/index.js: 
+
+None of these files exist:
+  * ios/src/reactotron.config(.ios.js|.native.js|.js|.ios.jsx|.native.jsx|.jsx|.ios.json|.native.json|.json|.ios.ts|.native.ts|.ts|.ios.tsx|.native.tsx|.tsx)
+  * ios/src/reactotron.config
+   5 |
+   6 | if (__DEV__) {
+>  7 |   void import('@/reactotron.config');
+     |        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   8 | }
+   9 |
+  10 | AppRegistry.registerComponent(appName, () => App);
+    at ModuleResolver.resolveDependency (/Users/balajinagisetty/Documents/LinkLibraryAI/linklibrary_mobile/node_modules/metro/src/node-haste/DependencyGraph/ModuleResolution.js:114:15)
+    at DependencyGraph.resolveDependency (/Users/balajinagisetty/Documents/LinkLibraryAI/linklibrary_mobile/node_modules/metro/src/node-haste/DependencyGraph.js:239:43)
+    at /Users/balajinagisetty/Documents/LinkLibraryAI/linklibrary_mobile/node_modules/metro/src/lib/transformHelpers.js:161:21
+    at resolveDependencies (/Users/balajinagisetty/Documents/LinkLibraryAI/linklibrary_mobile/node_modules/metro/src/DeltaBundler/buildSubgraph.js:43:25)
+    at visit (/Users/balajinagisetty/Documents/LinkLibraryAI/linklibrary_mobile/node_modules/metro/src/DeltaBundler/buildSubgraph.js:81:30)
+    at async Promise.all (index 0)
+    at async buildSubgraph (/Users/balajinagisetty/Documents/LinkLibraryAI/linklibrary_mobile/node_modules/metro/src/DeltaBundler/buildSubgraph.js:105:3)
+    at async Graph._buildDelta (/Users/balajinagisetty/Documents/LinkLibraryAI/linklibrary_mobile/node_modules/metro/src/DeltaBundler/Graph.js:158:22)
+    at async Graph.initialTraverseDependencies (/Users/balajinagisetty/Documents/LinkLibraryAI/linklibrary_mobile/node_modules/metro/src/DeltaBundler/Graph.js:141:19)
+    at async DeltaCalculator._getChangedDependencies (/Users/balajinagisetty/Documents/LinkLibraryAI/linklibrary_mobile/node_modules/metro/src/DeltaBundler/DeltaCalculator.js:151:25)
+ BUNDLE  ../index.js 
+ ERROR  Error: Unable to resolve module ./ios/src/reactotron.config from /Users/balajinagisetty/Documents/LinkLibraryAI/linklibrary_mobile/index.js: 
+
+None of these files exist:
+  * ios/src/reactotron.config(.ios.js|.native.js|.js|.ios.jsx|.native.jsx|.jsx|.ios.json|.native.json|.json|.ios.ts|.native.ts|.ts|.ios.tsx|.native.tsx|.tsx)
+  * ios/src/reactotron.config
+   5 |
+   6 | if (__DEV__) {
+>  7 |   void import('@/reactotron.config');
+     |        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   8 | }
+   9 |
+  10 | AppRegistry.registerComponent(appName, () => App);
+    at ModuleResolver.resolveDependency (/Users/balajinagisetty/Documents/LinkLibraryAI/linklibrary_mobile/node_modules/metro/src/node-haste/DependencyGraph/ModuleResolution.js:114:15)
+    at DependencyGraph.resolveDependency (/Users/balajinagisetty/Documents/LinkLibraryAI/linklibrary_mobile/node_modules/metro/src/node-haste/DependencyGraph.js:239:43)
+    at /Users/balajinagisetty/Documents/LinkLibraryAI/linklibrary_mobile/node_modules/metro/src/lib/transformHelpers.js:161:21
+    at resolveDependencies (/Users/balajinagisetty/Documents/LinkLibraryAI/linklibrary_mobile/node_modules/metro/src/DeltaBundler/buildSubgraph.js:43:25)
+    at visit (/Users/balajinagisetty/Documents/LinkLibraryAI/linklibrary_mobile/node_modules/metro/src/DeltaBundler/buildSubgraph.js:81:30)
+    at async Promise.all (index 0)
+    at async buildSubgraph (/Users/balajinagisetty/Documents/LinkLibraryAI/linklibrary_mobile/node_modules/metro/src/DeltaBundler/buildSubgraph.js:105:3)
+    at async Graph._buildDelta (/Users/balajinagisetty/Documents/LinkLibraryAI/linklibrary_mobile/node_modules/metro/src/DeltaBundler/Graph.js:158:22)
+    at async Graph.initialTraverseDependencies (/Users/balajinagisetty/Documents/LinkLibraryAI/linklibrary_mobile/node_modules/metro/src/DeltaBundler/Graph.js:141:19)
+    at async DeltaCalculator._getChangedDependencies (/Users/balajinagisetty/Documents/LinkLibraryAI/linklibrary_mobile/node_modules/metro/src/DeltaBundler/DeltaCalculator.js:151:25)
+ BUNDLE  ../index.js ░░░░░░░░░░░░░░░░ 0.0% (0/1)
+ BUNDLE  ../index.js 
+ ERROR  Error: Unable to resolve module ./ios/src/reactotron.config from /Users/balajinagisetty/Documents/LinkLibraryAI/linklibrary_mobile/index.js: 
+
+None of these files exist:
+  * ios/src/reactotron.config(.ios.js|.native.js|.js|.ios.jsx|.native.jsx|.jsx|.ios.json|.native.json|.json|.ios.ts|.native.ts|.ts|.ios.tsx|.native.tsx|.tsx)
+  * ios/src/reactotron.config
+   5 |
+   6 | if (__DEV__) {
+>  7 |   void import('@/reactotron.config');
+     |        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   8 | }
+   9 |
+  10 | AppRegistry.registerComponent(appName, () => App);
+    at ModuleResolver.resolveDependency (/Users/balajinagisetty/Documents/LinkLibraryAI/linklibrary_mobile/node_modules/metro/src/node-haste/DependencyGraph/ModuleResolution.js:114:15)
+    at DependencyGraph.resolveDependency (/Users/balajinagisetty/Documents/LinkLibraryAI/linklibrary_mobile/node_modules/metro/src/node-haste/DependencyGraph.js:239:43)
+    at /Users/balajinagisetty/Documents/LinkLibraryAI/linklibrary_mobile/node_modules/metro/src/lib/transformHelpers.js:161:21
+    at resolveDependencies (/Users/balajinagisetty/Documents/LinkLibraryAI/linklibrary_mobile/node_modules/metro/src/DeltaBundler/buildSubgraph.js:43:25)
+    at visit (/Users/balajinagisetty/Documents/LinkLibraryAI/linklibrary_mobile/node_modules/metro/src/DeltaBundler/buildSubgraph.js:81:30)
+    at async Promise.all (index 0)
+    at async buildSubgraph (/Users/balajinagisetty/Documents/LinkLibraryAI/linklibrary_mobile/node_modules/metro/src/DeltaBundler/buildSubgraph.js:105:3)
+    at async Graph._buildDelta (/Users/balajinagisetty/Documents/LinkLibraryAI/linklibrary_mobile/node_modules/metro/src/DeltaBundler/Graph.js:158:22)
+    at async Graph.initialTraverseDependencies (/Users/balajinagisetty/Documents/LinkLibraryAI/linklibrary_mobile/node_modules/metro/src/DeltaBundler/Graph.js:141:19)
+    at async DeltaCalculator._getChangedDependencies (/Users/balajinagisetty/Documents/LinkLibraryAI/linklibrary_mobile/node_modules/metro/src/DeltaBundler/DeltaCalculator.js:151:25)
+ BUNDLE  ../index.js 
+ ERROR  Error: Unable to resolve module ./ios/src/reactotron.config from /Users/balajinagisetty/Documents/LinkLibraryAI/linklibrary_mobile/index.js: 
+
+None of these files exist:
+  * ios/src/reactotron.config(.ios.js|.native.js|.js|.ios.jsx|.native.jsx|.jsx|.ios.json|.native.json|.json|.ios.ts|.native.ts|.ts|.ios.tsx|.native.tsx|.tsx)
+  * ios/src/reactotron.config
+   5 |
+   6 | if (__DEV__) {
+>  7 |   void import('@/reactotron.config');
+     |        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   8 | }
+   9 |
+  10 | AppRegistry.registerComponent(appName, () => App);
+    at ModuleResolver.resolveDependency (/Users/balajinagisetty/Documents/LinkLibraryAI/linklibrary_mobile/node_modules/metro/src/node-haste/DependencyGraph/ModuleResolution.js:114:15)
+    at DependencyGraph.resolveDependency (/Users/balajinagisetty/Documents/LinkLibraryAI/linklibrary_mobile/node_modules/metro/src/node-haste/DependencyGraph.js:239:43)
+    at /Users/balajinagisetty/Documents/LinkLibraryAI/linklibrary_mobile/node_modules/metro/src/lib/transformHelpers.js:161:21
+    at resolveDependencies (/Users/balajinagisetty/Documents/LinkLibraryAI/linklibrary_mobile/node_modules/metro/src/DeltaBundler/buildSubgraph.js:43:25)
+    at visit (/Users/balajinagisetty/Documents/LinkLibraryAI/linklibrary_mobile/node_modules/metro/src/DeltaBundler/buildSubgraph.js:81:30)
+    at async Promise.all (index 0)
+    at async buildSubgraph (/Users/balajinagisetty/Documents/LinkLibraryAI/linklibrary_mobile/node_modules/metro/src/DeltaBundler/buildSubgraph.js:105:3)
+    at async Graph._buildDelta (/Users/balajinagisetty/Documents/LinkLibraryAI/linklibrary_mobile/node_modules/metro/src/DeltaBundler/Graph.js:158:22)
+    at async Graph.initialTraverseDependencies (/Users/balajinagisetty/Documents/LinkLibraryAI/linklibrary_mobile/node_modules/metro/src/DeltaBundler/Graph.js:141:19)
+    at async DeltaCalculator._getChangedDependencies (/Users/balajinagisetty/Documents/LinkLibraryAI/linklibrary_mobile/node_modules/metro/src/DeltaBundler/DeltaCalculator.js:151:25)
+ BUNDLE  ../index.js ░░░░░░░░░░░░░░░░ 0.0% (0/1)
+ BUNDLE  ../index.js 
+ ERROR  Error: Unable to resolve module ./ios/src/reactotron.config from /Users/balajinagisetty/Documents/LinkLibraryAI/linklibrary_mobile/index.js: 
+
+None of these files exist:
+  * ios/src/reactotron.config(.ios.js|.native.js|.js|.ios.jsx|.native.jsx|.jsx|.ios.json|.native.json|.json|.ios.ts|.native.ts|.ts|.ios.tsx|.native.tsx|.tsx)
+  * ios/src/reactotron.config
+   5 |
+   6 | if (__DEV__) {
+>  7 |   void import('@/reactotron.config');
+     |        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   8 | }
+   9 |
+  10 | AppRegistry.registerComponent(appName, () => App);
+    at ModuleResolver.resolveDependency (/Users/balajinagisetty/Documents/LinkLibraryAI/linklibrary_mobile/node_modules/metro/src/node-haste/DependencyGraph/ModuleResolution.js:114:15)
+    at DependencyGraph.resolveDependency (/Users/balajinagisetty/Documents/LinkLibraryAI/linklibrary_mobile/node_modules/metro/src/node-haste/DependencyGraph.js:239:43)
+    at /Users/balajinagisetty/Documents/LinkLibraryAI/linklibrary_mobile/node_modules/metro/src/lib/transformHelpers.js:161:21
+    at resolveDependencies (/Users/balajinagisetty/Documents/LinkLibraryAI/linklibrary_mobile/node_modules/metro/src/DeltaBundler/buildSubgraph.js:43:25)
+    at visit (/Users/balajinagisetty/Documents/LinkLibraryAI/linklibrary_mobile/node_modules/metro/src/DeltaBundler/buildSubgraph.js:81:30)
+    at async Promise.all (index 0)
+    at async buildSubgraph (/Users/balajinagisetty/Documents/LinkLibraryAI/linklibrary_mobile/node_modules/metro/src/DeltaBundler/buildSubgraph.js:105:3)
+    at async Graph._buildDelta (/Users/balajinagisetty/Documents/LinkLibraryAI/linklibrary_mobile/node_modules/metro/src/DeltaBundler/Graph.js:158:22)
+    at async Graph.initialTraverseDependencies (/Users/balajinagisetty/Documents/LinkLibraryAI/linklibrary_mobile/node_modules/metro/src/DeltaBundler/Graph.js:141:19)
+    at async DeltaCalculator._getChangedDependencies (/Users/balajinagisetty/Documents/LinkLibraryAI/linklibrary_mobile/node_modules/metro/src/DeltaBundler/DeltaCalculator.js:151:25)
+ BUNDLE  ../index.js ░░░░░░░░░░░░░░░░ 0.0% (0/1)
+ BUNDLE  ../index.js 
+ ERROR  Error: Unable to resolve module ./ios/src/reactotron.config from /Users/balajinagisetty/Documents/LinkLibraryAI/linklibrary_mobile/index.js: 
+
+None of these files exist:
+  * ios/src/reactotron.config(.ios.js|.native.js|.js|.ios.jsx|.native.jsx|.jsx|.ios.json|.native.json|.json|.ios.ts|.native.ts|.ts|.ios.tsx|.native.tsx|.tsx)
+  * ios/src/reactotron.config
+   5 |
+   6 | if (__DEV__) {
+>  7 |   void import('@/reactotron.config');
+     |        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   8 | }
+   9 |
+  10 | AppRegistry.registerComponent(appName, () => App);
+    at ModuleResolver.resolveDependency (/Users/balajinagisetty/Documents/LinkLibraryAI/linklibrary_mobile/node_modules/metro/src/node-haste/DependencyGraph/ModuleResolution.js:114:15)
+    at DependencyGraph.resolveDependency (/Users/balajinagisetty/Documents/LinkLibraryAI/linklibrary_mobile/node_modules/metro/src/node-haste/DependencyGraph.js:239:43)
+    at /Users/balajinagisetty/Documents/LinkLibraryAI/linklibrary_mobile/node_modules/metro/src/lib/transformHelpers.js:161:21
+    at resolveDependencies (/Users/balajinagisetty/Documents/LinkLibraryAI/linklibrary_mobile/node_modules/metro/src/DeltaBundler/buildSubgraph.js:43:25)
+    at visit (/Users/balajinagisetty/Documents/LinkLibraryAI/linklibrary_mobile/node_modules/metro/src/DeltaBundler/buildSubgraph.js:81:30)
+    at async Promise.all (index 0)
+    at async buildSubgraph (/Users/balajinagisetty/Documents/LinkLibraryAI/linklibrary_mobile/node_modules/metro/src/DeltaBundler/buildSubgraph.js:105:3)
+    at async Graph._buildDelta (/Users/balajinagisetty/Documents/LinkLibraryAI/linklibrary_mobile/node_modules/metro/src/DeltaBundler/Graph.js:158:22)
+    at async Graph.initialTraverseDependencies (/Users/balajinagisetty/Documents/LinkLibraryAI/linklibrary_mobile/node_modules/metro/src/DeltaBundler/Graph.js:141:19)
+    at async DeltaCalculator._getChangedDependencies (/Users/balajinagisetty/Documents/LinkLibraryAI/linklibrary_mobile/node_modules/metro/src/DeltaBundler/DeltaCalculator.js:151:25)
+ BUNDLE  ../index.js ░░░░░░░░░░░░░░░░ 0.0% (0/1)
+ BUNDLE  ../index.js 
+ ERROR  Error: Unable to resolve module ./ios/src/reactotron.config from /Users/balajinagisetty/Documents/LinkLibraryAI/linklibrary_mobile/index.js: 
+
+None of these files exist:
+  * ios/src/reactotron.config(.ios.js|.native.js|.js|.ios.jsx|.native.jsx|.jsx|.ios.json|.native.json|.json|.ios.ts|.native.ts|.ts|.ios.tsx|.native.tsx|.tsx)
+  * ios/src/reactotron.config
+   5 |
+   6 | if (__DEV__) {
+>  7 |   void import('@/reactotron.config');
+     |        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   8 | }
+   9 |
+  10 | AppRegistry.registerComponent(appName, () => App);
+    at ModuleResolver.resolveDependency (/Users/balajinagisetty/Documents/LinkLibraryAI/linklibrary_mobile/node_modules/metro/src/node-haste/DependencyGraph/ModuleResolution.js:114:15)
+    at DependencyGraph.resolveDependency (/Users/balajinagisetty/Documents/LinkLibraryAI/linklibrary_mobile/node_modules/metro/src/node-haste/DependencyGraph.js:239:43)
+    at /Users/balajinagisetty/Documents/LinkLibraryAI/linklibrary_mobile/node_modules/metro/src/lib/transformHelpers.js:161:21
+    at resolveDependencies (/Users/balajinagisetty/Documents/LinkLibraryAI/linklibrary_mobile/node_modules/metro/src/DeltaBundler/buildSubgraph.js:43:25)
+    at visit (/Users/balajinagisetty/Documents/LinkLibraryAI/linklibrary_mobile/node_modules/metro/src/DeltaBundler/buildSubgraph.js:81:30)
+    at async Promise.all (index 0)
+    at async buildSubgraph (/Users/balajinagisetty/Documents/LinkLibraryAI/linklibrary_mobile/node_modules/metro/src/DeltaBundler/buildSubgraph.js:105:3)
+    at async Graph._buildDelta (/Users/balajinagisetty/Documents/LinkLibraryAI/linklibrary_mobile/node_modules/metro/src/DeltaBundler/Graph.js:158:22)
+    at async Graph.initialTraverseDependencies (/Users/balajinagisetty/Documents/LinkLibraryAI/linklibrary_mobile/node_modules/metro/src/DeltaBundler/Graph.js:141:19)
+    at async DeltaCalculator._getChangedDependencies (/Users/balajinagisetty/Documents/LinkLibraryAI/linklibrary_mobile/node_modules/metro/src/DeltaBundler/DeltaCalculator.js:151:25)
+ BUNDLE  ../index.js ░░░░░░░░░░░░░░░░ 0.0% (0/1)
+ BUNDLE  ../index.js 
+ ERROR  Error: Unable to resolve module ./ios/src/reactotron.config from /Users/balajinagisetty/Documents/LinkLibraryAI/linklibrary_mobile/index.js: 
+
+None of these files exist:
+  * ios/src/reactotron.config(.ios.js|.native.js|.js|.ios.jsx|.native.jsx|.jsx|.ios.json|.native.json|.json|.ios.ts|.native.ts|.ts|.ios.tsx|.native.tsx|.tsx)
+  * ios/src/reactotron.config
+   5 |
+   6 | if (__DEV__) {
+>  7 |   void import('@/reactotron.config');
+     |        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   8 | }
+   9 |
+  10 | AppRegistry.registerComponent(appName, () => App);
+    at ModuleResolver.resolveDependency (/Users/balajinagisetty/Documents/LinkLibraryAI/linklibrary_mobile/node_modules/metro/src/node-haste/DependencyGraph/ModuleResolution.js:114:15)
+    at DependencyGraph.resolveDependency (/Users/balajinagisetty/Documents/LinkLibraryAI/linklibrary_mobile/node_modules/metro/src/node-haste/DependencyGraph.js:239:43)
+    at /Users/balajinagisetty/Documents/LinkLibraryAI/linklibrary_mobile/node_modules/metro/src/lib/transformHelpers.js:161:21
+    at resolveDependencies (/Users/balajinagisetty/Documents/LinkLibraryAI/linklibrary_mobile/node_modules/metro/src/DeltaBundler/buildSubgraph.js:43:25)
+    at visit (/Users/balajinagisetty/Documents/LinkLibraryAI/linklibrary_mobile/node_modules/metro/src/DeltaBundler/buildSubgraph.js:81:30)
+    at async Promise.all (index 0)
+    at async buildSubgraph (/Users/balajinagisetty/Documents/LinkLibraryAI/linklibrary_mobile/node_modules/metro/src/DeltaBundler/buildSubgraph.js:105:3)
+    at async Graph._buildDelta (/Users/balajinagisetty/Documents/LinkLibraryAI/linklibrary_mobile/node_modules/metro/src/DeltaBundler/Graph.js:158:22)
+    at async Graph.initialTraverseDependencies (/Users/balajinagisetty/Documents/LinkLibraryAI/linklibrary_mobile/node_modules/metro/src/DeltaBundler/Graph.js:141:19)
+    at async DeltaCalculator._getChangedDependencies (/Users/balajinagisetty/Documents/LinkLibraryAI/linklibrary_mobile/node_modules/metro/src/DeltaBundler/DeltaCalculator.js:151:25)

@@ -14,9 +14,12 @@ import ApplicationNavigator from '@/navigation/Application';
 import { ThemeProvider } from '@/theme';
 import { setupErrorHandling } from '@/utils/errorHandler';
 import { initializeI18n } from '@/translations';
-import ShareReceiver from '@/share/ShareReceiver';
+// import ShareReceiver from '@/share/ShareReceiver'; // Using iOS share extension instead
 import { navigationRef, Paths } from '@/navigation/paths';
 import { useAuthStore } from '@/hooks/domain/user/useAuthStore';
+import { NativeModules, AppState, Linking } from 'react-native';
+
+const { AppGroupsModule } = NativeModules;
 
 // Enable Reanimated layout animations
 import { UIManager } from 'react-native';
@@ -86,6 +89,39 @@ function App() {
     navigateToAddScreen(url);
   };
 
+  // Check for shared content from iOS share extension
+  const checkForSharedContent = async () => {
+    try {
+      if (!AppGroupsModule) {
+        console.log('📤 AppGroupsModule not available');
+        return;
+      }
+
+      const sharedData = await AppGroupsModule.getSharedContent();
+      if (sharedData) {
+        console.log('📤 Found shared data from iOS share extension:', sharedData);
+        
+        let url = '';
+        if (sharedData.type === 'url') {
+          url = sharedData.data;
+        } else if (sharedData.type === 'text') {
+          // Try to extract URL from text
+          const urlMatch = sharedData.data.match(/https?:\/\/[^\s]+/);
+          if (urlMatch) {
+            url = urlMatch[0];
+          }
+        }
+        
+        if (url) {
+          console.log('📤 Extracted URL from shared content:', url);
+          handleSharedUrl(url);
+        }
+      }
+    } catch (error) {
+      console.error('📤 Error checking for shared content:', error);
+    }
+  };
+
   const navigateToAddScreen = (url: string) => {
     console.log('📤 Attempting to navigate to Add screen with URL:', url);
     
@@ -144,6 +180,52 @@ function App() {
     return unsubscribe;
   }, []);
 
+  // Monitor app state changes and check for shared content
+  useEffect(() => {
+    const handleAppStateChange = (nextAppState: string) => {
+      console.log('📤 App state changed to:', nextAppState);
+      if (nextAppState === 'active') {
+        // Check for shared content when app becomes active
+        setTimeout(() => {
+          checkForSharedContent();
+        }, 300);
+      }
+    };
+
+    // Check for shared content on app launch
+    checkForSharedContent();
+
+    const appStateSubscription = AppState.addEventListener('change', handleAppStateChange);
+    return () => appStateSubscription?.remove();
+  }, []);
+
+  // Handle deep link URL scheme
+  useEffect(() => {
+    const handleDeepLink = (url: string) => {
+      console.log('📤 Received deep link:', url);
+      if (url.startsWith('linklibrarymobile://')) {
+        // Check for shared content when deep link is received
+        setTimeout(() => {
+          checkForSharedContent();
+        }, 100);
+      }
+    };
+
+    // Handle initial URL (when app is launched from deep link)
+    Linking.getInitialURL().then(url => {
+      if (url) {
+        handleDeepLink(url);
+      }
+    });
+
+    // Handle URLs when app is already running
+    const linkingSubscription = Linking.addEventListener('url', ({ url }) => {
+      handleDeepLink(url);
+    });
+
+    return () => linkingSubscription?.remove();
+  }, []);
+
   if (!isI18nInitialized) {
     return (
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
@@ -158,7 +240,7 @@ function App() {
         <GestureHandlerRootView style={{ flex: 1 }}>
           <QueryClientProvider client={queryClient}>
             <ThemeProvider>
-              <ShareReceiver onUrl={handleSharedUrl} />
+              {/* <ShareReceiver onUrl={handleSharedUrl} /> */}
               <ApplicationNavigator />
               <Toast />
             </ThemeProvider>

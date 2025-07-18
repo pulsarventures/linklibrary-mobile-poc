@@ -3,14 +3,16 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 70;
+	objectVersion = 60;
 	objects = {
 
 /* Begin PBXBuildFile section */
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
 		81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
-		B2EBA0A22E1C022D009E9B2E /* ShareExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = B2EBA0982E1C022D009E9B2E /* ShareExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
-		E6A284FF78BF467CBB873C9D /* libPods-linklibrary_mobile.a in Frameworks */ = {isa = PBXBuildFile; fileRef = C8DD1A582B79948189FF2547 /* libPods-linklibrary_mobile.a */; };
+		B23823962E2A671F00C17D8B /* AppGroupsModule.swift in Sources */ = {isa = PBXBuildFile; fileRef = B23823952E2A671F00C17D8B /* AppGroupsModule.swift */; };
+		B23823972E2A671F00C17D8B /* AppGroupsModule.m in Sources */ = {isa = PBXBuildFile; fileRef = B23823942E2A671F00C17D8B /* AppGroupsModule.m */; };
+		B238239B2E2A6F6000C17D8B /* ShareExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = B2EBA0982E1C022D009E9B2E /* ShareExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		B23823A22E2A6F7200C17D8B /* libPods-linklibrary_mobile.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B23823A12E2A6F7200C17D8B /* libPods-linklibrary_mobile.a */; };
 		F571B3882BD7A3F80014213C /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = F571B3872BD7A3F80014213C /* PrivacyInfo.xcprivacy */; };
 		F5DC7AB12D9D8A92004DB744 /* AppDelegade.swift in Sources */ = {isa = PBXBuildFile; fileRef = F5DC7AB02D9D8A92004DB744 /* AppDelegade.swift */; };
 /* End PBXBuildFile section */
@@ -23,7 +25,14 @@
 			remoteGlobalIDString = 13B07F861A680F5B00A75B9A;
 			remoteInfo = linklibrary_mobile;
 		};
-		B2EBA0A02E1C022D009E9B2E /* PBXContainerItemProxy */ = {
+		B238239C2E2A6F6000C17D8B /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 83CBB9F71A601CBA00E9B192 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = B2EBA0972E1C022D009E9B2E;
+			remoteInfo = ShareExtension;
+		};
+		B238239F2E2A6F6600C17D8B /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 83CBB9F71A601CBA00E9B192 /* Project object */;
 			proxyType = 1;
@@ -33,13 +42,13 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
-		B2EBA07C2E1AD1EE009E9B2E /* Embed Foundation Extensions */ = {
+		B238239E2E2A6F6000C17D8B /* Embed Foundation Extensions */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
 			dstPath = "";
 			dstSubfolderSpec = 13;
 			files = (
-				B2EBA0A22E1C022D009E9B2E /* ShareExtension.appex in Embed Foundation Extensions */,
+				B238239B2E2A6F6000C17D8B /* ShareExtension.appex in Embed Foundation Extensions */,
 			);
 			name = "Embed Foundation Extensions";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -53,6 +62,10 @@
 		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = linklibrary_mobile/Info.plist; sourceTree = "<group>"; };
 		5EAC4DCC832357E078426E45 /* Pods-linklibrary_mobile.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-linklibrary_mobile.release.xcconfig"; path = "Target Support Files/Pods-linklibrary_mobile/Pods-linklibrary_mobile.release.xcconfig"; sourceTree = "<group>"; };
 		81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = linklibrary_mobile/LaunchScreen.storyboard; sourceTree = "<group>"; };
+		B23823942E2A671F00C17D8B /* AppGroupsModule.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppGroupsModule.m; sourceTree = "<group>"; };
+		B23823952E2A671F00C17D8B /* AppGroupsModule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppGroupsModule.swift; sourceTree = "<group>"; };
+		B23823992E2A6F2B00C17D8B /* libPods-linklibrary_mobile.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = "libPods-linklibrary_mobile.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		B23823A12E2A6F7200C17D8B /* libPods-linklibrary_mobile.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = "libPods-linklibrary_mobile.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		B2EBA0982E1C022D009E9B2E /* ShareExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = ShareExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		B2EBA0A72E1C028C009E9B2E /* linklibrary_mobile.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; name = linklibrary_mobile.entitlements; path = linklibrary_mobile/linklibrary_mobile.entitlements; sourceTree = "<group>"; };
 		BFC7F502A3964DDA421F4246 /* Pods-linklibrary_mobile.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-linklibrary_mobile.debug.xcconfig"; path = "Target Support Files/Pods-linklibrary_mobile/Pods-linklibrary_mobile.debug.xcconfig"; sourceTree = "<group>"; };
@@ -64,7 +77,7 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		B2EBA0A32E1C022D009E9B2E /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
+		B2EBA0A32E1C022D009E9B2E /* Exceptions for "ShareExtension" folder in "ShareExtension" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
@@ -74,7 +87,18 @@
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		B2EBA0992E1C022D009E9B2E /* ShareExtension */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (B2EBA0A32E1C022D009E9B2E /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = ShareExtension; sourceTree = "<group>"; };
+		B2EBA0992E1C022D009E9B2E /* ShareExtension */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				B2EBA0A32E1C022D009E9B2E /* Exceptions for "ShareExtension" folder in "ShareExtension" target */,
+			);
+			explicitFileTypes = {
+			};
+			explicitFolders = (
+			);
+			path = ShareExtension;
+			sourceTree = "<group>";
+		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -89,7 +113,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				E6A284FF78BF467CBB873C9D /* libPods-linklibrary_mobile.a in Frameworks */,
+				B23823A22E2A6F7200C17D8B /* libPods-linklibrary_mobile.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -106,6 +130,8 @@
 		13B07FAE1A68108700A75B9A /* linklibrary_mobile */ = {
 			isa = PBXGroup;
 			children = (
+				B23823942E2A671F00C17D8B /* AppGroupsModule.m */,
+				B23823952E2A671F00C17D8B /* AppGroupsModule.swift */,
 				B2EBA0A72E1C028C009E9B2E /* linklibrary_mobile.entitlements */,
 				F5DC7AB02D9D8A92004DB744 /* AppDelegade.swift */,
 				F571B3872BD7A3F80014213C /* PrivacyInfo.xcprivacy */,
@@ -120,6 +146,8 @@
 		2D16E6871FA4F8E400B85C8A /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				B23823A12E2A6F7200C17D8B /* libPods-linklibrary_mobile.a */,
+				B23823992E2A6F2B00C17D8B /* libPods-linklibrary_mobile.a */,
 				ED297162215061F000B7C4FE /* JavaScriptCore.framework */,
 				C8DD1A582B79948189FF2547 /* libPods-linklibrary_mobile.a */,
 			);
@@ -200,14 +228,15 @@
 				13B07F8C1A680F5B00A75B9A /* Frameworks */,
 				13B07F8E1A680F5B00A75B9A /* Resources */,
 				00DD1BFF1BD5951E006B06BC /* Bundle React Native code and images */,
-				B2EBA07C2E1AD1EE009E9B2E /* Embed Foundation Extensions */,
 				0E2CE418CBD6570AA71C93FA /* [CP] Embed Pods Frameworks */,
 				D4FF36D8B9C0E38D547A49BD /* [CP] Copy Pods Resources */,
+				B238239E2E2A6F6000C17D8B /* Embed Foundation Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
-				B2EBA0A12E1C022D009E9B2E /* PBXTargetDependency */,
+				B238239D2E2A6F6000C17D8B /* PBXTargetDependency */,
+				B23823A02E2A6F6600C17D8B /* PBXTargetDependency */,
 			);
 			name = linklibrary_mobile;
 			productName = linklibrary_mobile;
@@ -230,8 +259,6 @@
 				B2EBA0992E1C022D009E9B2E /* ShareExtension */,
 			);
 			name = ShareExtension;
-			packageProductDependencies = (
-			);
 			productName = ShareExtension;
 			productReference = B2EBA0982E1C022D009E9B2E /* ShareExtension.appex */;
 			productType = "com.apple.product-type.app-extension";
@@ -330,13 +357,9 @@
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-linklibrary_mobile/Pods-linklibrary_mobile-frameworks-${CONFIGURATION}-input-files.xcfilelist",
 			);
-			inputPaths = (
-			);
 			name = "[CP] Embed Pods Frameworks";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-linklibrary_mobile/Pods-linklibrary_mobile-frameworks-${CONFIGURATION}-output-files.xcfilelist",
-			);
-			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -407,13 +430,9 @@
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-linklibrary_mobile/Pods-linklibrary_mobile-resources-${CONFIGURATION}-input-files.xcfilelist",
 			);
-			inputPaths = (
-			);
 			name = "[CP] Copy Pods Resources";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-linklibrary_mobile/Pods-linklibrary_mobile-resources-${CONFIGURATION}-output-files.xcfilelist",
-			);
-			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -453,6 +472,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B23823962E2A671F00C17D8B /* AppGroupsModule.swift in Sources */,
+				B23823972E2A671F00C17D8B /* AppGroupsModule.m in Sources */,
 				F5DC7AB12D9D8A92004DB744 /* AppDelegade.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -472,10 +493,15 @@
 			target = 13B07F861A680F5B00A75B9A /* linklibrary_mobile */;
 			targetProxy = 00E356F41AD99517003FC87E /* PBXContainerItemProxy */;
 		};
-		B2EBA0A12E1C022D009E9B2E /* PBXTargetDependency */ = {
+		B238239D2E2A6F6000C17D8B /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = B2EBA0972E1C022D009E9B2E /* ShareExtension */;
-			targetProxy = B2EBA0A02E1C022D009E9B2E /* PBXContainerItemProxy */;
+			targetProxy = B238239C2E2A6F6000C17D8B /* PBXContainerItemProxy */;
+		};
+		B23823A02E2A6F6600C17D8B /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = B2EBA0972E1C022D009E9B2E /* ShareExtension */;
+			targetProxy = B238239F2E2A6F6600C17D8B /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -540,6 +566,8 @@
 				DEVELOPMENT_TEAM = 7836837UUW;
 				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = linklibrary_mobile/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = LinkLibraryAI;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -570,6 +598,8 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 7836837UUW;
 				INFOPLIST_FILE = linklibrary_mobile/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = LinkLibraryAI;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -764,6 +794,7 @@
 				CLANG_ENABLE_OBJC_WEAK = YES;
 				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
 				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CODE_SIGN_ENTITLEMENTS = ShareExtension/ShareExtension.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEBUG_INFORMATION_FORMAT = dwarf;
@@ -809,6 +840,7 @@
 				CLANG_ENABLE_OBJC_WEAK = YES;
 				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
 				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CODE_SIGN_ENTITLEMENTS = ShareExtension/ShareExtension.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = NO;
 				CURRENT_PROJECT_VERSION = 1;

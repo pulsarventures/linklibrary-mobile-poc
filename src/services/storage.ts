@@ -19,6 +19,14 @@ class StorageService {
     const accessTokenExpiry = now + tokenData.access_token_expires_in * 1000; // Convert to milliseconds
     const refreshTokenExpiry = now + tokenData.refresh_token_expires_in * 1000;
 
+    console.log('🔑 Storage: Storing tokens with expiry times:', {
+      now: new Date(now).toISOString(),
+      accessTokenExpiresIn: tokenData.access_token_expires_in, // seconds
+      accessTokenExpiry: new Date(accessTokenExpiry).toISOString(),
+      refreshTokenExpiresIn: tokenData.refresh_token_expires_in, // seconds
+      refreshTokenExpiry: new Date(refreshTokenExpiry).toISOString(),
+    });
+
     // Store both individual keys (for initializeAuth compatibility) and JSON object
     await Promise.all([
       // Individual keys for backward compatibility
@@ -45,24 +53,48 @@ class StorageService {
 
   async getRefreshToken(): Promise<string | null> {
     const tokenData = await this.getTokens();
-    return tokenData?.refresh_token || null;
+    const refreshToken = tokenData?.refresh_token || null;
+    console.log('🔑 Storage: getRefreshToken called, found token:', refreshToken ? refreshToken.substring(0, 20) + '...' : 'null');
+    return refreshToken;
   }
 
   async isAccessTokenValid(): Promise<boolean> {
     const expiryStr = await AsyncStorage.getItem(StorageService.ACCESS_TOKEN_EXPIRY);
-    if (!expiryStr) return false;
+    if (!expiryStr) {
+      console.log('🔑 Storage: No access token expiry found');
+      return false;
+    }
 
     const expiry = parseInt(expiryStr, 10);
+    const now = Date.now();
     const bufferTime = 5 * 60 * 1000; // 5 minutes buffer
-    return Date.now() + bufferTime < expiry;
+    const isValid = now + bufferTime < expiry;
+    
+    console.log('🔑 Storage: Access token valid check:', {
+      expiry: new Date(expiry).toISOString(),
+      now: new Date(now).toISOString(),
+      bufferTime: bufferTime / 1000 / 60, // in minutes
+      isValid
+    });
+    
+    return isValid;
   }
 
   async isRefreshTokenValid(): Promise<boolean> {
     const expiryStr = await AsyncStorage.getItem(StorageService.REFRESH_TOKEN_EXPIRY);
-    if (!expiryStr) return false;
+    if (!expiryStr) {
+      console.log('🔑 Storage: No refresh token expiry found');
+      return false;
+    }
 
     const expiry = parseInt(expiryStr, 10);
-    return Date.now() < expiry;
+    const isValid = Date.now() < expiry;
+    console.log('🔑 Storage: Refresh token valid check:', {
+      expiry: new Date(expiry).toISOString(),
+      now: new Date().toISOString(),
+      isValid
+    });
+    return isValid;
   }
 
   async clearTokens(): Promise<void> {

@@ -28,6 +28,14 @@
 				<string>com.googleusercontent.apps.YOUR-CLIENT-ID</string>
 			</array>
 		</dict>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>LinkLibraryShare</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>linklibrarymobile</string>
+			</array>
+		</dict>
 	</array>
 	<key>CFBundleVersion</key>
 	<string>$(CURRENT_PROJECT_VERSION)</string>
@@ -51,5 +59,6 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<false/>
+
 </dict>
 </plist>

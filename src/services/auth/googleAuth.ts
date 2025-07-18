@@ -1,6 +1,7 @@
 import { GoogleSignin, statusCodes, type User } from '@react-native-google-signin/google-signin';
 import { Platform } from 'react-native';
 import { GOOGLE_CLIENT_ID } from '@env';
+import { safeErrorLog } from '@/utils/errorHandler';
 
 // Initialize Google Sign-In
 console.log('Configuring Google Sign-In with webClientId:', GOOGLE_CLIENT_ID);
@@ -72,12 +73,9 @@ export async function signInWithGoogle(): Promise<GoogleSignInResult> {
     };
     
   } catch (error: unknown) {
-    console.error('Google Sign-In failed with error:', error);
+    safeErrorLog('Google Sign-In failed', error);
     
     if (error instanceof Error) {
-      console.error('Error message:', error.message);
-      console.error('Error stack:', error.stack);
-      
       if ('code' in error) {
         const code = (error as any).code;
         console.error('Error code:', code);
@@ -137,7 +135,7 @@ export async function getCurrentUser(): Promise<User | null> {
     const currentUser = await GoogleSignin.getCurrentUser();
     return currentUser;
   } catch (error) {
-    console.error('Get current user error:', error);
+    safeErrorLog('Get current user error', error);
     return null;
   }
 }
@@ -146,7 +144,7 @@ export async function hasPreviousSignIn(): Promise<boolean> {
   try {
     return await GoogleSignin.hasPreviousSignIn();
   } catch (error) {
-    console.error('Check sign in status error:', error);
+    safeErrorLog('Check sign in status error', error);
     return false;
   }
 } 

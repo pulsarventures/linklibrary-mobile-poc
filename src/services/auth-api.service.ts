@@ -21,7 +21,15 @@ class AuthApiService {
   }
 
   public async login(data: LoginRequest): Promise<AuthResponse> {
-    return apiClient.post<AuthResponse>(API_ENDPOINTS.auth.login, data);
+    // Create form data for OAuth2 login endpoint
+    const formData = new URLSearchParams();
+    formData.append('username', data.username);
+    formData.append('password', data.password);
+    formData.append('grant_type', 'password');
+    formData.append('client_id', 'string');
+    formData.append('client_secret', 'string');
+
+    return apiClient.postForm<AuthResponse>(API_ENDPOINTS.auth.login, formData.toString());
   }
 
   public async register(data: RegisterRequest): Promise<AuthResponse> {

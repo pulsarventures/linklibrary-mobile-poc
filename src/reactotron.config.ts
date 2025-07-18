@@ -4,7 +4,9 @@ import Reactotron from 'reactotron-react-native';
 import mmkvPlugin from 'reactotron-react-native-mmkv';
 
 import config from '../app.json';
-import { storage } from './App';
+import { createSecureStorage } from './utils/security';
+
+const storage = createSecureStorage();
 
 Reactotron.configure({
   name: config.name,

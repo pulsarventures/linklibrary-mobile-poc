@@ -15,6 +15,14 @@ export interface LoginRequest {
   password: string;
 }
 
+export interface OAuth2LoginFormData {
+  username: string;
+  password: string;
+  grant_type: 'password';
+  client_id: string;
+  client_secret: string;
+}
+
 export interface RegisterRequest {
   full_name: string;
   email: string;

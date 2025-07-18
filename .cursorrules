@@ -1,0 +1,164 @@
+# Cursor Rules for LinkLibrary Mobile
+
+## Project Overview
+React Native mobile app for link management with TypeScript, Zustand state management, TanStack Query for server state, and modern authentication patterns.
+
+## Code Style & Standards
+
+### TypeScript
+- Use strict TypeScript with proper type definitions
+- Prefer interfaces over types for object shapes
+- Use type unions for variant props (e.g., `type ButtonVariant = 'primary' | 'secondary'`)
+- Always type function parameters and return values
+- Use generics for reusable API functions
+
+### React Native & React Patterns
+- Use functional components with hooks exclusively
+- Prefer const assertions for StyleSheet objects
+- Use TouchableOpacity with proper activeOpacity values (0.8 for interactive, 1 for disabled)
+- Implement proper loading and error states in all components
+- Use React.memo for performance optimization when needed
+
+### File Organization
+- Use absolute imports with `@/` prefix (configured in babel.config.js)
+- Follow atomic design: atoms → molecules → organisms → templates
+- Group related files in domain folders under `src/hooks/domain/`
+- Keep API types separate from component types
+- One component per file with matching filename
+
+### Naming Conventions
+- PascalCase for components and types/interfaces
+- camelCase for functions, variables, and object properties
+- kebab-case for file names (except components which use PascalCase)
+- Use descriptive names that indicate purpose: `useAuthStore`, `LoginScreen`, `apiClient`
+
+## Architecture Patterns
+
+### State Management
+- Use Zustand stores for domain-specific state management
+- Follow the established store pattern:
+  ```typescript
+  interface StoreState {
+    // data
+    items: Item[];
+    isLoading: boolean;
+    error: string | null;
+    
+    // actions
+    fetchItems: () => Promise<void>;
+    createItem: (data: CreateItemRequest) => Promise<void>;
+    updateItem: (id: string, data: UpdateItemRequest) => Promise<void>;
+    deleteItem: (id: string) => Promise<void>;
+    
+    // utilities
+    clearError: () => void;
+    resetStore: () => void;
+  }
+  ```
+- Use TanStack Query for all server state - never duplicate in Zustand
+- Implement proper error handling with try/catch and error state updates
+- Use Zustand persist middleware for data that should survive app restarts
+
+### API Integration
+- Use the singleton `apiClient` for all HTTP requests
+- Implement proper token refresh logic in interceptors
+- Use domain-specific API service files (e.g., `auth-api.service.ts`)
+- Handle loading states and errors consistently across all API calls
+- Use TypeScript interfaces for all API request/response types
+
+### Navigation
+- Use typed navigation with proper TypeScript definitions in `navigation/types.ts`
+- Screen components should be in `src/screens/` with PascalCase naming
+- Use `navigationRef` for programmatic navigation from outside components
+- Implement proper screen options (headerShown, animation, etc.)
+
+### Component Development
+- Follow atomic design principles
+- Use the established theming system from `@/theme`
+- Implement proper accessibility features (accessibilityLabel, accessibilityRole)
+- Use StyleSheet.create for styles, prefer object over inline styles
+- Handle platform differences when necessary using Platform.select
+
+### Authentication & Security
+- Use secure storage (Keychain/encrypted preferences) for tokens
+- Implement proper token refresh logic with retry mechanisms
+- Never log sensitive information (mask tokens in logs)
+- Handle authentication state consistently across the app
+- Use proper TypeScript types for user and auth-related data
+
+## Development Guidelines
+
+### Error Handling
+- Always implement try/catch blocks for async operations
+- Use meaningful error messages for user feedback
+- Log errors with context for debugging: `console.error('Context:', error)`
+- Handle network failures gracefully with retry logic
+
+### Performance
+- Use React.memo for expensive components
+- Implement proper FlatList optimization for large lists
+- Use TanStack Query caching strategies effectively
+- Avoid unnecessary re-renders with proper dependency arrays
+
+### Testing
+- Write unit tests for utility functions and hooks
+- Use React Native Testing Library for component tests
+- Mock external dependencies properly
+- Follow the existing test patterns in the codebase
+
+### Code Quality
+- Run linting before commits: `yarn lint`
+- Use Prettier for consistent formatting
+- Follow existing patterns and conventions
+- Write self-documenting code with clear variable names
+
+## Common Patterns to Follow
+
+### API Service Pattern
+```typescript
+class SomeApiService {
+  async create(data: CreateRequest): Promise<SomeResponse> {
+    return apiClient.post<SomeResponse>('/endpoint', data);
+  }
+  
+  async getAll(params?: QueryParams): Promise<SomeResponse[]> {
+    return apiClient.get<SomeResponse[]>('/endpoint', params);
+  }
+}
+
+export const someApiService = new SomeApiService();
+```
+
+### Hook Pattern for API Integration
+```typescript
+export function useSomeData() {
+  return useQuery({
+    queryKey: ['someData'],
+    queryFn: () => someApiService.getAll(),
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
+}
+```
+
+### Component with Loading States
+```typescript
+export function SomeComponent() {
+  const { data, isLoading, error } = useSomeData();
+  
+  if (isLoading) return <LoadingSpinner />;
+  if (error) return <ErrorMessage error={error} />;
+  
+  return <SomeContent data={data} />;
+}
+```
+
+## Don'ts
+- Don't use any or unknown types - always provide proper types
+- Don't duplicate server state in Zustand stores - use TanStack Query
+- Don't use inline styles for complex styling
+- Don't ignore TypeScript errors or use ts-ignore
+- Don't commit console.log statements for debugging
+- Don't hardcode strings - use proper constants or translations
+- Don't forget to handle loading and error states
+- Don't use class components - use functional components with hooks
+- Don't access AsyncStorage directly - use the storage service

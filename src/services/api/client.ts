@@ -77,12 +77,16 @@ class ApiClient {
     try {
       const refreshToken = await storageService.getRefreshToken();
       if (!refreshToken) {
-        throw new Error('No refresh token available');
+        throw new Error('Refresh token is required');
       }
 
+      console.log('🔑 Attempting token refresh...');
+      
       // Import authApiService dynamically to avoid circular imports
       const { authApiService } = await import('../auth-api.service');
       const response = await authApiService.refreshToken(refreshToken);
+      
+      console.log('🔑 Token refresh successful, storing new tokens');
       
       // Store new tokens
       await storageService.storeTokens({
@@ -97,6 +101,7 @@ class ApiClient {
       this.processQueue();
       return response;
     } catch (error) {
+      console.log('🔑 Token refresh failed:', error);
       this.processQueue(error);
       throw error;
     } finally {
@@ -114,15 +119,31 @@ class ApiClient {
     }
 
     if (!response.ok) {
-      console.error('API Error:', {
-        status: response.status,
-        statusText: response.statusText,
-        data,
-        url: response.url,
-      });
+      // Only log as error if it's not a 401 (auth errors are expected during app initialization)
+      if (response.status === 401) {
+        console.log('API Auth Error (expected during initialization):', {
+          status: response.status,
+          statusText: response.statusText,
+          message: data?.detail || data?.message || 'Unauthorized',
+          url: response.url,
+        });
+      } else {
+        console.error('API Error:', {
+          status: response.status,
+          statusText: response.statusText,
+          data,
+          url: response.url,
+        });
+      }
 
       if (response.status === 401 && !retryAttempt) {
-        // Check if refresh token is still valid
+        // Check if refresh token exists and is valid
+        const refreshToken = await storageService.getRefreshToken();
+        if (!refreshToken) {
+          await storageService.clearTokens();
+          throw new Error('Session expired. Please log in again.');
+        }
+
         const isRefreshTokenValid = await storageService.isRefreshTokenValid();
         if (!isRefreshTokenValid) {
           await storageService.clearTokens();
@@ -140,6 +161,7 @@ class ApiClient {
           const retryResponse = await fetch(response.url, requestConfig);
           return this.handleResponse<T>(retryResponse, true);
         } catch (error) {
+          console.log('🔑 Token refresh failed:', error);
           // Only clear tokens if refresh fails
           await storageService.clearTokens();
           throw new Error('Authentication required. Please log in.');
@@ -234,13 +256,35 @@ class ApiClient {
       'Content-Type': 'application/x-www-form-urlencoded',
     });
 
-    const response = await fetch(`${this.baseUrl}${endpoint}`, {
+    console.log('📡 Making form API request:', {
       method: 'POST',
-      headers,
-      body: formData,
+      url: `${this.baseUrl}${endpoint}`,
+      headers: Object.fromEntries(headers.entries()),
+      formData
     });
 
-    return this.handleResponse<T>(response);
+    try {
+      const response = await fetch(`${this.baseUrl}${endpoint}`, {
+        method: 'POST',
+        headers,
+        body: formData,
+      });
+
+      console.log('📥 Form API response:', {
+        status: response.status,
+        statusText: response.statusText,
+        headers: Object.fromEntries(response.headers.entries())
+      });
+
+      return this.handleResponse<T>(response);
+    } catch (error) {
+      console.error('🚨 Form API request failed:', {
+        message: error instanceof Error ? error.message : 'Unknown error',
+        name: error instanceof Error ? error.name : 'Unknown',
+        ...(error instanceof Error && error.stack ? { stack: error.stack } : {})
+      });
+      throw error;
+    }
   }
 }
 

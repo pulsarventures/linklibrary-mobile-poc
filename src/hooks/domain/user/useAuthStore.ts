@@ -37,19 +37,17 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     try {
       set({ isLoading: true });
       
-      // Get all auth tokens
-      const [accessToken, refreshToken, tokenType, expiresAt] = await Promise.all([
-        AsyncStorage.getItem('access_token'),
-        AsyncStorage.getItem('refresh_token'),
-        AsyncStorage.getItem('token_type'),
-        AsyncStorage.getItem('token_expires_at'),
-      ]);
+      // Use storageService to get tokens and check validity
+      const accessToken = await storageService.getAccessToken();
+      const refreshToken = await storageService.getRefreshToken();
+      const isAccessTokenValid = await storageService.isAccessTokenValid();
+      const isRefreshTokenValid = await storageService.isRefreshTokenValid();
 
       console.log('🔍 INIT AUTH - Tokens found:', {
         hasAccessToken: !!accessToken,
         hasRefreshToken: !!refreshToken,
-        tokenType,
-        expiresAt: expiresAt ? new Date(parseInt(expiresAt)).toISOString() : null
+        isAccessTokenValid,
+        isRefreshTokenValid
       });
 
       // If no tokens found, mark as initialized and return
@@ -66,7 +64,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       }
 
       // Check if access token is expired
-      const isExpired = expiresAt && parseInt(expiresAt, 10) < Date.now();
+      const isExpired = !isAccessTokenValid;
       console.log('🔍 INIT AUTH - Token expired?', isExpired);
 
       // If access token is expired, try to refresh
@@ -98,14 +96,9 @@ export const useAuthStore = create<AuthState>((set, get) => ({
             return;
           }
         } catch (error) {
-          console.error('🔍 INIT AUTH - Token refresh failed:', error);
+          console.log('🔍 INIT AUTH - Token refresh failed (normal for expired tokens):', error instanceof Error ? error.message : 'Unknown error');
           // Clear tokens and continue to try with current token
-          await AsyncStorage.multiRemove([
-            'access_token',
-            'refresh_token',
-            'token_type',
-            'token_expires_at'
-          ]);
+          await storageService.clearTokens();
           set({ 
             user: null,
             isAuthenticated: false,
@@ -132,12 +125,14 @@ export const useAuthStore = create<AuthState>((set, get) => ({
           });
           return;
         } catch (error) {
-          console.error('🔍 INIT AUTH - Failed to get user data:', error);
+          console.log('🔍 INIT AUTH - Failed to get user data (normal for fresh install):', error instanceof Error ? error.message : 'Unknown error');
           // If we can't get user data, try to refresh token as last resort
           if (refreshToken) {
             try {
-              console.log('🔍 INIT AUTH - Last resort: attempting token refresh');
+              console.log('🔍 INIT AUTH - Last resort: attempting token refresh with token:', refreshToken.substring(0, 20) + '...');
               const response = await authApiService.refreshToken(refreshToken);
+              
+              console.log('🔍 INIT AUTH - Token refresh successful, storing new tokens');
               
               // Store new tokens
               await storageService.storeTokens({
@@ -161,17 +156,12 @@ export const useAuthStore = create<AuthState>((set, get) => ({
                 return;
               }
             } catch (refreshError) {
-              console.error('🔍 INIT AUTH - Last resort refresh failed:', refreshError);
+              console.log('🔍 INIT AUTH - Last resort refresh failed (normal for fresh install):', refreshError instanceof Error ? refreshError.message : 'Unknown error');
             }
           }
           
           // Clear tokens on final failure
-          await AsyncStorage.multiRemove([
-            'access_token',
-            'refresh_token',
-            'token_type',
-            'token_expires_at'
-          ]);
+          await storageService.clearTokens();
           set({ 
             user: null,
             isAuthenticated: false,
@@ -182,14 +172,9 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         }
       }
     } catch (error) {
-      console.error('🔍 INIT AUTH - Initialization failed:', error);
+      console.log('🔍 INIT AUTH - Initialization failed (normal for fresh install):', error instanceof Error ? error.message : 'Unknown error');
       // Clear any stored tokens if initialization fails
-      await AsyncStorage.multiRemove([
-        'access_token',
-        'refresh_token',
-        'token_type',
-        'token_expires_at'
-      ]);
+      await storageService.clearTokens();
       
       set({ 
         user: null,
