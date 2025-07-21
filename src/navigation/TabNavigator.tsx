@@ -34,7 +34,7 @@ export default function TabNavigator() {
                 <IconByVariant
                   name={TAB_ICONS[route.name]}
                   size={24}
-                  color={colors.background.primary}
+                  color={colors.text.inverse}
                 />
               </View>
             );

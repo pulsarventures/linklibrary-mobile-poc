@@ -25,6 +25,8 @@ class StorageService {
       accessTokenExpiry: new Date(accessTokenExpiry).toISOString(),
       refreshTokenExpiresIn: tokenData.refresh_token_expires_in, // seconds
       refreshTokenExpiry: new Date(refreshTokenExpiry).toISOString(),
+      accessTokenExpiryMs: accessTokenExpiry,
+      refreshTokenExpiryMs: refreshTokenExpiry,
     });
 
     // Store both individual keys (for initializeAuth compatibility) and JSON object
@@ -72,8 +74,11 @@ class StorageService {
     
     console.log('🔑 Storage: Access token valid check:', {
       expiry: new Date(expiry).toISOString(),
+      expiryMs: expiry,
       now: new Date(now).toISOString(),
+      nowMs: now,
       bufferTime: bufferTime / 1000 / 60, // in minutes
+      timeRemaining: (expiry - now) / 1000 / 60, // in minutes
       isValid
     });
     
@@ -88,10 +93,14 @@ class StorageService {
     }
 
     const expiry = parseInt(expiryStr, 10);
-    const isValid = Date.now() < expiry;
+    const now = Date.now();
+    const isValid = now < expiry;
     console.log('🔑 Storage: Refresh token valid check:', {
       expiry: new Date(expiry).toISOString(),
-      now: new Date().toISOString(),
+      expiryMs: expiry,
+      now: new Date(now).toISOString(),
+      nowMs: now,
+      timeRemaining: (expiry - now) / 1000 / 60 / 60 / 24, // in days
       isValid
     });
     return isValid;

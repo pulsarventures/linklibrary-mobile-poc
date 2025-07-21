@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { View, FlatList, StyleSheet, RefreshControl, ActivityIndicator, Pressable } from 'react-native';
+import { View, FlatList, StyleSheet, RefreshControl, ActivityIndicator, Pressable, Alert } from 'react-native';
 import { SafeScreen } from '@/components/templates';
 import { useCollectionsStore } from '../../hooks/domain/collections/useCollectionsStore';
-import { CollectionItem } from '../../components/molecules/CollectionItem/CollectionItem';
+import { CollectionItem, CollectionFormModal } from '../../components/molecules';
 import { useTheme } from '@/theme';
 import type { Collection } from '../../types/collection.types';
 import Toast from 'react-native-toast-message';
@@ -19,9 +19,12 @@ const AnimatedFlatList = Animated.createAnimatedComponent(FlatList<Collection>);
 
 export default function Collections() {
   const { colors } = useTheme();
-  const { collections, loading, error, fetchCollections } = useCollectionsStore();
+  const { collections, loading, error, fetchCollections, createCollection, updateCollection, deleteCollection } = useCollectionsStore();
   const { user } = useAuthStore();
   const [refreshing, setRefreshing] = useState(false);
+  const [showFormModal, setShowFormModal] = useState(false);
+  const [editingCollection, setEditingCollection] = useState<Collection | null>(null);
+  const [formLoading, setFormLoading] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -44,6 +47,81 @@ export default function Collections() {
     }
   };
 
+  const handleCreateCollection = async (data: { name: string; description?: string; icon?: string; color?: string }) => {
+    setFormLoading(true);
+    try {
+      await createCollection(data);
+      Toast.show({
+        type: 'success',
+        text1: 'Collection created successfully',
+      });
+      setShowFormModal(false);
+    } catch (error) {
+      console.error('Failed to create collection:', error);
+      Toast.show({
+        type: 'error',
+        text1: 'Failed to create collection',
+        text2: error instanceof Error ? error.message : 'Please try again',
+      });
+    } finally {
+      setFormLoading(false);
+    }
+  };
+
+  const handleUpdateCollection = async (data: { name: string; description?: string; icon?: string; color?: string }) => {
+    if (!editingCollection) return;
+    
+    setFormLoading(true);
+    try {
+      await updateCollection(editingCollection.id, data);
+      Toast.show({
+        type: 'success',
+        text1: 'Collection updated successfully',
+      });
+      setShowFormModal(false);
+      setEditingCollection(null);
+    } catch (error) {
+      console.error('Failed to update collection:', error);
+      Toast.show({
+        type: 'error',
+        text1: 'Failed to update collection',
+        text2: error instanceof Error ? error.message : 'Please try again',
+      });
+    } finally {
+      setFormLoading(false);
+    }
+  };
+
+  const handleDeleteCollection = async (id: number) => {
+    try {
+      await deleteCollection(id);
+      Toast.show({
+        type: 'success',
+        text1: 'Collection deleted successfully',
+      });
+    } catch (error) {
+      console.error('Failed to delete collection:', error);
+      Toast.show({
+        type: 'error',
+        text1: 'Failed to delete collection',
+        text2: error instanceof Error ? error.message : 'Please try again',
+      });
+    }
+  };
+
+  const handleFormSubmit = async (data: { name: string; description?: string; icon?: string; color?: string }) => {
+    if (editingCollection) {
+      await handleUpdateCollection(data);
+    } else {
+      await handleCreateCollection(data);
+    }
+  };
+
+  const handleCloseFormModal = () => {
+    setShowFormModal(false);
+    setEditingCollection(null);
+  };
+
   const handleAction = (actionType: string, id: number) => {
     'worklet';
     switch (actionType) {
@@ -51,10 +129,28 @@ export default function Collections() {
         // Navigate to collection view
         break;
       case 'EDIT':
-        // Open edit modal
+        const collection = collections.find(c => c.id === id);
+        if (collection) {
+          setEditingCollection(collection);
+          setShowFormModal(true);
+        }
         break;
       case 'DELETE':
-        // Open delete confirmation
+        const collectionToDelete = collections.find(c => c.id === id);
+        if (collectionToDelete) {
+          Alert.alert(
+            'Delete Collection',
+            `Are you sure you want to delete "${collectionToDelete.name}"? This action cannot be undone.`,
+            [
+              { text: 'Cancel', style: 'cancel' },
+              { 
+                text: 'Delete', 
+                style: 'destructive',
+                onPress: () => handleDeleteCollection(id)
+              }
+            ]
+          );
+        }
         break;
       default:
         break;
@@ -119,7 +215,21 @@ export default function Collections() {
           <Text style={[styles.emptyText, { color: colors.text.secondary }]}>
             Create your first collection to start organizing your links
           </Text>
+          <Button
+            variant="primary"
+            onPress={() => setShowFormModal(true)}
+            style={styles.createButton}
+          >
+            Create
+          </Button>
         </View>
+        
+        <CollectionFormModal
+          visible={showFormModal}
+          onClose={handleCloseFormModal}
+          onSubmit={handleFormSubmit}
+          loading={formLoading}
+        />
       </SafeScreen>
     );
   }
@@ -127,13 +237,15 @@ export default function Collections() {
   return (
     <SafeScreen>
       <View style={styles.container}>
-        <Text 
-          variant="title"
-          weight="bold"
-          style={[styles.title, { color: colors.text.primary }]}
-        >
-          Collections
-        </Text>
+        <View style={styles.header}>
+          <Button
+            variant="primary"
+            onPress={() => setShowFormModal(true)}
+            style={styles.createButton}
+          >
+            Create
+          </Button>
+        </View>
 
         <AnimatedFlatList
           data={collections}
@@ -150,6 +262,14 @@ export default function Collections() {
           }
         />
       </View>
+      
+      <CollectionFormModal
+        visible={showFormModal}
+        onClose={handleCloseFormModal}
+        onSubmit={handleFormSubmit}
+        collection={editingCollection}
+        loading={formLoading}
+      />
     </SafeScreen>
   );
 }
@@ -157,14 +277,24 @@ export default function Collections() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: SPACING.lg,
+    paddingHorizontal: SPACING.lg,
+    paddingTop: SPACING.md,
+  },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: SPACING.lg,
+    paddingHorizontal: SPACING.sm,
   },
   centered: {
     justifyContent: 'center',
     alignItems: 'center',
   },
-  title: {
-    marginBottom: SPACING.md,
+
+  createButton: {
+    minWidth: 100,
+    height: 40,
   },
   list: {
     flex: 1,

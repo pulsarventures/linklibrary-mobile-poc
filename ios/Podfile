@@ -15,7 +15,7 @@ if linkage != nil
 end
 
 # Use modular headers for Firebase
-# use_modular_headers!
+use_modular_headers!
 
 # Fix for UIKit module import issues
 # $RNFirebaseAsStaticFramework = true

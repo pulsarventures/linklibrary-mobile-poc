@@ -72,9 +72,9 @@ export function Button({
         style={[styles.container, style]}
       >
         <LinearGradient
-          colors={['#6366F1', '#4F46E5']}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 0 }}
+          colors={gradientConfig.colors}
+          start={gradientConfig.start}
+          end={gradientConfig.end}
           style={styles.gradient}
         >
           {renderContent()}

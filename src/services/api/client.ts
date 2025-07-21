@@ -1,4 +1,3 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { API_BASE_URL } from '@/config/api';
 import { storageService } from '../storage';
 
@@ -38,6 +37,23 @@ class ApiClient {
 
     console.log('📤 Request headers:', Object.fromEntries(headers.entries()));
     return headers;
+  }
+
+  private async shouldAttemptRefresh(): Promise<boolean> {
+    const refreshToken = await storageService.getRefreshToken();
+    const isRefreshTokenValid = await storageService.isRefreshTokenValid();
+    
+    // Only attempt refresh if we have a refresh token AND it's valid
+    const shouldAttempt = !!refreshToken && isRefreshTokenValid;
+    
+    // Only log when we're actually going to attempt refresh
+    if (shouldAttempt) {
+      console.log('🔑 Will attempt token refresh - token exists and is valid');
+    } else {
+      console.log('🔑 Skipping token refresh - no valid refresh token available');
+    }
+    
+    return shouldAttempt;
   }
 
   private processQueue(error: any = null) {
@@ -109,7 +125,7 @@ class ApiClient {
     }
   }
 
-  private async handleResponse<T>(response: Response, retryAttempt = false): Promise<T> {
+  private async handleResponse<T>(response: Response, retryAttempt = false, originalMethod = 'GET', originalBody?: any): Promise<T> {
     let data: any;
     try {
       data = await response.json();
@@ -121,12 +137,15 @@ class ApiClient {
     if (!response.ok) {
       // Only log as error if it's not a 401 (auth errors are expected during app initialization)
       if (response.status === 401) {
-        console.log('API Auth Error (expected during initialization):', {
-          status: response.status,
-          statusText: response.statusText,
-          message: data?.detail || data?.message || 'Unauthorized',
-          url: response.url,
-        });
+        // Only log 401 errors if we're not in the middle of a refresh attempt
+        if (!this.isRefreshing) {
+          console.log('API Auth Error (expected during initialization):', {
+            status: response.status,
+            statusText: response.statusText,
+            message: data?.detail || data?.message || 'Unauthorized',
+            url: response.url,
+          });
+        }
       } else {
         console.error('API Error:', {
           status: response.status,
@@ -137,32 +156,29 @@ class ApiClient {
       }
 
       if (response.status === 401 && !retryAttempt) {
-        // Check if refresh token exists and is valid
-        const refreshToken = await storageService.getRefreshToken();
-        if (!refreshToken) {
-          await storageService.clearTokens();
-          throw new Error('Session expired. Please log in again.');
-        }
-
-        const isRefreshTokenValid = await storageService.isRefreshTokenValid();
-        if (!isRefreshTokenValid) {
-          await storageService.clearTokens();
-          throw new Error('Session expired. Please log in again.');
+        // Check if we should attempt token refresh
+        const shouldRefresh = await this.shouldAttemptRefresh();
+        
+        if (!shouldRefresh) {
+          console.log('🔑 No valid refresh token available, requiring login');
+          // Don't clear tokens here - let the auth store handle it
+          throw new Error('Authentication required. Please log in.');
         }
 
         try {
           await this.handleTokenRefresh();
-          // Retry the original request with new token
+          // Retry the original request with new token using the correct method
           const headers = await this.getAuthHeaders();
           const requestConfig: RequestInit = {
-            method: response.type === 'cors' ? 'GET' : response.type,
+            method: originalMethod,
             headers,
+            ...(originalBody && { body: JSON.stringify(originalBody) })
           };
           const retryResponse = await fetch(response.url, requestConfig);
-          return this.handleResponse<T>(retryResponse, true);
+          return this.handleResponse<T>(retryResponse, true, originalMethod, originalBody);
         } catch (error) {
           console.log('🔑 Token refresh failed:', error);
-          // Only clear tokens if refresh fails
+          // Only clear tokens if refresh fails and we had tokens to begin with
           await storageService.clearTokens();
           throw new Error('Authentication required. Please log in.');
         }
@@ -190,19 +206,24 @@ class ApiClient {
       headers,
     });
 
-    return this.handleResponse<T>(response);
+    return this.handleResponse<T>(response, false, 'GET');
   }
 
   public async post<T>(endpoint: string, data?: any): Promise<T> {
     const url = `${this.baseUrl}${endpoint}`;
     const headers = await this.getAuthHeaders();
 
-    console.log('📡 Making API request:', {
-      method: 'POST',
-      url,
-      headers: Object.fromEntries(headers.entries()),
-      data: data ? { ...data, token: data.token ? `${data.token.substring(0, 10)}...` : undefined } : undefined
-    });
+    // Only log non-auth requests to reduce noise
+    if (!endpoint.includes('/auth/')) {
+      console.log('📡 Making API POST request:', {
+        method: 'POST',
+        url,
+        endpoint,
+        headers: Object.fromEntries(headers.entries()),
+        hasData: !!data,
+        data: data ? { ...data, token: data.token ? `${data.token.substring(0, 10)}...` : undefined } : undefined
+      });
+    }
 
     try {
       const response = await fetch(url, {
@@ -211,14 +232,16 @@ class ApiClient {
         body: data ? JSON.stringify(data) : undefined,
       });
 
-      // If you want to log the response body, do it inside handleResponse, or clone the response
-      console.log('📥 API response:', {
-        status: response.status,
-        statusText: response.statusText,
-        headers: Object.fromEntries(response.headers.entries())
-      });
+      // Only log non-auth responses to reduce noise
+      if (!endpoint.includes('/auth/')) {
+        console.log('📥 API response:', {
+          status: response.status,
+          statusText: response.statusText,
+          headers: Object.fromEntries(response.headers.entries())
+        });
+      }
 
-      return this.handleResponse<T>(response);
+      return this.handleResponse<T>(response, false, 'POST', data);
     } catch (error) {
       console.error('🚨 API request failed:', {
         message: error instanceof Error ? error.message : 'Unknown error',
@@ -237,7 +260,7 @@ class ApiClient {
       body: JSON.stringify(data),
     });
 
-    return this.handleResponse<T>(response);
+    return this.handleResponse<T>(response, false, 'PUT', data);
   }
 
   public async delete(endpoint: string): Promise<void> {
@@ -247,7 +270,7 @@ class ApiClient {
       headers,
     });
 
-    await this.handleResponse(response);
+    await this.handleResponse(response, false, 'DELETE');
   }
 
   public async postForm<T>(endpoint: string, formData: string): Promise<T> {

@@ -67,7 +67,14 @@ class AuthApiService {
   }
 
   public async refreshToken(refreshToken: string): Promise<AuthResponse> {
-    return apiClient.post<AuthResponse>(API_ENDPOINTS.auth.refreshToken, { refresh_token: refreshToken });
+    // Send refresh_token as query parameter according to API docs
+    // Use ApiClient to ensure proper URL construction and error handling
+    const endpoint = `${API_ENDPOINTS.auth.refreshToken}?refresh_token=${encodeURIComponent(refreshToken)}`;
+    
+    console.log('🔑 Making refresh token request to:', endpoint);
+
+    // Use ApiClient's post method but with no body
+    return apiClient.post<AuthResponse>(endpoint);
   }
 }
 

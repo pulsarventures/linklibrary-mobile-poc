@@ -45,6 +45,14 @@ export function TagItem({ tag, onPress, onEdit, onDelete }: TagItemProps) {
       </View>
 
       <View style={styles.actions}>
+        {onEdit && (
+          <TouchableOpacity
+            style={[styles.actionButton, { backgroundColor: 'transparent' }]}
+            onPress={onEdit}
+          >
+            <IconByVariant name="edit" size={16} color={colors.text.secondary} />
+          </TouchableOpacity>
+        )}
         {onDelete && (
           <TouchableOpacity
             style={[styles.actionButton, { backgroundColor: 'transparent' }]}

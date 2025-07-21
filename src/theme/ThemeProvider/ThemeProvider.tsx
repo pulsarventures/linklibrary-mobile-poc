@@ -31,7 +31,7 @@ const THEME_STORAGE_KEY = '@theme';
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const systemColorScheme = useColorScheme();
   const [isLoading, setIsLoading] = useState(true);
-  const [theme, setThemeState] = useState<ColorTheme>('system');
+  const [theme, setThemeState] = useState<ColorTheme>('light');
 
   useEffect(() => {
     const initTheme = async () => {
@@ -51,7 +51,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   }, []);
 
   // Determine if dark mode should be active based on theme setting and system preference
-  const isDark = theme === 'system' ? systemColorScheme === 'dark' : theme === 'dark';
+  const isDark = theme === 'dark';
 
   useEffect(() => {
     // Save theme changes to storage

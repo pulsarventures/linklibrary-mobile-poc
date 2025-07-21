@@ -104,7 +104,7 @@ export const getColorScheme = (color: ColorOption | string): ColorScheme => {
 
 export const LIGHT_COLORS: ThemeColors = {
   text: {
-    primary: '#1f2937',
+    primary: '#000000',
     secondary: '#6b7280',
     tertiary: '#9ca3af',
     inverse: '#ffffff',
@@ -112,47 +112,47 @@ export const LIGHT_COLORS: ThemeColors = {
   },
   background: {
     primary: '#ffffff',
-    secondary: '#f3f4f6',
+    secondary: '#f8f9fa',
     tertiary: '#e5e7eb',
     error: '#fef2f2',
     surface: '#ffffff',
-    subtle: '#f3f4f6'
+    subtle: '#f8f9fa'
   },
   border: {
     primary: '#e5e7eb'
   },
   accent: {
-    primary: '#a855f7'
+    primary: '#000000'
   },
   card: '#ffffff',
-  muted: '#f3f4f6',
+  muted: '#f8f9fa',
   error: '#ef4444',
   success: '#22c55e'
 };
 
 export const DARK_COLORS: ThemeColors = {
   text: {
-    primary: '#f3f4f6',
+    primary: '#ffffff',
     secondary: '#9ca3af',
     tertiary: '#6b7280',
     inverse: '#000000',
     error: '#ef4444'
   },
   background: {
-    primary: '#111827',
-    secondary: '#1f2937',
+    primary: '#000000',
+    secondary: '#1a1a1a',
     tertiary: '#374151',
     error: '#450a0a',
-    surface: '#1f2937',
+    surface: '#1a1a1a',
     subtle: '#374151'
   },
   border: {
     primary: '#374151'
   },
   accent: {
-    primary: '#a855f7'
+    primary: '#ffffff'
   },
-  card: '#1f2937',
+  card: '#1a1a1a',
   muted: '#374151',
   error: '#ef4444',
   success: '#22c55e'
@@ -160,31 +160,32 @@ export const DARK_COLORS: ThemeColors = {
 
 export type ColorTheme = 'light' | 'dark';
 
+// Light theme colors (default)
 export const PRIMARY_COLORS = {
-  background: "#0F1117",           // Dark background from screenshot
-  surface: "#1A1D26",             // Input field background
-  primary: "#7C3AED",             // Primary purple button with gradient
-  primaryGradient: ["#7C3AED", "#2563EB"], // Button gradient
-  secondary: "#64748B",           // Secondary elements
-  success: "#10B981",             // Green connection status
-  error: "#EF4444",               // Error states, validation
-  warning: "#F59E0B",             // Warning states
+  background: "#FFFFFF",           // White background
+  surface: "#F8F9FA",             // Very light gray surface
+  primary: "#000000",             // Black primary
+  primaryGradient: ["#000000", "#374151"], // Black to dark gray gradient
+  secondary: "#6B7280",           // Gray secondary
+  success: "#10B981",             // Green success
+  error: "#EF4444",               // Red error
+  warning: "#F59E0B",             // Orange warning
   text: {
-    primary: "#FFFFFF",           // White text
-    secondary: "#94A3B8",         // Gray text like "Sign in to continue"
-    muted: "#64748B"             // Even more muted text
+    primary: "#000000",           // Black text
+    secondary: "#6B7280",         // Medium gray text
+    muted: "#9CA3AF"             // Light gray text
   },
-  border: "#2A2F3A",             // Dark border color for inputs
+  border: "#E5E7EB",             // Light gray border
   overlay: "rgba(0, 0, 0, 0.5)",   // Modal overlays
   social: {
     google: {
-      background: "#1A1D26",
-      border: "#2A2F3A",
-      text: "#FFFFFF"
+      background: "#FFFFFF",
+      border: "#E5E7EB",
+      text: "#000000"
     },
     apple: {
-      background: "#1A1D26",
-      border: "#2A2F3A",
+      background: "#000000",
+      border: "#374151",
       text: "#FFFFFF"
     }
   }

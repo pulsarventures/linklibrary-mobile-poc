@@ -72,6 +72,15 @@ export function CollectionItem({ collection, onAction }: CollectionItemProps) {
         </View>
         <View style={styles.actions}>
           <Pressable
+            onPress={() => handlePress('EDIT')}
+            style={({ pressed }) => [
+              styles.actionButton,
+              { backgroundColor: pressed ? colors.background.secondary : 'transparent' },
+            ]}
+          >
+            <IconByVariant name="edit" size={16} color={colors.text.secondary} />
+          </Pressable>
+          <Pressable
             onPress={() => handlePress('DELETE')}
             style={({ pressed }) => [
               styles.actionButton,

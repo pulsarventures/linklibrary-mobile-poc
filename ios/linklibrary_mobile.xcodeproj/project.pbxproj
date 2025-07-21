@@ -14,7 +14,7 @@
 		B238239B2E2A6F6000C17D8B /* ShareExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = B2EBA0982E1C022D009E9B2E /* ShareExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		B23823A22E2A6F7200C17D8B /* libPods-linklibrary_mobile.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B23823A12E2A6F7200C17D8B /* libPods-linklibrary_mobile.a */; };
 		F571B3882BD7A3F80014213C /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = F571B3872BD7A3F80014213C /* PrivacyInfo.xcprivacy */; };
-		F5DC7AB12D9D8A92004DB744 /* AppDelegade.swift in Sources */ = {isa = PBXBuildFile; fileRef = F5DC7AB02D9D8A92004DB744 /* AppDelegade.swift */; };
+		F5DC7AB12D9D8A92004DB744 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = F5DC7AB02D9D8A92004DB744 /* AppDelegate.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -72,7 +72,7 @@
 		C8DD1A582B79948189FF2547 /* libPods-linklibrary_mobile.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-linklibrary_mobile.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
 		F571B3872BD7A3F80014213C /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
-		F5DC7AB02D9D8A92004DB744 /* AppDelegade.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegade.swift; sourceTree = "<group>"; };
+		F5DC7AB02D9D8A92004DB744 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppDelegate.swift; path = linklibrary_mobile/AppDelegate.swift; sourceTree = "<group>"; };
 		F5DC7AB22D9D8AA1004DB744 /* linklibrary_mobile-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "linklibrary_mobile-Bridging-Header.h"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -133,7 +133,7 @@
 				B23823942E2A671F00C17D8B /* AppGroupsModule.m */,
 				B23823952E2A671F00C17D8B /* AppGroupsModule.swift */,
 				B2EBA0A72E1C028C009E9B2E /* linklibrary_mobile.entitlements */,
-				F5DC7AB02D9D8A92004DB744 /* AppDelegade.swift */,
+				F5DC7AB02D9D8A92004DB744 /* AppDelegate.swift */,
 				F571B3872BD7A3F80014213C /* PrivacyInfo.xcprivacy */,
 				13B07FB51A68108700A75B9A /* Images.xcassets */,
 				13B07FB61A68108700A75B9A /* Info.plist */,
@@ -474,7 +474,7 @@
 			files = (
 				B23823962E2A671F00C17D8B /* AppGroupsModule.swift in Sources */,
 				B23823972E2A671F00C17D8B /* AppGroupsModule.m in Sources */,
-				F5DC7AB12D9D8A92004DB744 /* AppDelegade.swift in Sources */,
+				F5DC7AB12D9D8A92004DB744 /* AppDelegate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

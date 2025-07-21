@@ -9,14 +9,14 @@ export interface GradientConfig {
 
 export const GRADIENTS = {
   primary: {
-    colors: ['#7C3AED', '#2563EB'],
+    colors: ['#000000', '#374151'],
     start: { x: 0, y: 0 },
     end: { x: 1, y: 0 },
     angle: 90
   },
   
   primaryHover: {
-    colors: ['#6D28D9', '#1D4ED8'],
+    colors: ['#1a1a1a', '#4B5563'],
     start: { x: 0, y: 0 },
     end: { x: 1, y: 0 },
     angle: 90

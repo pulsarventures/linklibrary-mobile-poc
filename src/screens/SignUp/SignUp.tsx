@@ -132,9 +132,6 @@ export function SignUp() {
       <SafeScreen>
         <View style={[styles.loadingOverlay, { backgroundColor: colors.background.primary }]}>
           <View style={styles.loadingContent}>
-            <View style={[styles.logoWrapper, { backgroundColor: colors.accent.primary }]}>
-              <AssetByVariant path="tom" style={styles.logo} resizeMode="contain" />
-            </View>
             <ActivityIndicator 
               size="large" 
               color={colors.accent.primary}
@@ -397,7 +394,6 @@ const styles = StyleSheet.create({
     height: 32,
   },
   loadingSpinner: {
-    marginTop: 24,
     marginBottom: 16,
   },
   loadingText: {

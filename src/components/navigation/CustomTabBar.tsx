@@ -52,7 +52,7 @@ function CustomTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
           >
             {isFocused ? (
               <LinearGradient
-                colors={['#7C3AED', '#2563EB']}
+                colors={['#000000', '#374151']}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 0 }}
                 style={styles.activeIndicator}
@@ -61,7 +61,7 @@ function CustomTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
             <IconByVariant
               name={TAB_ICONS[route.name]}
               size={isFocused ? 24 : 22}
-              color={isFocused ? PRIMARY_COLORS.primary : PRIMARY_COLORS.text.muted}
+              color={isFocused ? '#000000' : PRIMARY_COLORS.text.muted}
             />
             <Text
               style={[
@@ -116,7 +116,7 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   labelActive: {
-    color: PRIMARY_COLORS.primary,
+    color: '#000000',
     fontWeight: '600',
   },
   labelInactive: {

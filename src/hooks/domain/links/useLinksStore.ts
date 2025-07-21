@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import type { Link } from '@/types/link.types';
 import { apiClient } from '@/services/api/client';
 import { API_ENDPOINTS } from '@/config/api';
+import { useAuthStore } from '../user/useAuthStore';
 
 interface LinksState {
   links: Link[];
@@ -19,6 +20,14 @@ export const useLinksStore = create<LinksState>((set, get) => ({
   isLoading: false,
   error: null,
   fetchLinks: async () => {
+    const { isAuthenticated, initialized } = useAuthStore.getState();
+    
+    // Don't fetch if auth is not initialized or user is not authenticated
+    if (!initialized || !isAuthenticated) {
+      console.log('🔍 FETCHLINKS SKIPPED - Auth not ready or user not authenticated');
+      return;
+    }
+
     try {
       set({ isLoading: true, error: null });
       
