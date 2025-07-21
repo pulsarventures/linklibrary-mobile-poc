@@ -66,19 +66,93 @@ export const useCreateLink = () => {
   
   return useMutation({
     mutationFn: createLink,
-    onError: (error) => {
+    onError: (error, variables, context) => {
       console.error('❌ useCreateLink mutation failed:', error);
+      
+      // Rollback optimistic update if it failed
+      if (context?.previousLinks) {
+        try {
+          const { useLinksStore } = require('@/hooks/domain/links/useLinksStore');
+          const { setLinks } = useLinksStore.getState();
+          setLinks(context.previousLinks);
+        } catch (rollbackError) {
+          console.error('❌ Failed to rollback optimistic update:', rollbackError);
+        }
+      }
     },
-    onMutate: (variables) => {
+    onMutate: async (variables) => {
       console.log('🚀 useCreateLink mutation started with:', variables);
+      
+      // Optimistic update: immediately add the new link to the store
+      try {
+        const { useLinksStore } = require('@/hooks/domain/links/useLinksStore');
+        const { links, setLinks } = useLinksStore.getState();
+        
+        // Create optimistic link with temporary ID
+        const optimisticLink: Link = {
+          id: `temp-${Date.now()}`,
+          url: variables.url || '',
+          title: variables.title || '',
+          summary: variables.summary || '',
+          notes: variables.notes || '',
+          favicon_url: '',
+          content_type: '',
+          input_source: variables.input_source || 'mobile',
+          is_favorite: variables.is_favorite || false,
+          is_archived: false,
+          is_read: false,
+          collection_id: variables.collection_id || null,
+          tag_ids: variables.tag_ids || [],
+          tags: [], // Will be populated when real response comes back
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        };
+        
+        // Add to beginning of list (most recent first)
+        const newLinks = [optimisticLink, ...links];
+        setLinks(newLinks);
+        
+        console.log('✅ Optimistic update applied - new link added to top of list');
+        
+        // Return context for rollback if needed
+        return { previousLinks: links };
+      } catch (error) {
+        console.error('❌ Failed to apply optimistic update:', error);
+        return {};
+      }
     },
-    onSuccess: (newLink) => {
+    onSuccess: async (newLink, variables, context) => {
       console.log('✅ useCreateLink mutation succeeded:', newLink);
-      // Invalidate and refetch links list
+      
+      // Invalidate and refetch TanStack Query cache
       queryClient.invalidateQueries({ queryKey: linkKeys.lists() });
       
       // Add the new link to the cache
       queryClient.setQueryData(linkKeys.detail(newLink.id), newLink);
+      
+      // Replace optimistic update with real data
+      try {
+        const { useLinksStore } = require('@/hooks/domain/links/useLinksStore');
+        const { links, setLinks } = useLinksStore.getState();
+        
+        // Remove optimistic link and add real link
+        const linksWithoutOptimistic = links.filter(link => !link.id.startsWith('temp-'));
+        const newLinks = [newLink, ...linksWithoutOptimistic];
+        setLinks(newLinks);
+        
+        console.log('✅ Real link data replaced optimistic update');
+      } catch (error) {
+        console.error('❌ Failed to replace optimistic update:', error);
+        // Fallback: just refresh the entire store
+        try {
+          const { useLinksStore } = await import('@/hooks/domain/links/useLinksStore');
+          const { fetchLinks } = useLinksStore.getState();
+          await fetchLinks();
+          console.log('✅ Links store refreshed after creating new link');
+        } catch (refreshError) {
+          console.error('❌ Failed to refresh links store:', refreshError);
+        }
+      }
     },
   });
 };

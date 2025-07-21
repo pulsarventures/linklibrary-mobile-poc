@@ -1,8 +1,12 @@
 import UIKit
+import FirebaseCore
 
 @UIApplicationMain
 class AppDelegate: RCTAppDelegate {
   override func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
+    // Configure Firebase
+    FirebaseApp.configure()
+    
     self.moduleName = "linklibrary_mobile"
     // You can add your custom initial props in the dictionary below.
     // They will be passed down to the ViewController used by React Native.

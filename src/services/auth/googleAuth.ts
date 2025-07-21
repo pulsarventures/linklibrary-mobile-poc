@@ -1,5 +1,4 @@
 import { GoogleSignin, statusCodes, type User } from '@react-native-google-signin/google-signin';
-import { Platform } from 'react-native';
 import { GOOGLE_CLIENT_ID } from '@env';
 import { safeErrorLog } from '@/utils/errorHandler';
 
@@ -7,8 +6,10 @@ import { safeErrorLog } from '@/utils/errorHandler';
 console.log('Configuring Google Sign-In with webClientId:', GOOGLE_CLIENT_ID);
 GoogleSignin.configure({
   webClientId: GOOGLE_CLIENT_ID,
+  iosClientId: '991185990145-21ebjs10ct5gckdj5pshsd84i3pvpdpc.apps.googleusercontent.com',
   offlineAccess: true,
   forceCodeForRefreshToken: true,
+  scopes: ['profile', 'email'],
 });
 
 interface GoogleSignInResult {
@@ -32,8 +33,12 @@ export async function signInWithGoogle(): Promise<GoogleSignInResult> {
     console.log('Google Client ID configured:', GOOGLE_CLIENT_ID);
     
     // Check if Google Play Services is available
-    await GoogleSignin.hasPlayServices();
-    console.log('Google Play Services available');
+    try {
+      await GoogleSignin.hasPlayServices();
+      console.log('Google Play Services available');
+    } catch (error) {
+      console.log('Google Play Services not available (iOS or not installed)');
+    }
     
     // Simple sign-in without all the complexity
     const signInResult = await GoogleSignin.signIn();

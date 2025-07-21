@@ -9,9 +9,11 @@ interface LinksState {
   isLoading: boolean;
   error: Error | null;
   fetchLinks: () => Promise<void>;
+  setLinks: (links: Link[]) => void;
+  addLink: (link: Link) => void;
 }
 
-export const useLinksStore = create<LinksState>((set) => ({
+export const useLinksStore = create<LinksState>((set, get) => ({
   links: [],
   total: 0,
   isLoading: false,
@@ -45,5 +47,12 @@ export const useLinksStore = create<LinksState>((set) => ({
       set({ error: error as Error, isLoading: false });
       throw error;
     }
+  },
+  setLinks: (links: Link[]) => {
+    set({ links, total: links.length });
+  },
+  addLink: (link: Link) => {
+    const { links } = get();
+    set({ links: [link, ...links], total: links.length + 1 });
   },
 })); 
