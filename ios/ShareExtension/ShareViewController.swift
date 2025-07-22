@@ -73,7 +73,7 @@ class ShareViewController: UIViewController {
     }
     
     func saveSharedData(_ data: [String: Any]) {
-        let userDefaults = UserDefaults(suiteName: "group.com.linklibrary.share")
+        let userDefaults = UserDefaults(suiteName: "group.com.pulsarventures.linklibraryai")
         userDefaults?.set(data, forKey: "SharedData")
         userDefaults?.synchronize()
     }

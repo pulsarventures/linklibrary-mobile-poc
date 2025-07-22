@@ -128,21 +128,14 @@ function App() {
     if (navigationRef.isReady()) {
       console.log('📤 Navigation is ready, navigating...');
       try {
-        // Navigate to the Main tab navigator first, then to the Add tab
-        navigationRef.navigate(Paths.Main as any);
-        console.log('📤 Navigated to Main');
-        
-        // Use setTimeout to ensure the tab navigator is ready
-        setTimeout(() => {
-          try {
-            navigationRef.navigate('Add' as any, { sharedUrl: url });
-            console.log('📤 Navigated to Add screen with URL');
-          } catch (error) {
-            console.error('📤 Error navigating to Add screen:', error);
-          }
-        }, 100);
+        // Navigate to the Main navigator with nested Add screen
+        navigationRef.navigate(Paths.Main as any, {
+          screen: 'Add',
+          params: { sharedUrl: url }
+        });
+        console.log('📤 Navigated to Add screen with URL');
       } catch (error) {
-        console.error('📤 Error navigating to Main:', error);
+        console.error('📤 Error navigating to Add screen:', error);
       }
     } else {
       console.log('📤 Navigation not ready, waiting...');
@@ -150,15 +143,11 @@ function App() {
       const unsubscribe = navigationRef.addListener('state', () => {
         console.log('📤 Navigation state changed, attempting navigation...');
         try {
-          navigationRef.navigate(Paths.Main as any);
-          setTimeout(() => {
-            try {
-              navigationRef.navigate('Add' as any, { sharedUrl: url });
-              console.log('📤 Navigated to Add screen with URL (delayed)');
-            } catch (error) {
-              console.error('📤 Error navigating to Add screen (delayed):', error);
-            }
-          }, 100);
+          navigationRef.navigate(Paths.Main as any, {
+            screen: 'Add',
+            params: { sharedUrl: url }
+          });
+          console.log('📤 Navigated to Add screen with URL (delayed)');
           unsubscribe();
         } catch (error) {
           console.error('📤 Error in delayed navigation:', error);

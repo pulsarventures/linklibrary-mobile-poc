@@ -10,7 +10,7 @@ class AppGroupsModule: NSObject {
     
     @objc
     func getSharedContent(_ resolve: @escaping RCTPromiseResolveBlock, rejecter reject: @escaping RCTPromiseRejectBlock) {
-        let appGroupId = "group.com.linklibrary.share"
+        let appGroupId = "group.com.pulsarventures.linklibraryai"
         
         guard let userDefaults = UserDefaults(suiteName: appGroupId) else {
             reject("APP_GROUP_ERROR", "Failed to access App Group", nil)
@@ -31,7 +31,7 @@ class AppGroupsModule: NSObject {
     
     @objc
     func clearSharedContent(_ resolve: @escaping RCTPromiseResolveBlock, rejecter reject: @escaping RCTPromiseRejectBlock) {
-        let appGroupId = "group.com.linklibrary.share"
+        let appGroupId = "group.com.pulsarventures.linklibraryai"
         
         guard let userDefaults = UserDefaults(suiteName: appGroupId) else {
             reject("APP_GROUP_ERROR", "Failed to access App Group", nil)
