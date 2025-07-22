@@ -17,9 +17,9 @@ function DefaultErrorScreen({ onReset = undefined }: Properties) {
 
   // Fallback texts in case translations are not available
   const fallbackTexts = {
-    title: 'Oops! Something went wrong.',
-    description: 'We are sorry for the inconvenience. Please try again later.',
     cta: 'Reload the screen',
+    description: 'We are sorry for the inconvenience. Please try again later.',
+    title: 'Oops! Something went wrong.',
   };
 
   // Try to get translations, fall back to default text if not available
@@ -29,34 +29,34 @@ function DefaultErrorScreen({ onReset = undefined }: Properties) {
 
   const styles = StyleSheet.create({
     container: {
-      flex: 1,
-      justifyContent: 'center',
       alignItems: 'center',
-      padding: 16,
+      flex: 1,
       gap: 16,
-    },
-    title: {
-      fontSize: 16,
-      fontWeight: 'bold',
-      color: colors.text.primary,
-    },
-    description: {
-      fontSize: 12,
-      textAlign: 'center',
-      color: colors.text.primary,
+      justifyContent: 'center',
+      padding: 16,
     },
     cta: {
-      fontSize: 16,
       color: colors.text.primary,
+      fontSize: 16,
+    },
+    description: {
+      color: colors.text.primary,
+      fontSize: 12,
+      textAlign: 'center',
+    },
+    title: {
+      color: colors.text.primary,
+      fontSize: 16,
+      fontWeight: 'bold',
     },
   });
 
   return (
     <View style={styles.container}>
       <IconByVariant
-        size={42}
-        name="fire"
         color={colors.error}
+        name="fire"
+        size={42}
       />
       <Text style={styles.title}>
         {title}

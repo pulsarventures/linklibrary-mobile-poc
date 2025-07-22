@@ -1,31 +1,32 @@
 import React from 'react';
-import { TouchableOpacity, Text, StyleSheet, ActivityIndicator, View } from 'react-native';
+import { ActivityIndicator, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
+
 import { PRIMARY_COLORS } from '@/theme/styles/colors';
-import { SPACING } from '@/theme/styles/spacing';
 import { createGradientStyle } from '@/theme/styles/gradients';
+import { SPACING } from '@/theme/styles/spacing';
 import { useTheme } from '@/theme/ThemeProvider/ThemeProvider';
 
-type ButtonVariant = 'primary' | 'social' | 'google' | 'apple' | 'danger' | 'gradient';
-
-interface ButtonProps {
-  children: React.ReactNode;
-  onPress: () => void;
-  variant?: ButtonVariant;
-  disabled?: boolean;
-  loading?: boolean;
-  icon?: React.ReactNode;
-  style?: any;
+type ButtonProps = {
+  readonly children: React.ReactNode;
+  readonly disabled?: boolean;
+  readonly icon?: React.ReactNode;
+  readonly loading?: boolean;
+  readonly onPress: () => void;
+  readonly style?: any;
+  readonly variant?: ButtonVariant;
 }
+
+type ButtonVariant = 'apple' | 'danger' | 'google' | 'gradient' | 'primary' | 'social';
 
 export function Button({
   children,
-  onPress,
-  variant = 'primary',
   disabled = false,
-  loading = false,
   icon,
+  loading = false,
+  onPress,
   style,
+  variant = 'primary',
 }: ButtonProps) {
   const { colors } = useTheme();
   
@@ -44,14 +45,14 @@ export function Button({
         <ActivityIndicator color={getTextColor()} size="small" />
       ) : (
         <>
-          {icon && <View style={styles.iconContainer}>{icon}</View>}
+          {icon ? <View style={styles.iconContainer}>{icon}</View> : null}
           <Text 
+            numberOfLines={1}
             style={[
               styles.text,
               { color: getTextColor() },
               variant === 'social' && styles.socialText
             ]}
-            numberOfLines={1}
           >
             {children}
           </Text>
@@ -66,15 +67,15 @@ export function Button({
     
     return (
       <TouchableOpacity
-        onPress={onPress}
-        disabled={disabled || loading}
         activeOpacity={disabled || loading ? 1 : 0.8}
+        disabled={disabled || loading}
+        onPress={onPress}
         style={[styles.container, style]}
       >
         <LinearGradient
           colors={gradientConfig.colors}
-          start={gradientConfig.start}
           end={gradientConfig.end}
+          start={gradientConfig.start}
           style={styles.gradient}
         >
           {renderContent()}
@@ -87,15 +88,15 @@ export function Button({
   if (variant === 'danger') {
     return (
       <TouchableOpacity
-        onPress={onPress}
-        disabled={disabled || loading}
         activeOpacity={disabled || loading ? 1 : 0.8}
+        disabled={disabled || loading}
+        onPress={onPress}
         style={[styles.container, disabled && styles.disabled, style]}
       >
         <LinearGradient
           colors={disabled ? [colors.text.tertiary, colors.text.tertiary] : [colors.error, colors.error]}
-          start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 0 }}
+          start={{ x: 0, y: 0 }}
           style={styles.gradient}
         >
           {renderContent()}
@@ -110,15 +111,15 @@ export function Button({
     
     return (
       <TouchableOpacity
-        onPress={onPress}
-        disabled={disabled || loading}
         activeOpacity={disabled || loading ? 1 : 0.8}
+        disabled={disabled || loading}
+        onPress={onPress}
         style={[styles.container, style]}
       >
         <LinearGradient
           colors={gradientConfig.colors}
-          start={gradientConfig.start}
           end={gradientConfig.end}
+          start={gradientConfig.start}
           style={styles.gradient}
         >
           {renderContent()}
@@ -131,9 +132,9 @@ export function Button({
   if (variant === 'google') {
     return (
       <TouchableOpacity
-        onPress={onPress}
-        disabled={disabled || loading}
         activeOpacity={disabled || loading ? 1 : 0.8}
+        disabled={disabled || loading}
+        onPress={onPress}
         style={[
           styles.container,
           {
@@ -156,15 +157,15 @@ export function Button({
     
     return (
       <TouchableOpacity
-        onPress={onPress}
-        disabled={disabled || loading}
         activeOpacity={disabled || loading ? 1 : 0.8}
+        disabled={disabled || loading}
+        onPress={onPress}
         style={[styles.container, disabled && styles.disabled, style]}
       >
         <LinearGradient
           colors={gradientConfig.colors}
-          start={gradientConfig.start}
           end={gradientConfig.end}
+          start={gradientConfig.start}
           style={styles.gradient}
         >
           {renderContent()}
@@ -176,9 +177,9 @@ export function Button({
   // Fallback social button
   return (
     <TouchableOpacity
-      onPress={onPress}
-      disabled={disabled || loading}
       activeOpacity={disabled || loading ? 1 : 0.8}
+      disabled={disabled || loading}
+      onPress={onPress}
       style={[
         styles.container,
         {
@@ -197,49 +198,49 @@ export function Button({
 
 const styles = StyleSheet.create({
   container: {
+    alignItems: 'center',
+    borderRadius: 12,
     height: 48,
-    borderRadius: 12,
-    width: '100%',
     justifyContent: 'center',
-    alignItems: 'center',
     overflow: 'hidden',
-  },
-  gradient: {
-    flex: 1,
     width: '100%',
-    height: '100%',
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderRadius: 12,
-  },
-  socialButton: {
-    borderWidth: 1,
-    paddingHorizontal: SPACING.md,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 1,
-    },
-    shadowOpacity: 0.08,
-    shadowRadius: 2,
-    elevation: 2,
   },
   contentContainer: {
-    flexDirection: 'row',
     alignItems: 'center',
+    flexDirection: 'row',
     justifyContent: 'center',
+  },
+  disabled: {
+    opacity: 0.5,
+  },
+  gradient: {
+    alignItems: 'center',
+    borderRadius: 12,
+    flex: 1,
+    height: '100%',
+    justifyContent: 'center',
+    width: '100%',
   },
   iconContainer: {
     marginRight: SPACING.sm,
   },
-  text: {
-    fontSize: 16,
-    fontWeight: '600',
+  socialButton: {
+    borderWidth: 1,
+    elevation: 2,
+    paddingHorizontal: SPACING.md,
+    shadowColor: '#000',
+    shadowOffset: {
+      height: 1,
+      width: 0,
+    },
+    shadowOpacity: 0.08,
+    shadowRadius: 2,
   },
   socialText: {
     fontWeight: '500',
   },
-  disabled: {
-    opacity: 0.5,
+  text: {
+    fontSize: 16,
+    fontWeight: '600',
   },
 });

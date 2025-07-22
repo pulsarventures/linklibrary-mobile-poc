@@ -1,15 +1,18 @@
 import type { RootScreenProps } from '@/navigation/types';
+
 import { useEffect } from 'react';
 import { ActivityIndicator, View } from 'react-native';
+
+import { useAuthStore } from '@/hooks/domain/user/useAuthStore';
 import { Paths } from '@/navigation/paths';
 import { useTheme } from '@/theme';
+
 import { AssetByVariant } from '@/components/atoms';
 import { SafeScreen } from '@/components/templates';
-import { useAuthStore } from '@/hooks/domain/user/useAuthStore';
 
 export function Startup({ navigation }: RootScreenProps<'Startup'>) {
-  const { layout, colors } = useTheme();
-  const { initializeAuth, isAuthenticated, initialized, isLoading } = useAuthStore();
+  const { colors, layout } = useTheme();
+  const { initializeAuth, initialized, isAuthenticated, isLoading } = useAuthStore();
 
   // Run initialization only once on mount
   useEffect(() => {
@@ -54,9 +57,9 @@ export function Startup({ navigation }: RootScreenProps<'Startup'>) {
           style={{ height: 300, width: 300 }}
         />
         <ActivityIndicator 
+          color={colors.accent.primary} 
           size="large" 
-          style={{ marginTop: 24 }} 
-          color={colors.accent.primary}
+          style={{ marginTop: 24 }}
         />
       </View>
     </SafeScreen>

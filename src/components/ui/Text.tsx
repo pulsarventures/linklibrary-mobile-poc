@@ -1,23 +1,24 @@
 import React from 'react';
 import { Text as RNText, StyleSheet, TextProps } from 'react-native';
+
 import { PRIMARY_COLORS, TYPOGRAPHY } from '@/theme/styles';
 
-type TextVariant = 'title' | 'subtitle' | 'body' | 'small' | 'caption';
-type TextWeight = 'regular' | 'medium' | 'semibold' | 'bold';
+type CustomTextProps = {
+  readonly children: React.ReactNode;
+  readonly color?: string;
+  readonly variant?: TextVariant;
+  readonly weight?: TextWeight;
+} & TextProps
+type TextVariant = 'body' | 'caption' | 'small' | 'subtitle' | 'title';
 
-interface CustomTextProps extends TextProps {
-  variant?: TextVariant;
-  weight?: TextWeight;
-  color?: string;
-  children: React.ReactNode;
-}
+type TextWeight = 'bold' | 'medium' | 'regular' | 'semibold';
 
 export function Text({
-  variant = 'body',
-  weight = 'regular',
+  children,
   color = PRIMARY_COLORS.text.primary,
   style,
-  children,
+  variant = 'body',
+  weight = 'regular',
   ...props
 }: CustomTextProps) {
   const textStyle = [
@@ -40,37 +41,37 @@ const styles = StyleSheet.create({
     fontFamily: TYPOGRAPHY.fontFamily,
   },
   // Variants
-  title: {
-    fontSize: TYPOGRAPHY.sizes.xl,
-    lineHeight: TYPOGRAPHY.sizes.xl * TYPOGRAPHY.lineHeights.tight,
-  },
-  subtitle: {
-    fontSize: TYPOGRAPHY.sizes.lg,
-    lineHeight: TYPOGRAPHY.sizes.lg * TYPOGRAPHY.lineHeights.normal,
-  },
   body: {
     fontSize: TYPOGRAPHY.sizes.md,
     lineHeight: TYPOGRAPHY.sizes.md * TYPOGRAPHY.lineHeights.normal,
-  },
-  small: {
-    fontSize: TYPOGRAPHY.sizes.sm,
-    lineHeight: TYPOGRAPHY.sizes.sm * TYPOGRAPHY.lineHeights.normal,
   },
   caption: {
     fontSize: TYPOGRAPHY.sizes.xs,
     lineHeight: TYPOGRAPHY.sizes.xs * TYPOGRAPHY.lineHeights.normal,
   },
+  small: {
+    fontSize: TYPOGRAPHY.sizes.sm,
+    lineHeight: TYPOGRAPHY.sizes.sm * TYPOGRAPHY.lineHeights.normal,
+  },
+  subtitle: {
+    fontSize: TYPOGRAPHY.sizes.lg,
+    lineHeight: TYPOGRAPHY.sizes.lg * TYPOGRAPHY.lineHeights.normal,
+  },
+  title: {
+    fontSize: TYPOGRAPHY.sizes.xl,
+    lineHeight: TYPOGRAPHY.sizes.xl * TYPOGRAPHY.lineHeights.tight,
+  },
   // Weights
-  regular: {
-    fontWeight: TYPOGRAPHY.weights.regular,
+  bold: {
+    fontWeight: TYPOGRAPHY.weights.bold,
   },
   medium: {
     fontWeight: TYPOGRAPHY.weights.medium,
   },
+  regular: {
+    fontWeight: TYPOGRAPHY.weights.regular,
+  },
   semibold: {
     fontWeight: TYPOGRAPHY.weights.semibold,
-  },
-  bold: {
-    fontWeight: TYPOGRAPHY.weights.bold,
   },
 }); 

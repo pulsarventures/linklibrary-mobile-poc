@@ -1,39 +1,40 @@
 import React from 'react';
 import {
-  View,
-  StyleSheet,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
+  StyleSheet,
+  View,
   ViewProps,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+
 import { SPACING } from '@/theme/styles/spacing';
 import { useTheme } from '@/theme/ThemeProvider/ThemeProvider';
 
-interface ContainerProps extends ViewProps {
-  children: React.ReactNode;
-  variant?: 'screen';
-  keyboardAvoiding?: boolean;
-  scrollable?: boolean;
-}
+type ContainerProps = {
+  readonly children: React.ReactNode;
+  readonly keyboardAvoiding?: boolean;
+  readonly scrollable?: boolean;
+  readonly variant?: 'screen';
+} & ViewProps
 
 export function Container({
   children,
-  variant = 'screen',
   keyboardAvoiding = false,
   scrollable = false,
   style,
+  variant = 'screen',
   ...props
 }: ContainerProps) {
   const { colors } = useTheme();
 
   const content = scrollable ? (
     <ScrollView
+      bounces={false}
       contentContainerStyle={styles.scrollContent}
       keyboardShouldPersistTaps="handled"
       showsVerticalScrollIndicator={false}
-      bounces={false}
     >
       {children}
     </ScrollView>
@@ -75,15 +76,15 @@ export function Container({
 }
 
 const styles = StyleSheet.create({
-  screen: {
-    flex: 1,
-    padding: SPACING.lg,
-  },
   container: {
     flex: 1,
   },
   keyboardAvoidingView: {
     flex: 1,
+  },
+  screen: {
+    flex: 1,
+    padding: SPACING.lg,
   },
   scrollContent: {
     flexGrow: 1,

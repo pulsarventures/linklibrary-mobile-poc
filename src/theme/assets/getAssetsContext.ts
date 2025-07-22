@@ -8,8 +8,8 @@ const getAssetsContext = (type: AssetType) => {
       : require.context('./icons', true, /\.svg$/);
   } catch (error) {
     // Ensure we have a proper Error object
-    const err = error instanceof Error ? error : new Error(`Failed to load ${type} context`);
-    console.error(`Error loading ${type} context:`, err.message);
+    const error_ = error instanceof Error ? error : new Error(`Failed to load ${type} context`);
+    console.error(`Error loading ${type} context:`, error_.message);
     // Return a dummy context function that safely returns undefined
     return (request: string) => {
       console.warn(`Attempted to load ${request} but asset context is unavailable`);

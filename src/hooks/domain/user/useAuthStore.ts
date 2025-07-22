@@ -1,33 +1,56 @@
-import { create } from 'zustand';
-import type { User, AuthResponse, RegisterCredentials } from './schema';
-import { authApiService } from '@/services/auth-api.service';
+import type { AuthResponse, RegisterCredentials, User } from './schema';
+
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useCollectionsStore } from '../collections/useCollectionsStore';
+import { create } from 'zustand';
+
+import { authApiService } from '@/services/auth-api.service';
 import { signOutFromGoogle } from '@/services/auth/googleAuth';
 import { storageService } from '@/services/storage';
 
-interface AuthState {
-  user: User | null;
+import { useCollectionsStore } from '../collections/useCollectionsStore';
+
+type AuthState = {
+  clearError: () => void;
+  error: null | string;
+  googleAuth: (token: string) => Promise<AuthResponse>;
+  initializeAuth: () => Promise<void>;
+  initialized: boolean;
   isAuthenticated: boolean;
   isLoading: boolean;
-  error: string | null;
-  initialized: boolean;
-  login: (credentials: { username: string; password: string }) => Promise<AuthResponse>;
-  register: (data: RegisterCredentials) => Promise<AuthResponse>;
-  socialAuth: (data: { provider: string; token: string; email?: string; name?: string }) => Promise<AuthResponse>;
-  googleAuth: (token: string) => Promise<AuthResponse>;
+  login: (credentials: { password: string; username: string; }) => Promise<AuthResponse>;
   logout: () => void;
-  clearError: () => void;
-  initializeAuth: () => Promise<void>;
+  register: (data: RegisterCredentials) => Promise<AuthResponse>;
+  socialAuth: (data: { email?: string; name?: string; provider: string; token: string; }) => Promise<AuthResponse>;
+  user: null | User;
 }
 
 export const useAuthStore = create<AuthState>((set, get) => ({
-  user: null,
-  isAuthenticated: false,
-  isLoading: false,
+  clearError: () => { set({ error: null }); },
   error: null,
-  initialized: false,
-
+  googleAuth: async (token: string) => {
+    set({ error: null, isLoading: true });
+    try {
+      const response = await authApiService.googleSignIn(token);
+      
+      if (response.user) {
+        set({ 
+          error: null, 
+          initialized: true,
+          isAuthenticated: true,
+          isLoading: false,
+          user: response.user
+        });
+      } else {
+        throw new Error('Google authentication failed: No user data received');
+      }
+      
+      return response;
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Google authentication failed';
+      set({ error: message, isAuthenticated: false, isLoading: false, user: null });
+      throw error;
+    }
+  },
   initializeAuth: async () => {
     // Skip if already initialized
     if (get().initialized) {
@@ -54,11 +77,11 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       if (!accessToken || !refreshToken) {
         console.log('🔍 INIT AUTH - No tokens found, user not authenticated');
         set({ 
-          user: null,
+          error: null,
+          initialized: true,
           isAuthenticated: false,
           isLoading: false,
-          initialized: true,
-          error: null
+          user: null
         });
         return;
       }
@@ -77,21 +100,21 @@ export const useAuthStore = create<AuthState>((set, get) => ({
           // Store new tokens
           await storageService.storeTokens({
             access_token: response.access_token,
-            refresh_token: response.refresh_token || refreshToken,
-            token_type: response.token_type,
             access_token_expires_in: response.access_token_expires_in,
-            refresh_token_expires_in: response.refresh_token_expires_in,
             is_revoked: false,
+            refresh_token: response.refresh_token || refreshToken,
+            refresh_token_expires_in: response.refresh_token_expires_in,
+            token_type: response.token_type,
           });
 
           if (response.user) {
             console.log('🔍 INIT AUTH - User authenticated via refresh');
             set({ 
-              user: response.user,
+              error: null,
+              initialized: true,
               isAuthenticated: true,
               isLoading: false,
-              initialized: true,
-              error: null
+              user: response.user
             });
             return;
           }
@@ -100,11 +123,11 @@ export const useAuthStore = create<AuthState>((set, get) => ({
           // Clear tokens and continue to try with current token
           await storageService.clearTokens();
           set({ 
-            user: null,
+            error: null,
+            initialized: true,
             isAuthenticated: false,
             isLoading: false,
-            initialized: true,
-            error: null
+            user: null
           });
           return;
         }
@@ -117,11 +140,11 @@ export const useAuthStore = create<AuthState>((set, get) => ({
           const response = await authApiService.me();
           console.log('🔍 INIT AUTH - User data retrieved successfully');
           set({ 
-            user: response.user,
+            error: null,
+            initialized: true,
             isAuthenticated: true,
             isLoading: false,
-            initialized: true,
-            error: null
+            user: response.user
           });
           return;
         } catch (error) {
@@ -129,7 +152,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
           // If we can't get user data, try to refresh token as last resort
           if (refreshToken) {
             try {
-              console.log('🔍 INIT AUTH - Last resort: attempting token refresh with token:', refreshToken.substring(0, 20) + '...');
+              console.log('🔍 INIT AUTH - Last resort: attempting token refresh with token:', refreshToken.slice(0, 20) + '...');
               const response = await authApiService.refreshToken(refreshToken);
               
               console.log('🔍 INIT AUTH - Token refresh successful, storing new tokens');
@@ -137,21 +160,21 @@ export const useAuthStore = create<AuthState>((set, get) => ({
               // Store new tokens
               await storageService.storeTokens({
                 access_token: response.access_token,
-                refresh_token: response.refresh_token || refreshToken,
-                token_type: response.token_type,
                 access_token_expires_in: response.access_token_expires_in,
-                refresh_token_expires_in: response.refresh_token_expires_in,
                 is_revoked: false,
+                refresh_token: response.refresh_token || refreshToken,
+                refresh_token_expires_in: response.refresh_token_expires_in,
+                token_type: response.token_type,
               });
 
               if (response.user) {
                 console.log('🔍 INIT AUTH - User authenticated via last resort refresh');
                 set({ 
-                  user: response.user,
+                  error: null,
+                  initialized: true,
                   isAuthenticated: true,
                   isLoading: false,
-                  initialized: true,
-                  error: null
+                  user: response.user
                 });
                 return;
               }
@@ -163,11 +186,11 @@ export const useAuthStore = create<AuthState>((set, get) => ({
           // Clear tokens on final failure
           await storageService.clearTokens();
           set({ 
-            user: null,
+            error: null,
+            initialized: true,
             isAuthenticated: false,
             isLoading: false,
-            initialized: true,
-            error: null
+            user: null
           });
         }
       }
@@ -177,37 +200,42 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       await storageService.clearTokens();
       
       set({ 
-        user: null,
+        error: null,
+        initialized: true,
         isAuthenticated: false,
         isLoading: false,
-        initialized: true,
-        error: null
+        user: null
       });
     }
   },
+  initialized: false,
 
-  login: async (credentials: { username: string; password: string }) => {
-    set({ isLoading: true, error: null });
+  isAuthenticated: false,
+
+  isLoading: false,
+
+  login: async (credentials: { password: string; username: string; }) => {
+    set({ error: null, isLoading: true });
     try {
       const response = await authApiService.login(credentials);
       
       // Store tokens using storageService
       await storageService.storeTokens({
         access_token: response.access_token,
-        refresh_token: response.refresh_token,
-        token_type: response.token_type,
         access_token_expires_in: response.access_token_expires_in,
-        refresh_token_expires_in: response.refresh_token_expires_in,
         is_revoked: response.is_revoked,
+        refresh_token: response.refresh_token,
+        refresh_token_expires_in: response.refresh_token_expires_in,
+        token_type: response.token_type,
       });
       
       if (response.user) {
         set({ 
-          user: response.user, 
+          error: null, 
+          initialized: true,
           isAuthenticated: true,
           isLoading: false,
-          error: null,
-          initialized: true
+          user: response.user
         });
       } else {
         throw new Error('Login failed: No user data received');
@@ -216,42 +244,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       return response;
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Login failed';
-      set({ error: message, isLoading: false, isAuthenticated: false, user: null });
-      throw error;
-    }
-  },
-
-  register: async (data: RegisterCredentials) => {
-    set({ isLoading: true, error: null });
-    try {
-      const response = await authApiService.register(data);
-      
-      // Store tokens using storageService
-      await storageService.storeTokens({
-        access_token: response.access_token,
-        refresh_token: response.refresh_token,
-        token_type: response.token_type,
-        access_token_expires_in: response.access_token_expires_in,
-        refresh_token_expires_in: response.refresh_token_expires_in,
-        is_revoked: response.is_revoked,
-      });
-      
-      if (response.user) {
-        set({ 
-          user: response.user, 
-          isAuthenticated: true,
-          isLoading: false,
-          error: null,
-          initialized: true
-        });
-      } else {
-        throw new Error('Registration failed: No user data received');
-      }
-      
-      return response;
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'Registration failed';
-      set({ error: message, isLoading: false, isAuthenticated: false, user: null });
+      set({ error: message, isAuthenticated: false, isLoading: false, user: null });
       throw error;
     }
   },
@@ -291,37 +284,70 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       
       // Reset auth state
       set({ 
-        user: null, 
+        initialized: true, 
         isAuthenticated: false, 
         isLoading: false,
-        initialized: true 
+        user: null 
       });
     } catch (error) {
       console.error('Storage cleanup error:', error);
       // Still reset auth state even if storage cleanup fails
       set({ 
-        user: null, 
+        initialized: true, 
         isAuthenticated: false, 
         isLoading: false,
-        initialized: true 
+        user: null 
       });
     }
   },
 
-  clearError: () => set({ error: null }),
+  register: async (data: RegisterCredentials) => {
+    set({ error: null, isLoading: true });
+    try {
+      const response = await authApiService.register(data);
+      
+      // Store tokens using storageService
+      await storageService.storeTokens({
+        access_token: response.access_token,
+        access_token_expires_in: response.access_token_expires_in,
+        is_revoked: response.is_revoked,
+        refresh_token: response.refresh_token,
+        refresh_token_expires_in: response.refresh_token_expires_in,
+        token_type: response.token_type,
+      });
+      
+      if (response.user) {
+        set({ 
+          error: null, 
+          initialized: true,
+          isAuthenticated: true,
+          isLoading: false,
+          user: response.user
+        });
+      } else {
+        throw new Error('Registration failed: No user data received');
+      }
+      
+      return response;
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Registration failed';
+      set({ error: message, isAuthenticated: false, isLoading: false, user: null });
+      throw error;
+    }
+  },
 
   socialAuth: async (data) => {
-    set({ isLoading: true, error: null });
+    set({ error: null, isLoading: true });
     try {
       const response = await authApiService.googleSignIn(data.token);
       
       if (response.user) {
         set({ 
-          user: response.user, 
+          error: null, 
+          initialized: true,
           isAuthenticated: true,
           isLoading: false,
-          error: null,
-          initialized: true
+          user: response.user
         });
       } else {
         throw new Error('Social authentication failed: No user data received');
@@ -330,33 +356,10 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       return response;
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Social authentication failed';
-      set({ error: message, isLoading: false, isAuthenticated: false, user: null });
+      set({ error: message, isAuthenticated: false, isLoading: false, user: null });
       throw error;
     }
   },
 
-  googleAuth: async (token: string) => {
-    set({ isLoading: true, error: null });
-    try {
-      const response = await authApiService.googleSignIn(token);
-      
-      if (response.user) {
-        set({ 
-          user: response.user, 
-          isAuthenticated: true,
-          isLoading: false,
-          error: null,
-          initialized: true
-        });
-      } else {
-        throw new Error('Google authentication failed: No user data received');
-      }
-      
-      return response;
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'Google authentication failed';
-      set({ error: message, isLoading: false, isAuthenticated: false, user: null });
-      throw error;
-    }
-  },
+  user: null,
 })); 

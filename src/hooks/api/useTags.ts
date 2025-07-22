@@ -16,7 +16,13 @@ export const tagKeys = {
 
 // Fetch tags
 const fetchTags = async (): Promise<Tag[]> => {
-  return apiClient.get<Tag[]>('/tags');
+  try {
+    const response = await apiClient.get<Tag[]>('/tags');
+    return Array.isArray(response) ? response : [];
+  } catch (error) {
+    console.error('Failed to fetch tags:', error);
+    return [];
+  }
 };
 
 // Fetch single tag
@@ -45,7 +51,9 @@ export const useTags = () => {
     gcTime: 10 * 60 * 1000, // 10 minutes
     queryFn: fetchTags,
     queryKey: tagKeys.lists(),
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: 5 * 60 * 1000, // 5 minutes,
+    placeholderData: [],
+    select: (data) => data || [],
   });
 };
 

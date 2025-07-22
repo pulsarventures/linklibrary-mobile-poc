@@ -1,27 +1,29 @@
+import type { Collection, CollectionQueryParams as CollectionQueryParameters } from '../../../types/collection.types';
+
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { isEqual } from 'lodash';
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import type { Collection, CollectionQueryParams } from '../../../types/collection.types';
+
 import { CollectionsApiService } from '../../../services/collections-api.service';
-import { isEqual } from 'lodash';
 import { useAuthStore } from '../user/useAuthStore';
 
-interface CollectionsState {
-  collections: Collection[];
-  loading: boolean;
-  loaded: boolean;
-  error: string | null;
-  currentParams: CollectionQueryParams;
-  lastFetchTime: number;
+type CollectionsState = {
   activeRequests: Set<string>;
-
-  fetchCollections: (params?: CollectionQueryParams, force?: boolean) => Promise<void>;
-  createCollection: (data: { name: string; description?: string; icon?: string; color?: string }) => Promise<Collection>;
-  updateCollection: (id: number, data: { name: string; description?: string; icon?: string; color?: string }) => Promise<Collection>;
-  deleteCollection: (id: number) => Promise<void>;
-
   clearErrors: () => void;
+  collections: Collection[];
+  createCollection: (data: { color?: string; description?: string; icon?: string; name: string; }) => Promise<Collection>;
+  currentParams: CollectionQueryParameters;
+  deleteCollection: (id: number) => Promise<void>;
+  error: null | string;
+
+  fetchCollections: (parameters?: CollectionQueryParameters, force?: boolean) => Promise<void>;
+  lastFetchTime: number;
+  loaded: boolean;
+  loading: boolean;
+
   resetStore: () => void;
+  updateCollection: (id: number, data: { color?: string; description?: string; icon?: string; name: string; }) => Promise<Collection>;
 }
 
 // Subscribe to auth store changes
@@ -41,17 +43,36 @@ export const useCollectionsStore = create<CollectionsState>()(
       }
 
       return {
-        collections: [],
-        loading: false,
-        loaded: false,
-        error: null,
-        currentParams: {},
-        lastFetchTime: 0,
         activeRequests: new Set(),
+        clearErrors: () => { set({ error: null }); },
+        collections: [],
+        createCollection: async (data) => {
+          const { isAuthenticated } = useAuthStore.getState();
+          if (!isAuthenticated) {
+            throw new Error('Authentication required. Please log in.');
+          }
+          const newCollection = await CollectionsApiService.createCollection(data);
+          set((s) => ({
+            collections: [...s.collections, newCollection]
+          }));
+          return newCollection;
+        },
+        currentParams: {},
+        deleteCollection: async (id) => {
+          const { isAuthenticated } = useAuthStore.getState();
+          if (!isAuthenticated) {
+            throw new Error('Authentication required. Please log in.');
+          }
+          await CollectionsApiService.deleteCollection(id);
+          set((s) => ({
+            collections: s.collections.filter((c) => c.id !== id)
+          }));
+        },
+        error: null,
 
-        fetchCollections: async (params = {}, force = false) => {
+        fetchCollections: async (parameters = {}, force = false) => {
           const state = get();
-          const key = `fetch-collections-${JSON.stringify(params)}`;
+          const key = `fetch-collections-${JSON.stringify(parameters)}`;
 
           // Get current auth state
           const { initialized, isAuthenticated } = useAuthStore.getState();
@@ -76,38 +97,38 @@ export const useCollectionsStore = create<CollectionsState>()(
           }
 
           // Don't fetch if data is already loaded and params haven't changed
-          if (!force && state.loaded && state.currentParams && isEqual(state.currentParams, params)) {
+          if (!force && state.loaded && state.currentParams && isEqual(state.currentParams, parameters)) {
             console.log('🔍 FETCHCOLLECTIONS SKIPPED - Same params');
             return;
           }
 
           set((s) => ({
-            loading: true,
+            activeRequests: new Set([key, ...s.activeRequests]),
             error: null,
-            activeRequests: new Set([...s.activeRequests, key]),
+            loading: true,
           }));
 
           try {
-            console.log('🔍 FETCHCOLLECTIONS START - Params:', params);
-            const response = await CollectionsApiService.getCollections(params);
+            console.log('🔍 FETCHCOLLECTIONS START - Params:', parameters);
+            const response = await CollectionsApiService.getCollections(parameters);
             set({
               collections: response.items ?? [],
-              currentParams: params,
-              loading: false,
-              loaded: true,
+              currentParams: parameters,
               lastFetchTime: Date.now(),
+              loaded: true,
+              loading: false,
             });
             console.log('🔍 FETCHCOLLECTIONS SUCCESS');
-          } catch (err) {
-            console.error('🔍 FETCHCOLLECTIONS ERROR:', err);
+          } catch (error) {
+            console.error('🔍 FETCHCOLLECTIONS ERROR:', error);
             // If auth error, reset the store
-            if (err instanceof Error && 
-               (err.message.includes('Authentication required') || 
-                err.message.includes('Session expired'))) {
+            if (error instanceof Error && 
+               (error.message.includes('Authentication required') || 
+                error.message.includes('Session expired'))) {
               get().resetStore();
             }
-            set({ error: err instanceof Error ? err.message : 'Failed to fetch collections', loading: false });
-            throw err;
+            set({ error: error instanceof Error ? error.message : 'Failed to fetch collections', loading: false });
+            throw error;
           } finally {
             set((s) => {
               const r = new Set(s.activeRequests);
@@ -117,16 +138,22 @@ export const useCollectionsStore = create<CollectionsState>()(
           }
         },
 
-        createCollection: async (data) => {
-          const { isAuthenticated } = useAuthStore.getState();
-          if (!isAuthenticated) {
-            throw new Error('Authentication required. Please log in.');
-          }
-          const newCollection = await CollectionsApiService.createCollection(data);
-          set((s) => ({
-            collections: [...s.collections, newCollection]
-          }));
-          return newCollection;
+        lastFetchTime: 0,
+
+        loaded: false,
+
+        loading: false,
+
+        resetStore: () => {
+          set({
+            activeRequests: new Set(),
+            collections: [],
+            currentParams: {},
+            error: null,
+            lastFetchTime: 0,
+            loaded: false,
+            loading: false,
+          });
         },
 
         updateCollection: async (id, data) => {
@@ -140,42 +167,17 @@ export const useCollectionsStore = create<CollectionsState>()(
           }));
           return updatedCollection;
         },
-
-        deleteCollection: async (id) => {
-          const { isAuthenticated } = useAuthStore.getState();
-          if (!isAuthenticated) {
-            throw new Error('Authentication required. Please log in.');
-          }
-          await CollectionsApiService.deleteCollection(id);
-          set((s) => ({
-            collections: s.collections.filter((c) => c.id !== id)
-          }));
-        },
-
-        clearErrors: () => set({ error: null }),
-
-        resetStore: () => {
-          set({
-            collections: [],
-            loading: false,
-            loaded: false,
-            error: null,
-            currentParams: {},
-            lastFetchTime: 0,
-            activeRequests: new Set(),
-          });
-        },
       };
     },
     {
       name: 'collections-store',
-      storage: createJSONStorage(() => AsyncStorage),
       partialize: (state) => ({
         collections: state.collections,
-        loaded: state.loaded,
         currentParams: state.currentParams,
         lastFetchTime: state.lastFetchTime,
+        loaded: state.loaded,
       }),
+      storage: createJSONStorage(() => AsyncStorage),
     }
   )
 ); 

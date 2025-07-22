@@ -1,42 +1,45 @@
-import { useState, useEffect, useCallback } from 'react';
-import { authApiService } from '@/services/auth-api.service';
 import type { User } from '@/hooks/domain/user/schema';
-import type { LoginRequest, RegisterRequest, ApiError, SocialAuthRequest } from '@/services/api/types';
-import { useAuthStore } from './domain/user/useAuthStore';
+import type { ApiError, LoginRequest, RegisterRequest, SocialAuthRequest } from '@/services/api/types';
+
+import { useCallback, useEffect, useState } from 'react';
+
+import { authApiService } from '@/services/auth-api.service';
 import { storageService } from '@/services/storage';
 
-interface AuthState {
-  user: User | null;
+import { useAuthStore } from './domain/user/useAuthStore';
+
+type AuthState = {
+  error: null | string;
   isAuthenticated: boolean;
   isLoading: boolean;
-  error: string | null;
+  user: null | User;
 }
 
 export function useAuth() {
   const [state, setState] = useState<AuthState>({
-    user: null,
+    error: null,
     isAuthenticated: false,
     isLoading: true,
-    error: null,
+    user: null,
   });
 
-  const setUser = (user: User | null) => {
-    setState(prev => ({
-      ...prev,
-      user,
+  const setUser = (user: null | User) => {
+    setState(previous => ({
+      ...previous,
       isAuthenticated: !!user,
+      user,
     }));
   };
 
   const setLoading = (isLoading: boolean) => {
-    setState(prev => ({ ...prev, isLoading }));
+    setState(previous => ({ ...previous, isLoading }));
   };
 
-  const setError = (error: string | null) => {
-    setState(prev => ({ ...prev, error }));
+  const setError = (error: null | string) => {
+    setState(previous => ({ ...previous, error }));
   };
 
-  const clearError = () => setError(null);
+  const clearError = () => { setError(null); };
 
   const login = async (data: LoginRequest): Promise<void> => {
     try {
@@ -46,19 +49,19 @@ export function useAuth() {
       const response = await authApiService.login(data);
       await storageService.storeTokens({
         access_token: response.access_token,
-        refresh_token: response.refresh_token || '',
-        token_type: response.token_type,
         access_token_expires_in: response.access_token_expires_in,
-        refresh_token_expires_in: response.refresh_token_expires_in,
         is_revoked: false,
+        refresh_token: response.refresh_token || '',
+        refresh_token_expires_in: response.refresh_token_expires_in,
+        token_type: response.token_type,
       });
       
       useAuthStore.setState({
-        user: response.user,
-        isAuthenticated: true,
-        isLoading: false,
         error: null,
         initialized: true,
+        isAuthenticated: true,
+        isLoading: false,
+        user: response.user,
       });
       setUser(response.user);
     } catch (error) {
@@ -78,19 +81,19 @@ export function useAuth() {
       const response = await authApiService.register(data);
       await storageService.storeTokens({
         access_token: response.access_token,
-        refresh_token: response.refresh_token || '',
-        token_type: response.token_type,
         access_token_expires_in: response.access_token_expires_in,
-        refresh_token_expires_in: response.refresh_token_expires_in,
         is_revoked: false,
+        refresh_token: response.refresh_token || '',
+        refresh_token_expires_in: response.refresh_token_expires_in,
+        token_type: response.token_type,
       });
       
       useAuthStore.setState({
-        user: response.user,
-        isAuthenticated: true,
-        isLoading: false,
         error: null,
         initialized: true,
+        isAuthenticated: true,
+        isLoading: false,
+        user: response.user,
       });
       setUser(response.user);
     } catch (error) {
@@ -127,19 +130,19 @@ export function useAuth() {
       const response = await authApiService.googleSignIn(data.token);
       await storageService.storeTokens({
         access_token: response.access_token,
-        refresh_token: response.refresh_token || '',
-        token_type: response.token_type,
         access_token_expires_in: response.access_token_expires_in,
-        refresh_token_expires_in: response.refresh_token_expires_in,
         is_revoked: false,
+        refresh_token: response.refresh_token || '',
+        refresh_token_expires_in: response.refresh_token_expires_in,
+        token_type: response.token_type,
       });
       
       useAuthStore.setState({
-        user: response.user,
-        isAuthenticated: true,
-        isLoading: false,
         error: null,
         initialized: true,
+        isAuthenticated: true,
+        isLoading: false,
+        user: response.user,
       });
       setUser(response.user);
     } catch (error) {
@@ -158,11 +161,11 @@ export function useAuth() {
       
       const response = await authApiService.me();
       useAuthStore.setState({
-        user: response.user,
-        isAuthenticated: true,
-        isLoading: false,
         error: null,
         initialized: true,
+        isAuthenticated: true,
+        isLoading: false,
+        user: response.user,
       });
       setUser(response.user);
     } catch (error) {
@@ -176,15 +179,15 @@ export function useAuth() {
 
   // Sync with auth store instead of making API calls
   useEffect(() => {
-    const { user, isAuthenticated, isLoading } = useAuthStore.getState();
+    const { isAuthenticated, isLoading, user } = useAuthStore.getState();
     setUser(user);
-    setState(prev => ({ ...prev, isAuthenticated, isLoading }));
+    setState(previous => ({ ...previous, isAuthenticated, isLoading }));
     
     // Subscribe to auth store changes
     const unsubscribe = useAuthStore.subscribe((state) => {
       setUser(state.user);
-      setState(prev => ({ 
-        ...prev, 
+      setState(previous => ({ 
+        ...previous, 
         isAuthenticated: state.isAuthenticated, 
         isLoading: state.isLoading 
       }));
@@ -195,11 +198,11 @@ export function useAuth() {
 
   return {
     ...state,
-    login,
-    register,
-    logout,
-    socialAuth,
     clearError,
+    login,
+    logout,
     refetch: checkAuthStatus,
+    register,
+    socialAuth,
   };
 } 

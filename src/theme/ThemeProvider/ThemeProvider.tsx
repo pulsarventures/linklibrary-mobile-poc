@@ -1,34 +1,37 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
-import { useColorScheme, ActivityIndicator, View } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { LIGHT_COLORS, DARK_COLORS } from '../styles/colors';
 import type { ThemeColors } from '../types/theme';
+
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import React, { createContext, useContext, useEffect, useState } from 'react';
+import { ActivityIndicator, useColorScheme, View } from 'react-native';
+
 import { storageService } from '@/services/storage';
+
 import layout from '../layout';
+import { DARK_COLORS, LIGHT_COLORS } from '../styles/colors';
 
-export type ColorTheme = 'light' | 'dark' | 'system';
+export type ColorTheme = 'dark' | 'light' | 'system';
 
-interface ThemeContextType {
+type ThemeContextType = {
   colors: ThemeColors;
   isDark: boolean;
+  layout: typeof layout;
+  setTheme: (theme: ColorTheme) => void;
   theme: ColorTheme;
   toggleTheme: () => void;
-  setTheme: (theme: ColorTheme) => void;
-  layout: typeof layout;
 }
 
 const ThemeContext = createContext<ThemeContextType>({
   colors: LIGHT_COLORS,
   isDark: false,
+  layout,
+  setTheme: () => {},
   theme: 'system',
   toggleTheme: () => {},
-  setTheme: () => {},
-  layout,
 });
 
 const THEME_STORAGE_KEY = '@theme';
 
-export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const ThemeProvider: React.FC<{ readonly children: React.ReactNode }> = ({ children }) => {
   const systemColorScheme = useColorScheme();
   const [isLoading, setIsLoading] = useState(true);
   const [theme, setThemeState] = useState<ColorTheme>('light');
@@ -73,7 +76,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   if (isLoading) {
     return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+      <View style={{ alignItems: 'center', flex: 1, justifyContent: 'center' }}>
         <ActivityIndicator size="large" />
       </View>
     );
@@ -84,10 +87,10 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       value={{
         colors,
         isDark,
+        layout,
+        setTheme,
         theme,
         toggleTheme,
-        setTheme,
-        layout,
       }}
     >
       {children}

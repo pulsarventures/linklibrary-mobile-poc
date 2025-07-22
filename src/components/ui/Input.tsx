@@ -1,48 +1,46 @@
 import React from 'react';
-import { View, TextInput, StyleSheet, TextInputProps, ViewStyle } from 'react-native';
-import { Text } from './Text';
+import { StyleSheet, TextInput, TextInputProps, View, ViewStyle } from 'react-native';
+
 import { PRIMARY_COLORS } from '@/theme/styles/colors';
 import { SPACING } from '@/theme/styles/spacing';
 
-interface InputProps extends TextInputProps {
-  label?: string;
-  icon?: React.ReactNode;
-  error?: string;
-  containerStyle?: ViewStyle;
-}
+import { Text } from './Text';
+
+type InputProps = {
+  readonly containerStyle?: ViewStyle;
+  readonly error?: string;
+  readonly icon?: React.ReactNode;
+  readonly label?: string;
+} & TextInputProps
 
 export function Input({
-  label,
-  icon,
-  error,
   containerStyle,
+  error,
+  icon,
+  label,
   style,
   ...props
 }: InputProps) {
   return (
     <View style={[styles.container, containerStyle]}>
-      {label && (
-        <Text variant="caption" weight="medium" style={styles.label}>
+      {label ? <Text style={styles.label} variant="caption" weight="medium">
           {label}
-        </Text>
-      )}
+        </Text> : null}
       <View style={styles.inputContainer}>
-        {icon && <View style={styles.icon}>{icon}</View>}
+        {icon ? <View style={styles.icon}>{icon}</View> : null}
         <TextInput
+          placeholderTextColor={PRIMARY_COLORS.text.secondary}
           style={[
             styles.input,
             error && styles.inputError,
             style,
           ]}
-          placeholderTextColor={PRIMARY_COLORS.text.secondary}
           {...props}
         />
       </View>
-      {error && (
-        <Text variant="caption" color={PRIMARY_COLORS.error} style={styles.error}>
+      {error ? <Text color={PRIMARY_COLORS.error} style={styles.error} variant="caption">
           {error}
-        </Text>
-      )}
+        </Text> : null}
     </View>
   );
 }
@@ -51,35 +49,35 @@ const styles = StyleSheet.create({
   container: {
     marginBottom: SPACING.md,
   },
-  label: {
-    marginBottom: SPACING.xs,
+  error: {
+    marginTop: SPACING.xs,
+  },
+  icon: {
+    height: '100%',
+    justifyContent: 'center',
+    left: SPACING.md,
+    position: 'absolute',
+    zIndex: 1,
+  },
+  input: {
+    backgroundColor: PRIMARY_COLORS.surface,
+    borderColor: PRIMARY_COLORS.border,
+    borderRadius: 12,
+    borderWidth: 1,
     color: PRIMARY_COLORS.text.primary,
+    fontSize: 16,
+    height: 48,
+    paddingHorizontal: SPACING.md,
+    paddingLeft: 48, // Space for icon
   },
   inputContainer: {
     position: 'relative',
   },
-  input: {
-    height: 48,
-    backgroundColor: PRIMARY_COLORS.surface,
-    borderWidth: 1,
-    borderColor: PRIMARY_COLORS.border,
-    borderRadius: 12,
-    paddingHorizontal: SPACING.md,
-    paddingLeft: 48, // Space for icon
-    color: PRIMARY_COLORS.text.primary,
-    fontSize: 16,
-  },
   inputError: {
     borderColor: PRIMARY_COLORS.error,
   },
-  icon: {
-    position: 'absolute',
-    left: SPACING.md,
-    height: '100%',
-    justifyContent: 'center',
-    zIndex: 1,
-  },
-  error: {
-    marginTop: SPACING.xs,
+  label: {
+    color: PRIMARY_COLORS.text.primary,
+    marginBottom: SPACING.xs,
   },
 }); 

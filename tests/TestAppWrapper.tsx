@@ -1,19 +1,20 @@
-import { queryClient } from '@/App';
 import { QueryClientProvider } from '@tanstack/react-query';
-import { type PropsWithChildren, useEffect, useState } from 'react';
-import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import { I18nextProvider } from 'react-i18next';
 import i18n from 'i18next';
+import { type PropsWithChildren, useEffect, useState } from 'react';
+import { I18nextProvider } from 'react-i18next';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 import { ThemeProvider } from '@/theme';
 import { initializeI18n } from '@/translations';
+
+import { queryClient } from '@/App';
 
 function TestAppWrapper({ children }: PropsWithChildren) {
   const [isI18nInitialized, setIsI18nInitialized] = useState(false);
 
   useEffect(() => {
     initializeI18n()
-      .then(() => setIsI18nInitialized(true))
+      .then(() => { setIsI18nInitialized(true); })
       .catch(error => {
         console.error('Failed to initialize i18n:', error);
         // Still set as initialized to not block the tests, but translations might not work

@@ -1,25 +1,29 @@
-import React, { useEffect, useState } from 'react';
-import { View, FlatList, StyleSheet, RefreshControl, ActivityIndicator, Pressable, Alert } from 'react-native';
-import { SafeScreen } from '@/components/templates';
-import { useCollectionsStore } from '../../hooks/domain/collections/useCollectionsStore';
-import { CollectionItem, CollectionFormModal } from '../../components/molecules';
-import { useTheme } from '@/theme';
 import type { Collection } from '../../types/collection.types';
-import Toast from 'react-native-toast-message';
-import { useAuthStore } from '@/hooks/domain/user/useAuthStore';
-import { Text, Button } from '@/components/ui';
+
+import React, { useEffect, useState } from 'react';
+import { ActivityIndicator, Alert, FlatList, Pressable, RefreshControl, StyleSheet, View } from 'react-native';
 import Animated, { 
   FadeIn, 
   Layout
 } from 'react-native-reanimated';
-import { IconByVariant } from '@/components/atoms';
+import Toast from 'react-native-toast-message';
+
+import { useAuthStore } from '@/hooks/domain/user/useAuthStore';
+import { useTheme } from '@/theme';
 import { SPACING } from '@/theme/styles/spacing';
+
+import { IconByVariant } from '@/components/atoms';
+import { SafeScreen } from '@/components/templates';
+import { Button, Text } from '@/components/ui';
+
+import { CollectionFormModal, CollectionItem } from '../../components/molecules';
+import { useCollectionsStore } from '../../hooks/domain/collections/useCollectionsStore';
 
 const AnimatedFlatList = Animated.createAnimatedComponent(FlatList<Collection>);
 
 export default function Collections() {
   const { colors } = useTheme();
-  const { collections, loading, error, fetchCollections, createCollection, updateCollection, deleteCollection } = useCollectionsStore();
+  const { collections, createCollection, deleteCollection, error, fetchCollections, loading, updateCollection } = useCollectionsStore();
   const { user } = useAuthStore();
   const [refreshing, setRefreshing] = useState(false);
   const [showFormModal, setShowFormModal] = useState(false);
@@ -39,53 +43,53 @@ export default function Collections() {
     } catch (error) {
       console.error('Failed to refresh collections:', error);
       Toast.show({
-        type: 'error',
         text1: 'Failed to refresh collections',
+        type: 'error',
       });
     } finally {
       setRefreshing(false);
     }
   };
 
-  const handleCreateCollection = async (data: { name: string; description?: string; icon?: string; color?: string }) => {
+  const handleCreateCollection = async (data: { color?: string; description?: string; icon?: string; name: string; }) => {
     setFormLoading(true);
     try {
       await createCollection(data);
       Toast.show({
-        type: 'success',
         text1: 'Collection created successfully',
+        type: 'success',
       });
       setShowFormModal(false);
     } catch (error) {
       console.error('Failed to create collection:', error);
       Toast.show({
-        type: 'error',
         text1: 'Failed to create collection',
         text2: error instanceof Error ? error.message : 'Please try again',
+        type: 'error',
       });
     } finally {
       setFormLoading(false);
     }
   };
 
-  const handleUpdateCollection = async (data: { name: string; description?: string; icon?: string; color?: string }) => {
+  const handleUpdateCollection = async (data: { color?: string; description?: string; icon?: string; name: string; }) => {
     if (!editingCollection) return;
     
     setFormLoading(true);
     try {
       await updateCollection(editingCollection.id, data);
       Toast.show({
-        type: 'success',
         text1: 'Collection updated successfully',
+        type: 'success',
       });
       setShowFormModal(false);
       setEditingCollection(null);
     } catch (error) {
       console.error('Failed to update collection:', error);
       Toast.show({
-        type: 'error',
         text1: 'Failed to update collection',
         text2: error instanceof Error ? error.message : 'Please try again',
+        type: 'error',
       });
     } finally {
       setFormLoading(false);
@@ -96,25 +100,21 @@ export default function Collections() {
     try {
       await deleteCollection(id);
       Toast.show({
-        type: 'success',
         text1: 'Collection deleted successfully',
+        type: 'success',
       });
     } catch (error) {
       console.error('Failed to delete collection:', error);
       Toast.show({
-        type: 'error',
         text1: 'Failed to delete collection',
         text2: error instanceof Error ? error.message : 'Please try again',
+        type: 'error',
       });
     }
   };
 
-  const handleFormSubmit = async (data: { name: string; description?: string; icon?: string; color?: string }) => {
-    if (editingCollection) {
-      await handleUpdateCollection(data);
-    } else {
-      await handleCreateCollection(data);
-    }
+  const handleFormSubmit = async (data: { color?: string; description?: string; icon?: string; name: string; }) => {
+    await (editingCollection ? handleUpdateCollection(data) : handleCreateCollection(data));
   };
 
   const handleCloseFormModal = () => {
@@ -125,35 +125,39 @@ export default function Collections() {
   const handleAction = (actionType: string, id: number) => {
     'worklet';
     switch (actionType) {
-      case 'VIEW':
-        // Navigate to collection view
-        break;
-      case 'EDIT':
-        const collection = collections.find(c => c.id === id);
-        if (collection) {
-          setEditingCollection(collection);
-          setShowFormModal(true);
-        }
-        break;
-      case 'DELETE':
+      case 'DELETE': {
         const collectionToDelete = collections.find(c => c.id === id);
         if (collectionToDelete) {
           Alert.alert(
             'Delete Collection',
             `Are you sure you want to delete "${collectionToDelete.name}"? This action cannot be undone.`,
             [
-              { text: 'Cancel', style: 'cancel' },
+              { style: 'cancel', text: 'Cancel' },
               { 
-                text: 'Delete', 
+                onPress: () => handleDeleteCollection(id), 
                 style: 'destructive',
-                onPress: () => handleDeleteCollection(id)
+                text: 'Delete'
               }
             ]
           );
         }
         break;
-      default:
+      }
+      case 'EDIT': {
+        const collection = collections.find(c => c.id === id);
+        if (collection) {
+          setEditingCollection(collection);
+          setShowFormModal(true);
+        }
         break;
+      }
+      case 'VIEW': {
+        // Navigate to collection view
+        break;
+      }
+      default: {
+        break;
+      }
     }
   };
 
@@ -162,7 +166,7 @@ export default function Collections() {
       entering={FadeIn.springify()}
       layout={Layout.springify()}
     >
-      <CollectionItem collection={item} view="list" onAction={handleAction} />
+      <CollectionItem collection={item} onAction={handleAction} view="list" />
     </Animated.View>
   );
 
@@ -170,7 +174,7 @@ export default function Collections() {
     return (
       <SafeScreen>
         <View style={[styles.container, styles.centered]}>
-          <ActivityIndicator size="large" color={colors.accent.primary} />
+          <ActivityIndicator color={colors.accent.primary} size="large" />
         </View>
       </SafeScreen>
     );
@@ -204,9 +208,9 @@ export default function Collections() {
       <SafeScreen>
         <View style={[styles.container, styles.centered]}>
           <IconByVariant
+            color={colors.text.secondary}
             name="collection"
             size={48}
-            color={colors.text.secondary}
             style={styles.emptyIcon}
           />
           <Text style={[styles.emptyTitle, { color: colors.text.primary }]}>
@@ -216,19 +220,19 @@ export default function Collections() {
             Create your first collection to start organizing your links
           </Text>
           <Button
-            variant="primary"
-            onPress={() => setShowFormModal(true)}
+            onPress={() => { setShowFormModal(true); }}
             style={styles.createButton}
+            variant="primary"
           >
             Create
           </Button>
         </View>
         
         <CollectionFormModal
-          visible={showFormModal}
+          loading={formLoading}
           onClose={handleCloseFormModal}
           onSubmit={handleFormSubmit}
-          loading={formLoading}
+          visible={showFormModal}
         />
       </SafeScreen>
     );
@@ -239,91 +243,91 @@ export default function Collections() {
       <View style={styles.container}>
         <View style={styles.header}>
           <Button
-            variant="primary"
-            onPress={() => setShowFormModal(true)}
+            onPress={() => { setShowFormModal(true); }}
             style={styles.createButton}
+            variant="primary"
           >
             Create
           </Button>
         </View>
 
         <AnimatedFlatList
-          data={collections}
-          renderItem={renderItem}
-          keyExtractor={(item) => item.id.toString()}
           contentContainerStyle={styles.list}
-          showsVerticalScrollIndicator={false}
+          data={collections}
+          keyExtractor={(item) => item.id.toString()}
           refreshControl={
             <RefreshControl
-              refreshing={refreshing}
               onRefresh={onRefresh}
+              refreshing={refreshing}
               tintColor={colors.accent.primary}
             />
           }
+          renderItem={renderItem}
+          showsVerticalScrollIndicator={false}
         />
       </View>
       
       <CollectionFormModal
-        visible={showFormModal}
-        onClose={handleCloseFormModal}
-        onSubmit={handleFormSubmit}
         collection={editingCollection}
         loading={formLoading}
+        onClose={handleCloseFormModal}
+        onSubmit={handleFormSubmit}
+        visible={showFormModal}
       />
     </SafeScreen>
   );
 }
 
 const styles = StyleSheet.create({
+  centered: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   container: {
     flex: 1,
     paddingHorizontal: SPACING.lg,
     paddingTop: SPACING.md,
   },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: SPACING.lg,
-    paddingHorizontal: SPACING.sm,
-  },
-  centered: {
-    justifyContent: 'center',
-    alignItems: 'center',
+  createButton: {
+    height: 40,
+    minWidth: 100,
   },
 
-  createButton: {
-    minWidth: 100,
-    height: 40,
-  },
-  list: {
-    flex: 1,
-  },
-  errorText: {
-    fontSize: 16,
-    marginBottom: 16,
-    textAlign: 'center',
-  },
-  retryButton: {
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 8,
-  },
-  retryText: {
-    fontSize: 16,
-    fontWeight: '600',
-  },
   emptyIcon: {
     marginBottom: 16,
+  },
+  emptyText: {
+    fontSize: 16,
+    marginBottom: 24,
+    textAlign: 'center',
   },
   emptyTitle: {
     fontSize: 20,
     fontWeight: '600',
     marginBottom: 8,
   },
-  emptyText: {
+  errorText: {
     fontSize: 16,
+    marginBottom: 16,
     textAlign: 'center',
-    marginBottom: 24,
+  },
+  header: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'center',
+    marginBottom: SPACING.lg,
+    paddingHorizontal: SPACING.sm,
+  },
+  list: {
+    flex: 1,
+  },
+  retryButton: {
+    borderRadius: 8,
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+  },
+  retryText: {
+    fontSize: 16,
+    fontWeight: '600',
   },
 }); 

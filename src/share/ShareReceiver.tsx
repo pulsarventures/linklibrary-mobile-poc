@@ -1,8 +1,8 @@
 import React, { useEffect } from 'react';
-import { Platform, Linking, AppState, Alert } from 'react-native';
+import { Alert, AppState, Linking, Platform } from 'react-native';
 
-interface ShareReceiverProps {
-  onUrl: (url: string) => void;
+type ShareReceiverProps = {
+  readonly onUrl: (url: string) => void;
 }
 
 const ShareReceiver: React.FC<ShareReceiverProps> = ({ onUrl }) => {
@@ -37,7 +37,7 @@ const ShareReceiver: React.FC<ShareReceiverProps> = ({ onUrl }) => {
       }
     };
 
-    const extractUrlFromContent = (content: any): string | null => {
+    const extractUrlFromContent = (content: any): null | string => {
       try {
         console.log('📤 🔍 Extracting URL from content:', JSON.stringify(content, null, 2));
         
@@ -48,7 +48,7 @@ const ShareReceiver: React.FC<ShareReceiverProps> = ({ onUrl }) => {
             console.log('📤 ✅ Found direct URL string:', content);
             return content;
           }
-          const urlMatch = content.match(/https?:\/\/[^\s]+/);
+          const urlMatch = /https?:\/\/\S+/.exec(content);
           if (urlMatch) {
             console.log('📤 ✅ Found URL in string:', urlMatch[0]);
             return urlMatch[0];
@@ -70,7 +70,7 @@ const ShareReceiver: React.FC<ShareReceiverProps> = ({ onUrl }) => {
         // Handle object with text
         if (content?.text && typeof content.text === 'string') {
           console.log('📤 Checking text content:', content.text);
-          const urlMatch = content.text.match(/https?:\/\/[^\s]+/);
+          const urlMatch = content.text.match(/https?:\/\/\S+/);
           if (urlMatch) {
             console.log('📤 ✅ Found URL in text:', urlMatch[0]);
             return urlMatch[0];
@@ -100,8 +100,8 @@ const ShareReceiver: React.FC<ShareReceiverProps> = ({ onUrl }) => {
                 'Share Detected!',
                 `URL: ${url}`,
                 [
-                  { text: 'Cancel', style: 'cancel' },
-                  { text: 'Open', onPress: () => onUrl(url) }
+                  { style: 'cancel', text: 'Cancel' },
+                  { onPress: () => { onUrl(url); }, text: 'Open' }
                 ]
               );
               
@@ -199,8 +199,8 @@ const ShareReceiver: React.FC<ShareReceiverProps> = ({ onUrl }) => {
             'Link Detected!',
             `URL: ${url}`,
             [
-              { text: 'Cancel', style: 'cancel' },
-              { text: 'Open', onPress: () => onUrl(url) }
+              { style: 'cancel', text: 'Cancel' },
+              { onPress: () => { onUrl(url); }, text: 'Open' }
             ]
           );
         }
@@ -246,7 +246,7 @@ const ShareReceiver: React.FC<ShareReceiverProps> = ({ onUrl }) => {
                   // Ignore errors on app state check
                 }
               );
-            } catch (error) {
+            } catch {
               // Ignore errors
             }
           }

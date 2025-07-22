@@ -1,4 +1,5 @@
 import { createNavigationContainerRef } from '@react-navigation/native';
+
 import { RootStackParamList } from './types';
 
 export const navigationRef = createNavigationContainerRef<RootStackParamList>();
@@ -8,15 +9,15 @@ export enum Paths {
   Startup = 'Startup',
 
   // Auth
+  ForgotPassword = 'ForgotPassword',
   Login = 'Login',
   SignUp = 'SignUp',
-  ForgotPassword = 'ForgotPassword',
   
   // Main
   Auth = 'Auth',
-  Main = 'Main',
-  Links = 'Links',
   Collections = 'Collections',
-  Tags = 'Tags',
+  Links = 'Links',
+  Main = 'Main',
   Settings = 'Settings',
+  Tags = 'Tags',
 }

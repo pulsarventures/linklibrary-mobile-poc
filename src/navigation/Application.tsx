@@ -1,13 +1,16 @@
-import React from 'react';
-import { NavigationContainer, DefaultTheme } from '@react-navigation/native';
+import { DefaultTheme, NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import React from 'react';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+
+import { useAuthStore } from '@/hooks/domain/user/useAuthStore';
 import { useTheme } from '@/theme';
+
+import { Landing, Login, SignUp, Startup } from '@/screens';
+
+import { navigationRef as navigationReference, Paths } from './paths';
 import TabNavigator from './TabNavigator';
 import { RootStackParamList } from './types';
-import { useAuthStore } from '@/hooks/domain/user/useAuthStore';
-import { Login, SignUp, Landing, Startup } from '@/screens';
-import { Paths, navigationRef } from './paths';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -19,62 +22,62 @@ function Application() {
 
   const navigationTheme = {
     ...DefaultTheme,
-    dark: isDark,
     colors: {
       ...DefaultTheme.colors,
-      primary: colors.accent.primary,
       background: colors.background.primary,
-      card: colors.background.secondary,
-      text: colors.text.primary,
       border: colors.border.primary,
+      card: colors.background.secondary,
       notification: colors.error,
+      primary: colors.accent.primary,
+      text: colors.text.primary,
     },
+    dark: isDark,
   };
 
   return (
     <SafeAreaProvider>
-      <NavigationContainer ref={navigationRef} theme={navigationTheme}>
+      <NavigationContainer ref={navigationReference} theme={navigationTheme}>
         <Stack.Navigator 
           screenOptions={{ 
-            headerShown: false,
             animation: 'fade',
             animationDuration: 200,
+            headerShown: false,
           }}
         >
           {!initialized || isLoading ? (
             <Stack.Screen 
-              name={Paths.Startup} 
-              component={Startup}
+              component={Startup} 
+              name={Paths.Startup}
               options={{
                 animation: 'none',
               }}
             />
-          ) : !isAuthenticated ? (
-            <>
-              <Stack.Screen 
-                name={Paths.Login} 
-                component={Login}
-                options={{
-                  animation: 'fade',
-                }}
-              />
-              <Stack.Screen 
-                name={Paths.SignUp} 
-                component={SignUp}
-                options={{
-                  animation: 'slide_from_right',
-                }}
-              />
-            </>
-          ) : (
+          ) : isAuthenticated ? (
             <Stack.Screen 
-              name={Paths.Main} 
-              component={TabNavigator}
+              component={TabNavigator} 
+              name={Paths.Main}
               options={{
                 animation: 'fade',
                 animationDuration: 300,
               }}
             />
+          ) : (
+            <>
+              <Stack.Screen 
+                component={Login} 
+                name={Paths.Login}
+                options={{
+                  animation: 'fade',
+                }}
+              />
+              <Stack.Screen 
+                component={SignUp} 
+                name={Paths.SignUp}
+                options={{
+                  animation: 'slide_from_right',
+                }}
+              />
+            </>
           )}
         </Stack.Navigator>
       </NavigationContainer>

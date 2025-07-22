@@ -1,14 +1,17 @@
+import type { RootStackParamList } from '@/navigation/types';
+import type { NativeStackScreenProps } from '@react-navigation/native-stack';
+
 import React from 'react';
 import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
   StatusBar,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
-import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import type { RootStackParamList } from '@/navigation/types';
+
 import { useTheme } from '@/theme/ThemeProvider/ThemeProvider';
+
 import { Container } from '@/components/ui';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Landing'>;
@@ -57,8 +60,8 @@ export function Landing({ navigation }: Props) {
           {/* Action Button */}
           <View style={styles.buttonContainer}>            
             <TouchableOpacity 
+              onPress={() => { navigation.navigate('Login'); }}
               style={[styles.loginButton, { backgroundColor: colors.accent.primary }]}
-              onPress={() => navigation.navigate('Login')}
             >
               <Text style={[styles.loginButtonText, { color: colors.text.inverse }]}>Sign In</Text>
             </TouchableOpacity>
@@ -70,6 +73,16 @@ export function Landing({ navigation }: Props) {
 }
 
 const styles = StyleSheet.create({
+  addIcon: {
+    alignItems: 'center',
+    borderRadius: 24,
+    height: 48,
+    justifyContent: 'center',
+    width: 48,
+  },
+  buttonContainer: {
+    width: '100%',
+  },
   content: {
     flex: 1,
   },
@@ -77,77 +90,67 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 40,
   },
+  illustration: {
+    aspectRatio: 1.2,
+    marginBottom: 40,
+    width: '100%',
+  },
+  line: {
+    borderRadius: 4,
+    height: 8,
+  },
+  loginButton: {
+    alignItems: 'center',
+    borderRadius: 12,
+    paddingVertical: 16,
+  },
+  loginButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+  },
   logo: {
     fontSize: 24,
     fontWeight: '600',
   },
   mainContent: {
-    flex: 1,
     alignItems: 'center',
-  },
-  title: {
-    fontSize: 40,
-    fontWeight: 'bold',
-    textAlign: 'center',
-    marginBottom: 8,
-  },
-  titleHighlight: {
-    fontSize: 40,
-    fontWeight: 'bold',
-    textAlign: 'center',
-    marginBottom: 24,
-  },
-  subtitle: {
-    fontSize: 16,
-    textAlign: 'center',
-    marginBottom: 40,
-    lineHeight: 24,
-  },
-  illustration: {
-    width: '100%',
-    aspectRatio: 1.2,
-    marginBottom: 40,
+    flex: 1,
   },
   mockupContainer: {
-    flex: 1,
     borderRadius: 20,
-    padding: 20,
+    flex: 1,
     justifyContent: 'center',
+    padding: 20,
   },
   mockupContent: {
     alignItems: 'center',
     gap: 24,
   },
-  addIcon: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    justifyContent: 'center',
-    alignItems: 'center',
+  mockupLines: {
+    gap: 12,
+    width: '100%',
   },
   plusIcon: {
     fontSize: 32,
     fontWeight: '300',
     marginTop: -2,
   },
-  mockupLines: {
-    width: '100%',
-    gap: 12,
-  },
-  line: {
-    height: 8,
-    borderRadius: 4,
-  },
-  buttonContainer: {
-    width: '100%',
-  },
-  loginButton: {
-    paddingVertical: 16,
-    borderRadius: 12,
-    alignItems: 'center',
-  },
-  loginButtonText: {
+  subtitle: {
     fontSize: 16,
-    fontWeight: '600',
+    lineHeight: 24,
+    marginBottom: 40,
+    textAlign: 'center',
+  },
+  title: {
+    fontSize: 40,
+    fontWeight: 'bold',
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  titleHighlight: {
+    fontSize: 40,
+    fontWeight: 'bold',
+    marginBottom: 24,
+    textAlign: 'center',
   },
 }); 

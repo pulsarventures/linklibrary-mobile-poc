@@ -1,15 +1,17 @@
-import React from 'react';
-import type { SvgProps } from 'react-native-svg';
 import type { ColorValue } from 'react-native';
-import { icons, IconName } from '@/theme/assets/icons';
+import type { SvgProps } from 'react-native-svg';
+
+import React from 'react';
+
+import { IconName, icons } from '@/theme/assets/icons';
 
 type Properties = {
+  readonly color?: ColorValue;
   readonly name: IconName;
   readonly size?: number;
-  readonly color?: ColorValue;
-} & Omit<SvgProps, 'color' | 'width' | 'height'>;
+} & Omit<SvgProps, 'color' | 'height' | 'width'>;
 
-const IconByVariant: React.FC<Properties> = ({ name, size = 24, color, ...props }) => {
+const IconByVariant: React.FC<Properties> = ({ color, name, size = 24, ...props }) => {
   const Icon = icons[name];
 
   if (!Icon) {
@@ -17,7 +19,7 @@ const IconByVariant: React.FC<Properties> = ({ name, size = 24, color, ...props 
     return null;
   }
 
-  return <Icon width={size} height={size} color={color} {...props} />;
+  return <Icon color={color} height={size} width={size} {...props} />;
 };
 
 export default IconByVariant;

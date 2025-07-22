@@ -1,23 +1,23 @@
-export interface Tag {
-  name: string;
+export type Tag = {
   color: string;
-  id: number;
-  user_id: number;
   created_at: string;
+  id: number;
   link_count: number;
+  name: string;
+  user_id: number;
 }
 
-export interface TagsResponse {
-  items: Tag[];
-  total: number;
-  skip: number;
-  limit: number;
-  has_more: boolean;
-}
-
-export interface TagsQueryParams {
+export type TagsQueryParams = {
+  limit?: number;
+  skip?: number;
   sort_by?: string;
   sort_desc?: boolean;
-  skip?: number;
-  limit?: number;
+}
+
+export type TagsResponse = {
+  has_more: boolean;
+  items: Tag[];
+  limit: number;
+  skip: number;
+  total: number;
 } 

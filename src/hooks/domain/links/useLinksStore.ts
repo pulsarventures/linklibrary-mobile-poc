@@ -1,26 +1,30 @@
-import { create } from 'zustand';
 import type { Link } from '@/types/link.types';
-import { apiClient } from '@/services/api/client';
+
+import { create } from 'zustand';
+
 import { API_ENDPOINTS } from '@/config/api';
+import { apiClient } from '@/services/api/client';
+
 import { useAuthStore } from '../user/useAuthStore';
 
-interface LinksState {
-  links: Link[];
-  total: number;
-  isLoading: boolean;
+type LinksState = {
+  addLink: (link: Link) => void;
   error: Error | null;
   fetchLinks: () => Promise<void>;
+  isLoading: boolean;
+  links: Link[];
   setLinks: (links: Link[]) => void;
-  addLink: (link: Link) => void;
+  total: number;
 }
 
 export const useLinksStore = create<LinksState>((set, get) => ({
-  links: [],
-  total: 0,
-  isLoading: false,
+  addLink: (link: Link) => {
+    const { links } = get();
+    set({ links: [link, ...links], total: links.length + 1 });
+  },
   error: null,
   fetchLinks: async () => {
-    const { isAuthenticated, initialized } = useAuthStore.getState();
+    const { initialized, isAuthenticated } = useAuthStore.getState();
     
     // Don't fetch if auth is not initialized or user is not authenticated
     if (!initialized || !isAuthenticated) {
@@ -29,27 +33,27 @@ export const useLinksStore = create<LinksState>((set, get) => ({
     }
 
     try {
-      set({ isLoading: true, error: null });
+      set({ error: null, isLoading: true });
       
       const response = await apiClient.get<{
-        items: Link[];
-        total: number;
-        skip: number;
-        limit: number;
         has_more: boolean;
+        items: Link[];
+        limit: number;
+        skip: number;
+        total: number;
       }>(API_ENDPOINTS.links.list, {
         params: {
+          limit: 100,
+          skip: 0,
           sort_by: 'created_at',
           sort_desc: true,
-          skip: 0,
-          limit: 100,
         },
       });
 
       set({ 
+        isLoading: false,
         links: response.items,
-        total: response.total,
-        isLoading: false 
+        total: response.total 
       });
     } catch (error) {
       console.error('Failed to fetch links:', error);
@@ -57,11 +61,10 @@ export const useLinksStore = create<LinksState>((set, get) => ({
       throw error;
     }
   },
+  isLoading: false,
+  links: [],
   setLinks: (links: Link[]) => {
     set({ links, total: links.length });
   },
-  addLink: (link: Link) => {
-    const { links } = get();
-    set({ links: [link, ...links], total: links.length + 1 });
-  },
+  total: 0,
 })); 

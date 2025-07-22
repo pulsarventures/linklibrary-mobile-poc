@@ -1,4 +1,5 @@
 import { authApiService } from '@/services/auth-api.service';
+
 import { userSchema } from './schema';
 
 export const UserServices = {

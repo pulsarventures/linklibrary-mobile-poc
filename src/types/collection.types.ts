@@ -1,38 +1,38 @@
-export interface Collection {
-  id: number;
-  name: string;
+export type Collection = {
+  color?: string;
+  created_at: string;
   description?: string;
   icon?: string;
-  color?: string;
-  is_favorite: boolean;
+  id: number;
   is_archived: boolean;
   is_default: boolean;
+  is_favorite: boolean;
   link_count: number;
-  created_at: string;
-  updated_at: string;
+  name: string;
   sort_order?: number;
+  updated_at: string;
   user_id?: number;
 }
 
-export interface CollectionFormData {
-  name: string;
+export type CollectionFormData = {
+  color: string;
   description: string;
   icon: string;
-  color: string;
+  name: string;
 }
 
-export interface CollectionQueryParams {
-  skip?: number;
+export type CollectionQueryParams = {
   limit?: number;
   search?: string;
+  skip?: number;
   sort_by?: string;
   sort_desc?: boolean;
 }
 
-export interface CollectionsResponse {
-  items: Collection[];
-  total: number;
-  skip: number;
-  limit: number;
+export type CollectionsResponse = {
   has_more: boolean;
+  items: Collection[];
+  limit: number;
+  skip: number;
+  total: number;
 } 

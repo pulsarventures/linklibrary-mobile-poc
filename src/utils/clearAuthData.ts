@@ -1,6 +1,8 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { storageService } from '@/services/storage';
+
 import { useAuthStore } from '@/hooks/domain/user/useAuthStore';
+
+import { storageService } from '@/services/storage';
 
 export const clearAllAuthData = async () => {
   try {
@@ -57,7 +59,7 @@ export const logStoredAuthData = async () => {
     
     for (const key of authKeys) {
       const value = await AsyncStorage.getItem(key);
-      console.log(`📋 ${key}:`, value ? value.substring(0, 50) + '...' : 'null');
+      console.log(`📋 ${key}:`, value ? value.slice(0, 50) + '...' : 'null');
     }
     
     // Check storage service

@@ -1,27 +1,29 @@
 import type { Paths } from '@/navigation/paths';
 import type { StackScreenProps } from '@react-navigation/stack';
+
 import { NavigatorScreenParams } from '@react-navigation/native';
 
 export type RootScreenProps<
   S extends keyof RootStackParamList = keyof RootStackParamList,
 > = StackScreenProps<RootStackParamList, S>;
 
-export type RootTabParamList = {
-  Links: undefined;
-  Collections: undefined;
-  Add: { sharedUrl?: string };
-  Tags: undefined;
-  Settings: undefined;
-};
-
 export type RootStackParamList = {
-  Startup: undefined;
+  Dashboard: { collection: number };
+  ForgotPassword: undefined;
   Landing: undefined;
   Login: undefined;
-  SignUp: undefined;
-  ForgotPassword: undefined;
   Main: NavigatorScreenParams<RootTabParamList>;
-  Dashboard: { collection: number };
+  SignUp: undefined;
+  Startup: undefined;
+};
+
+export type RootTabParamList = {
+  Add: { sharedUrl?: string }; // Keep Add for share functionality, but not in tabs
+  Collections: undefined;
+  Links: undefined;
+  Search: undefined;
+  Settings: undefined;
+  Tags: undefined;
 };
 
 declare global {

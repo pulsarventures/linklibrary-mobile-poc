@@ -1,11 +1,14 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
-import { SafeScreen } from '@/components/templates';
-import { useTheme } from '@/theme';
+import { Alert, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+
 import { useAuthStore } from '@/hooks/domain/user/useAuthStore';
 import { navigationRef } from '@/navigation/paths';
+import { useTheme } from '@/theme';
+
+import { SafeScreen } from '@/components/templates';
+
 import { clearAllAuthData, logStoredAuthData } from '@/utils/clearAuthData';
-import { resetApp, forceLogout } from '@/utils/resetApp';
+import { forceLogout, resetApp } from '@/utils/resetApp';
 
 export default function Settings() {
   const { colors } = useTheme();
@@ -16,8 +19,8 @@ export default function Settings() {
       'Logout',
       'Are you sure you want to logout?',
       [
-        { text: 'Cancel', style: 'cancel' },
-        { text: 'Logout', style: 'destructive', onPress: logout },
+        { style: 'cancel', text: 'Cancel' },
+        { onPress: logout, style: 'destructive', text: 'Logout' },
       ]
     );
   };
@@ -43,10 +46,8 @@ export default function Settings() {
       'Clear Auth Data',
       'This will clear all stored authentication data and reset the app. Are you sure?',
       [
-        { text: 'Cancel', style: 'cancel' },
+        { style: 'cancel', text: 'Cancel' },
         { 
-          text: 'Clear All', 
-          style: 'destructive', 
           onPress: async () => {
             const success = await clearAllAuthData();
             if (success) {
@@ -54,7 +55,9 @@ export default function Settings() {
             } else {
               Alert.alert('Error', 'Failed to clear authentication data.');
             }
-          }
+          }, 
+          style: 'destructive', 
+          text: 'Clear All'
         },
       ]
     );
@@ -72,10 +75,8 @@ export default function Settings() {
       'Force Logout',
       'This will clear all authentication data and force you to log in again. Are you sure?',
       [
-        { text: 'Cancel', style: 'cancel' },
+        { style: 'cancel', text: 'Cancel' },
         { 
-          text: 'Force Logout', 
-          style: 'destructive', 
           onPress: async () => {
             const success = await forceLogout();
             if (success) {
@@ -83,7 +84,9 @@ export default function Settings() {
             } else {
               Alert.alert('Error', 'Failed to force logout.');
             }
-          }
+          }, 
+          style: 'destructive', 
+          text: 'Force Logout'
         },
       ]
     );
@@ -95,10 +98,8 @@ export default function Settings() {
       'Reset App',
       'This will clear ALL app data and reset everything. Are you absolutely sure?',
       [
-        { text: 'Cancel', style: 'cancel' },
+        { style: 'cancel', text: 'Cancel' },
         { 
-          text: 'Reset Everything', 
-          style: 'destructive', 
           onPress: async () => {
             const success = await resetApp();
             if (success) {
@@ -106,7 +107,9 @@ export default function Settings() {
             } else {
               Alert.alert('Error', 'Failed to reset app.');
             }
-          }
+          }, 
+          style: 'destructive', 
+          text: 'Reset Everything'
         },
       ]
     );
@@ -118,8 +121,8 @@ export default function Settings() {
         <Text style={[styles.title, { color: colors.text.primary }]}>Settings</Text>
         
         <TouchableOpacity
-          style={[styles.button, { backgroundColor: colors.accent.primary }]}
           onPress={testShareFunction}
+          style={[styles.button, { backgroundColor: colors.accent.primary }]}
         >
           <Text style={[styles.buttonText, { color: colors.background.primary }]}>
             Test Share Function
@@ -131,8 +134,8 @@ export default function Settings() {
           <Text style={[styles.sectionTitle, { color: colors.text.secondary }]}>Debug Tools</Text>
           
           <TouchableOpacity
-            style={[styles.button, { backgroundColor: '#f59e0b' }]}
             onPress={handleLogAuthData}
+            style={[styles.button, { backgroundColor: '#f59e0b' }]}
           >
             <Text style={[styles.buttonText, { color: '#ffffff' }]}>
               Log Auth Data
@@ -140,8 +143,8 @@ export default function Settings() {
           </TouchableOpacity>
           
           <TouchableOpacity
-            style={[styles.button, { backgroundColor: '#ef4444' }]}
             onPress={handleClearAuthData}
+            style={[styles.button, { backgroundColor: '#ef4444' }]}
           >
             <Text style={[styles.buttonText, { color: '#ffffff' }]}>
               Clear All Auth Data
@@ -149,8 +152,8 @@ export default function Settings() {
           </TouchableOpacity>
           
           <TouchableOpacity
-            style={[styles.button, { backgroundColor: '#dc2626' }]}
             onPress={handleForceLogout}
+            style={[styles.button, { backgroundColor: '#dc2626' }]}
           >
             <Text style={[styles.buttonText, { color: '#ffffff' }]}>
               Force Logout
@@ -158,8 +161,8 @@ export default function Settings() {
           </TouchableOpacity>
           
           <TouchableOpacity
-            style={[styles.button, { backgroundColor: '#991b1b' }]}
             onPress={handleResetApp}
+            style={[styles.button, { backgroundColor: '#991b1b' }]}
           >
             <Text style={[styles.buttonText, { color: '#ffffff' }]}>
               Reset App (Nuclear)
@@ -168,8 +171,8 @@ export default function Settings() {
         </View>
         
         <TouchableOpacity
-          style={[styles.button, styles.logoutButton]}
           onPress={handleLogout}
+          style={[styles.button, styles.logoutButton]}
         >
           <Text style={[styles.buttonText, { color: '#ff4444' }]}>
             Logout
@@ -181,42 +184,42 @@ export default function Settings() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 20,
-    gap: 20,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 20,
-  },
   button: {
-    padding: 15,
-    borderRadius: 8,
     alignItems: 'center',
-  },
-  logoutButton: {
-    backgroundColor: 'transparent',
-    borderWidth: 1,
-    borderColor: '#ff4444',
+    borderRadius: 8,
+    padding: 15,
   },
   buttonText: {
     fontSize: 16,
     fontWeight: '600',
   },
+  container: {
+    flex: 1,
+    gap: 20,
+    padding: 20,
+  },
   debugSection: {
-    marginTop: 20,
-    padding: 15,
     backgroundColor: 'rgba(0, 0, 0, 0.05)',
     borderRadius: 8,
     gap: 10,
+    marginTop: 20,
+    padding: 15,
+  },
+  logoutButton: {
+    backgroundColor: 'transparent',
+    borderColor: '#ff4444',
+    borderWidth: 1,
   },
   sectionTitle: {
     fontSize: 14,
     fontWeight: '600',
+    letterSpacing: 0.5,
     marginBottom: 10,
     textTransform: 'uppercase',
-    letterSpacing: 0.5,
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 20,
   },
 });

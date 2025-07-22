@@ -1,56 +1,56 @@
-export interface User {
-  id: number;
-  email: string;
-  name: string | null;
-  full_name: string | null;
-  avatar: string | null;
-  is_active: boolean;
-  is_verified: boolean;
-  created_at: string;
-  updated_at: string;
+export type ApiError = {
+  code?: string;
+  message: string;
+  status?: number;
 }
 
-export interface LoginRequest {
-  username: string;
-  password: string;
+export type AuthResponse = {
+  access_token: string;
+  access_token_expires_in: number;
+  is_revoked: boolean;
+  message?: string;
+  refresh_token: string;
+  refresh_token_expires_in: number;
+  token_type: string;
+  user: User;
 }
 
-export interface OAuth2LoginFormData {
-  username: string;
+export type LoginRequest = {
   password: string;
-  grant_type: 'password';
+  username: string;
+}
+
+export type OAuth2LoginFormData = {
   client_id: string;
   client_secret: string;
+  grant_type: 'password';
+  password: string;
+  username: string;
 }
 
-export interface RegisterRequest {
-  full_name: string;
+export type RegisterRequest = {
   email: string;
+  full_name: string;
   password: string;
 }
 
-export interface AuthResponse {
-  access_token: string;
-  refresh_token: string;
-  token_type: string;
-  access_token_expires_in: number;
-  refresh_token_expires_in: number;
-  is_revoked: boolean;
-  user: User;
-  message?: string;
-}
-
-export interface SocialAuthRequest {
-  provider: 'google' | 'apple';
-  token: string;
-  name?: string;
+export type SocialAuthRequest = {
   email?: string;
+  name?: string;
+  provider: 'apple' | 'google';
+  token: string;
 }
 
-export interface SocialAuthResponse extends AuthResponse {}
+export type SocialAuthResponse = {} & AuthResponse
 
-export interface ApiError {
-  message: string;
-  code?: string;
-  status?: number;
+export type User = {
+  avatar: null | string;
+  created_at: string;
+  email: string;
+  full_name: null | string;
+  id: number;
+  is_active: boolean;
+  is_verified: boolean;
+  name: null | string;
+  updated_at: string;
 } 

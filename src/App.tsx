@@ -1,23 +1,26 @@
 import 'react-native-gesture-handler';
 
-import React, { useEffect, useState, useRef } from 'react';
-import { ActivityIndicator, View } from 'react-native';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import i18n from 'i18next';
+import React, { useEffect, useRef, useState } from 'react';
+import { I18nextProvider } from 'react-i18next';
+import { ActivityIndicator, View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { enableScreens } from 'react-native-screens';
 import Toast from 'react-native-toast-message';
-import { I18nextProvider } from 'react-i18next';
-import i18n from 'i18next';
 
-import { ErrorBoundary } from '@/components/organisms';
 import ApplicationNavigator from '@/navigation/Application';
 import { ThemeProvider } from '@/theme';
-import { setupErrorHandling } from '@/utils/errorHandler';
 import { initializeI18n } from '@/translations';
+
+import { ErrorBoundary } from '@/components/organisms';
+
+import { setupErrorHandling } from '@/utils/errorHandler';
 // import ShareReceiver from '@/share/ShareReceiver'; // Using iOS share extension instead
-import { navigationRef, Paths } from '@/navigation/paths';
+import { AppState, Linking, NativeModules } from 'react-native';
+
 import { useAuthStore } from '@/hooks/domain/user/useAuthStore';
-import { NativeModules, AppState, Linking } from 'react-native';
+import { navigationRef, Paths } from '@/navigation/paths';
 
 const { AppGroupsModule } = NativeModules;
 
@@ -39,17 +42,19 @@ const queryClient = new QueryClient({
     queries: {
       retry: 2,
       staleTime: 5 * 60 * 1000, // 5 minutes
+      placeholderData: (previousData: unknown) => previousData || [],
+      select: (data) => data || [],
     },
   },
 });
 
 function App() {
   const [isI18nInitialized, setIsI18nInitialized] = useState(false);
-  const pendingSharedUrl = useRef<string | null>(null);
+  const pendingSharedUrl = useRef<null | string>(null);
 
   useEffect(() => {
     initializeI18n()
-      .then(() => setIsI18nInitialized(true))
+      .then(() => { setIsI18nInitialized(true); })
       .catch(error => {
         console.error('Failed to initialize i18n:', error);
         // Still set as initialized to not block the app, but translations might not work
@@ -61,13 +66,13 @@ function App() {
     console.log('📤 🎯 SHARE HANDLER CALLED! Received shared URL:', url);
     
     // Validate URL first
-    if (!url || !url.startsWith('http')) {
+    if (!url?.startsWith('http')) {
       console.log('📤 Invalid URL received:', url);
       return;
     }
     
     // Check if user is authenticated
-    const { isAuthenticated, initialized } = useAuthStore.getState();
+    const { initialized, isAuthenticated } = useAuthStore.getState();
     
     console.log('📤 Auth state - initialized:', initialized, 'authenticated:', isAuthenticated);
     
@@ -106,7 +111,7 @@ function App() {
           url = sharedData.data;
         } else if (sharedData.type === 'text') {
           // Try to extract URL from text
-          const urlMatch = sharedData.data.match(/https?:\/\/[^\s]+/);
+          const urlMatch = sharedData.data.match(/https?:\/\/\S+/);
           if (urlMatch) {
             url = urlMatch[0];
           }
@@ -128,8 +133,8 @@ function App() {
     if (navigationRef.isReady()) {
       console.log('📤 Navigation is ready, navigating...');
       try {
-        // Navigate to the Main navigator with nested Add screen
-        navigationRef.navigate(Paths.Main as any, {
+        // Navigate to the Main navigator with Add screen params
+        navigationRef.navigate('Main', {
           screen: 'Add',
           params: { sharedUrl: url }
         });
@@ -143,7 +148,7 @@ function App() {
       const unsubscribe = navigationRef.addListener('state', () => {
         console.log('📤 Navigation state changed, attempting navigation...');
         try {
-          navigationRef.navigate(Paths.Main as any, {
+          navigationRef.navigate('Main', {
             screen: 'Add',
             params: { sharedUrl: url }
           });
@@ -217,7 +222,7 @@ function App() {
 
   if (!isI18nInitialized) {
     return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+      <View style={{ alignItems: 'center', flex: 1, justifyContent: 'center' }}>
         <ActivityIndicator size="large" />
       </View>
     );

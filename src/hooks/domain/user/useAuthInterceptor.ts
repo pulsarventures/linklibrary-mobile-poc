@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+
 import { useAuthStore } from './useAuthStore';
 
 export const useAuthInterceptor = () => {

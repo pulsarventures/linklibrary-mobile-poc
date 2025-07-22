@@ -1,24 +1,24 @@
 export const TYPOGRAPHY = {
   fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+  lineHeights: {
+    normal: 1.5,
+    relaxed: 1.8,
+    tight: 1.2
+  },
   sizes: {
-    xs: 12,      // Small text like "Remember me"
-    sm: 14,      // Form labels
-    md: 16,      // Input text, buttons
     lg: 18,      // Subtitles
+    md: 16,      // Input text, buttons
+    sm: 14,      // Form labels
     xl: 24,      // "Welcome back" title
+    xs: 12,      // Small text like "Remember me"
     xxl: 28,     // Large titles
   },
   weights: {
+    bold: "700",
     light: "300",
-    regular: "400",
     medium: "500",
-    semibold: "600",
-    bold: "700"
-  },
-  lineHeights: {
-    tight: 1.2,
-    normal: 1.5,
-    relaxed: 1.8
+    regular: "400",
+    semibold: "600"
   }
 } as const;
 

@@ -22,19 +22,19 @@ export const initializeI18n = async () => {
     .init({
       defaultNS,
       fallbackLng: 'fr-FR',
-      lng: 'fr-FR',
-      resources,
       interpolation: {
         escapeValue: false,
       },
-      returnNull: false, // Return key instead of null when translation is missing
-      returnEmptyString: false, // Return key instead of empty string
-      saveMissing: true, // Log missing translations in development
+      lng: 'fr-FR',
       missingKeyHandler: (lng, ns, key) => {
         if (__DEV__) {
           console.warn(`Missing translation: ${key} (${lng}/${ns})`);
         }
       },
+      resources,
+      returnEmptyString: false, // Return key instead of empty string
+      returnNull: false, // Return key instead of null when translation is missing
+      saveMissing: true, // Log missing translations in development
     });
 
   // add capitalization formatter

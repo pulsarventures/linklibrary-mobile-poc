@@ -90,22 +90,22 @@ export const useCreateLink = () => {
         
         // Create optimistic link with temporary ID
         const optimisticLink: Link = {
-          id: `temp-${Date.now()}`,
-          url: variables.url || '',
-          title: variables.title || '',
-          summary: variables.summary || '',
-          notes: variables.notes || '',
-          favicon_url: '',
-          content_type: '',
-          input_source: variables.input_source || 'mobile',
-          is_favorite: variables.is_favorite || false,
-          is_archived: false,
-          is_read: false,
           collection_id: variables.collection_id || null,
+          content_type: '',
+          created_at: new Date().toISOString(),
+          favicon_url: '',
+          id: `temp-${Date.now()}`,
+          input_source: variables.input_source || 'mobile',
+          is_archived: false,
+          is_favorite: variables.is_favorite || false,
+          is_read: false,
+          notes: variables.notes || '',
+          summary: variables.summary || '',
           tag_ids: variables.tag_ids || [],
           tags: [], // Will be populated when real response comes back
-          created_at: new Date().toISOString(),
+          title: variables.title || '',
           updated_at: new Date().toISOString(),
+          url: variables.url || '',
         };
         
         // Add to beginning of list (most recent first)

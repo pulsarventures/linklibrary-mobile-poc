@@ -9,7 +9,7 @@ export function generateEncryptionKey(): string {
   // Generate a 32-character random string for AES-256
   const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
   let result = '';
-  for (let i = 0; i < 32; i++) {
+  for (let index = 0; index < 32; index++) {
     result += chars.charAt(Math.floor(Math.random() * chars.length));
   }
   return result;
@@ -36,8 +36,8 @@ export function getEncryptionKey(): string {
  */
 export function createSecureStorage(): MMKV {
   return new MMKV({
-    id: 'secure-credentials',
     encryptionKey: getEncryptionKey(),
+    id: 'secure-credentials',
   });
 }
 

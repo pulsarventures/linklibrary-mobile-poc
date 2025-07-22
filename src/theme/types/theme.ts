@@ -22,30 +22,30 @@ export type Theme = {
   variant: Variant;
 };
 
-export interface ThemeColors {
-  text: {
+export type ThemeColors = {
+  accent: {
     primary: string;
-    secondary: string;
-    tertiary: string;
-    inverse: string;
-    error: string;
   };
   background: {
+    error: string;
     primary: string;
     secondary: string;
-    tertiary: string;
-    error: string;
-    surface: string;
     subtle: string;
+    surface: string;
+    tertiary: string;
   };
   border: {
     primary: string;
   };
-  accent: {
-    primary: string;
-  };
   card: string;
-  muted: string;
   error: string;
+  muted: string;
   success: string;
+  text: {
+    error: string;
+    inverse: string;
+    primary: string;
+    secondary: string;
+    tertiary: string;
+  };
 }

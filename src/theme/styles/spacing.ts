@@ -1,11 +1,11 @@
 export const SPACING = {
-  xxs: 2,
-  xs: 4,
-  sm: 8,
-  md: 16,
   lg: 24,
+  md: 16,
+  sm: 8,
   xl: 32,
-  xxl: 48
+  xs: 4,
+  xxl: 48,
+  xxs: 2
 } as const;
 
 export type Spacing = typeof SPACING; 

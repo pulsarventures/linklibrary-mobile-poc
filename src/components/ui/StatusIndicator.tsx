@@ -1,50 +1,57 @@
 import React from 'react';
-import { View, StyleSheet, ViewStyle } from 'react-native';
+import { StyleSheet, View, ViewStyle } from 'react-native';
+
 import { useTheme } from '@/theme';
-import { Text } from './Text';
-import { IconByVariant } from '@/components/atoms';
 import { SPACING } from '@/theme/styles/spacing';
 
-type StatusType = 'success' | 'error' | 'warning';
+import { IconByVariant } from '@/components/atoms';
+
+import { Text } from './Text';
 
 type StatusIndicatorProps = {
-  type: StatusType;
-  message: string;
-  style?: ViewStyle;
+  readonly message: string;
+  readonly style?: ViewStyle;
+  readonly type: StatusType;
 };
 
+type StatusType = 'error' | 'success' | 'warning';
+
 const STATUS_CONFIG = {
-  success: {
-    icon: 'check',
-    backgroundColor: 'rgba(16, 185, 129, 0.1)',
-    color: '#10B981'
-  },
   error: {
-    icon: 'x',
     backgroundColor: 'rgba(239, 68, 68, 0.1)',
-    color: '#EF4444'
+    color: '#EF4444',
+    icon: 'x'
+  },
+  success: {
+    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+    color: '#10B981',
+    icon: 'check'
   },
   warning: {
-    icon: 'alert-triangle',
     backgroundColor: 'rgba(245, 158, 11, 0.1)',
-    color: '#F59E0B'
+    color: '#F59E0B',
+    icon: 'alert-triangle'
   }
 } as const;
 
-export function StatusIndicator({ type, message, style }: StatusIndicatorProps) {
+export function StatusIndicator({ message, style, type }: StatusIndicatorProps) {
   const { colors } = useTheme();
   const config = STATUS_CONFIG[type];
 
   const getIconByStatus = (status: StatusType) => {
     switch (status) {
-      case 'success':
-        return 'check';
-      case 'error':
+      case 'error': {
         return 'fire';
-      case 'warning':
-        return 'fire';
-      default:
+      }
+      case 'success': {
         return 'check';
+      }
+      case 'warning': {
+        return 'fire';
+      }
+      default: {
+        return 'check';
+      }
     }
   };
 
@@ -55,9 +62,9 @@ export function StatusIndicator({ type, message, style }: StatusIndicatorProps) 
       style
     ]}>
       <IconByVariant 
+        color={config.color} 
         name={getIconByStatus(type)} 
-        size={16} 
-        color={config.color}
+        size={16}
         style={styles.icon} 
       />
       <Text style={[styles.text, { color: config.color }]}>{message}</Text>
@@ -67,11 +74,11 @@ export function StatusIndicator({ type, message, style }: StatusIndicatorProps) 
 
 const styles = StyleSheet.create({
   container: {
-    flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: SPACING.xs,
-    paddingHorizontal: SPACING.md,
     borderRadius: 8,
+    flexDirection: 'row',
+    paddingHorizontal: SPACING.md,
+    paddingVertical: SPACING.xs,
   },
   icon: {
     marginRight: SPACING.xs,

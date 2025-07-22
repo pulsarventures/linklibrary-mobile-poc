@@ -13,26 +13,26 @@ export const API_URL = isDevelopment
 
 export const API_ENDPOINTS = {
   auth: {
-    login: `/auth/login`,
-    register: `/auth/register`,
-    refreshToken: `/auth/refresh`,
-    logout: `/auth/logout`,
-    social: `/auth/social`,
-    googleAuth: `/auth/google/chrome-extension`,
     forgotPassword: `/auth/forgot-password`,
+    googleAuth: `/auth/google/chrome-extension`,
+    login: `/auth/login`,
+    logout: `/auth/logout`,
+    refreshToken: `/auth/refresh`,
+    register: `/auth/register`,
     resetPassword: `/auth/reset-password`,
+    social: `/auth/social`,
+  },
+  links: {
+    create: `/links`,
+    delete: (id: string) => `/links/${id}`,
+    get: (id: string) => `/links/${id}`,
+    list: `/links`,
+    update: (id: string) => `/links/${id}`,
   },
   user: {
     me: `/users/me`,
     profile: `/user/profile`,
     updateProfile: `/user/profile`,
-  },
-  links: {
-    list: `/links`,
-    create: `/links`,
-    get: (id: string) => `/links/${id}`,
-    update: (id: string) => `/links/${id}`,
-    delete: (id: string) => `/links/${id}`,
   },
 };
 

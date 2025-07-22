@@ -14,7 +14,7 @@ export const generateFontColors = (configuration: UnionConfiguration) => {
         },
       });
     },
-    {} as FontColors,
+    {},
   );
 };
 

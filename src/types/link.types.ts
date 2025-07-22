@@ -1,22 +1,22 @@
-export interface Link {
-  id: string;
-  url: string;
-  title: string;
-  summary?: string;
-  notes: string | null;
-  thumbnail_url: string | null;
-  favicon_url: string | null;
-  input_source: string | null;
-  source_name: string | null;
-  content_type?: string;
-  estimated_read_time: number | null;
+export type Link = {
   collection_id: string;
-  is_favorite: boolean;
-  is_archived: boolean;
-  is_read: boolean;
-  user_id: string;
+  content_type?: string;
   created_at: string;
-  updated_at: string;
-  last_accessed: string | null;
+  estimated_read_time: null | number;
+  favicon_url: null | string;
+  id: string;
+  input_source: null | string;
+  is_archived: boolean;
+  is_favorite: boolean;
+  is_read: boolean;
+  last_accessed: null | string;
+  notes: null | string;
+  source_name: null | string;
+  summary?: string;
   tag_ids: string[];
+  thumbnail_url: null | string;
+  title: string;
+  updated_at: string;
+  url: string;
+  user_id: string;
 } 

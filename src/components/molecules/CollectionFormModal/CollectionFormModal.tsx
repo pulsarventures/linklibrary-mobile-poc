@@ -1,41 +1,44 @@
-import React, { useState, useEffect, useRef } from 'react';
+import type { Collection } from '@/types/collection.types';
+
+import React, { useEffect, useRef, useState } from 'react';
 import {
-  View,
-  StyleSheet,
+  ActivityIndicator,
+  Alert,
   Modal,
   Pressable,
-  Alert,
-  ActivityIndicator,
+  StyleSheet,
   TextInput,
+  View,
 } from 'react-native';
-import { useTheme } from '@/theme';
-import { Text, Button, Input } from '@/components/ui';
-import type { Collection } from '@/types/collection.types';
-import { SPACING } from '@/theme/styles/spacing';
-import { IconByVariant } from '@/components/atoms';
 
-interface CollectionFormModalProps {
-  visible: boolean;
-  onClose: () => void;
-  onSubmit: (data: { name: string; description?: string; icon?: string; color?: string }) => Promise<void>;
-  collection?: Collection | null;
-  loading?: boolean;
+import { useTheme } from '@/theme';
+import { SPACING } from '@/theme/styles/spacing';
+
+import { IconByVariant } from '@/components/atoms';
+import { Button, Input, Text } from '@/components/ui';
+
+type CollectionFormModalProps = {
+  readonly collection?: Collection | null;
+  readonly loading?: boolean;
+  readonly onClose: () => void;
+  readonly onSubmit: (data: { color?: string; description?: string; icon?: string; name: string; }) => Promise<void>;
+  readonly visible: boolean;
 }
 
 export function CollectionFormModal({
-  visible,
-  onClose,
-  onSubmit,
   collection,
   loading = false,
+  onClose,
+  onSubmit,
+  visible,
 }: CollectionFormModalProps) {
   const { colors } = useTheme();
-  const nameInputRef = useRef<TextInput>(null);
+  const nameInputReference = useRef<TextInput>(null);
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [icon, setIcon] = useState('');
   const [color, setColor] = useState('gray');
-  const [errors, setErrors] = useState<{ [key: string]: string }>({});
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   const isEditing = !!collection;
 
@@ -59,14 +62,14 @@ export function CollectionFormModal({
     if (visible && !isEditing) {
       // Small delay to ensure modal is fully rendered
       const timer = setTimeout(() => {
-        nameInputRef.current?.focus();
+        nameInputReference.current?.focus();
       }, 100);
-      return () => clearTimeout(timer);
+      return () => { clearTimeout(timer); };
     }
   }, [visible, isEditing]);
 
   const validateForm = () => {
-    const newErrors: { [key: string]: string } = {};
+    const newErrors: Record<string, string> = {};
 
     if (!name.trim()) {
       newErrors.name = 'Collection name is required';
@@ -91,10 +94,10 @@ export function CollectionFormModal({
 
     try {
       await onSubmit({
-        name: name.trim(),
+        color: color || 'gray',
         description: description.trim() || undefined,
         icon: icon.trim() || undefined,
-        color: color || 'gray',
+        name: name.trim(),
       });
       onClose();
     } catch (error) {
@@ -121,15 +124,15 @@ export function CollectionFormModal({
 
   return (
     <Modal
-      visible={visible}
       animationType="slide"
-      presentationStyle="pageSheet"
       onRequestClose={handleClose}
+      presentationStyle="pageSheet"
+      visible={visible}
     >
       <View style={[styles.container, { backgroundColor: colors.background.primary }]}>
         {/* Header */}
         <View style={[styles.header, { borderBottomColor: colors.border.primary }]}>
-          <Pressable onPress={handleClose} disabled={loading}>
+          <Pressable disabled={loading} onPress={handleClose}>
             <Text style={[styles.cancelButton, { color: colors.text.secondary }]}>
               Cancel
             </Text>
@@ -137,7 +140,7 @@ export function CollectionFormModal({
           <Text style={[styles.title, { color: colors.text.primary }]}>
             {isEditing ? 'Edit Collection' : 'New Collection'}
           </Text>
-          <Pressable onPress={handleSubmit} disabled={loading || !name.trim()}>
+          <Pressable disabled={loading || !name.trim()} onPress={handleSubmit}>
             <Text
               style={[
                 styles.saveButton,
@@ -153,11 +156,9 @@ export function CollectionFormModal({
 
         {/* Content */}
         <View style={styles.content}>
-          {loading && (
-            <View style={styles.loadingOverlay}>
-              <ActivityIndicator size="large" color={colors.accent.primary} />
-            </View>
-          )}
+          {loading ? <View style={styles.loadingOverlay}>
+              <ActivityIndicator color={colors.accent.primary} size="large" />
+            </View> : null}
 
           {/* Name Input */}
           <View style={styles.field}>
@@ -165,12 +166,12 @@ export function CollectionFormModal({
               Name *
             </Text>
             <Input
-              ref={nameInputRef}
-              value={name}
-              onChangeText={setName}
-              placeholder="Enter collection name"
               error={errors.name}
               maxLength={100}
+              onChangeText={setName}
+              placeholder="Enter collection name"
+              ref={nameInputReference}
+              value={name}
             />
           </View>
 
@@ -180,13 +181,13 @@ export function CollectionFormModal({
               Description
             </Text>
             <Input
-              value={description}
-              onChangeText={setDescription}
-              placeholder="Enter collection description (optional)"
-              multiline
-              numberOfLines={3}
               error={errors.description}
               maxLength={500}
+              multiline
+              numberOfLines={3}
+              onChangeText={setDescription}
+              placeholder="Enter collection description (optional)"
+              value={description}
             />
           </View>
 
@@ -196,10 +197,10 @@ export function CollectionFormModal({
               Icon
             </Text>
             <Input
-              value={icon}
+              maxLength={50}
               onChangeText={setIcon}
               placeholder="Enter icon name (optional)"
-              maxLength={50}
+              value={icon}
             />
           </View>
 
@@ -209,23 +210,26 @@ export function CollectionFormModal({
               Color
             </Text>
             <View style={styles.colorGrid}>
-              {colorOptions.map((colorOption) => (
-                <Pressable
-                  key={colorOption.value}
-                  style={[
-                    styles.colorOption,
-                    {
-                      backgroundColor: colorOption.value,
-                      borderColor: color === colorOption.value ? colors.accent.primary : 'transparent',
-                    },
-                  ]}
-                  onPress={() => setColor(colorOption.value)}
-                >
-                  {color === colorOption.value && (
-                    <IconByVariant name="check" size={16} color="white" />
-                  )}
-                </Pressable>
-              ))}
+              {colorOptions.map((colorOption) => {
+                const isSelected = color === colorOption.value;
+                const colorOptionStyle = [
+                  styles.colorOption,
+                  { backgroundColor: colorOption.value },
+                  isSelected && { borderColor: colors.accent.primary }
+                ];
+                
+                return (
+                  <Pressable
+                    key={colorOption.value}
+                    onPress={() => { setColor(colorOption.value); }}
+                    style={colorOptionStyle}
+                  >
+                    {isSelected && (
+                      <IconByVariant color="white" name="check" size={16} />
+                    )}
+                  </Pressable>
+                );
+              })}
             </View>
           </View>
         </View>
@@ -235,51 +239,9 @@ export function CollectionFormModal({
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: SPACING.lg,
-    paddingVertical: SPACING.md,
-    borderBottomWidth: 1,
-  },
   cancelButton: {
     fontSize: 16,
     fontWeight: '500',
-  },
-  title: {
-    fontSize: 18,
-    fontWeight: '600',
-  },
-  saveButton: {
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  content: {
-    flex: 1,
-    padding: SPACING.lg,
-  },
-  loadingOverlay: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: 'rgba(0, 0, 0, 0.3)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    zIndex: 1000,
-  },
-  field: {
-    marginBottom: SPACING.lg,
-  },
-  label: {
-    fontSize: 16,
-    fontWeight: '600',
-    marginBottom: SPACING.sm,
   },
   colorGrid: {
     flexDirection: 'row',
@@ -287,11 +249,54 @@ const styles = StyleSheet.create({
     gap: SPACING.sm,
   },
   colorOption: {
-    width: 40,
-    height: 40,
+    alignItems: 'center',
     borderRadius: 20,
     borderWidth: 2,
+    borderColor: 'transparent',
+    height: 40,
     justifyContent: 'center',
+    width: 40,
+  },
+  container: {
+    flex: 1,
+  },
+  content: {
+    flex: 1,
+    padding: SPACING.lg,
+  },
+  field: {
+    marginBottom: SPACING.lg,
+  },
+  header: {
     alignItems: 'center',
+    borderBottomWidth: 1,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingHorizontal: SPACING.lg,
+    paddingVertical: SPACING.md,
+  },
+  label: {
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: SPACING.sm,
+  },
+  loadingOverlay: {
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.3)',
+    bottom: 0,
+    justifyContent: 'center',
+    left: 0,
+    position: 'absolute',
+    right: 0,
+    top: 0,
+    zIndex: 1000,
+  },
+  saveButton: {
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  title: {
+    fontSize: 18,
+    fontWeight: '600',
   },
 }); 

@@ -1,63 +1,63 @@
 import { ViewStyle } from 'react-native';
 
-export interface GradientConfig {
-  colors: string[];
-  start: { x: number; y: number };
-  end: { x: number; y: number };
+export type GradientConfig = {
   angle: number;
+  colors: string[];
+  end: { x: number; y: number };
+  start: { x: number; y: number };
 }
 
 export const GRADIENTS = {
-  primary: {
-    colors: ['#000000', '#374151'],
-    start: { x: 0, y: 0 },
-    end: { x: 1, y: 0 },
-    angle: 90
-  },
-  
-  primaryHover: {
-    colors: ['#1a1a1a', '#4B5563'],
-    start: { x: 0, y: 0 },
-    end: { x: 1, y: 0 },
-    angle: 90
-  },
-  
-  google: {
-    colors: ['#FFFFFF', '#F9FAFB'],
-    start: { x: 0, y: 0 },
-    end: { x: 0, y: 1 },
-    angle: 180
-  },
-  
   apple: {
+    angle: 180,
     colors: ['#000000', '#1F2937'],
-    start: { x: 0, y: 0 },
     end: { x: 0, y: 1 },
-    angle: 180
+    start: { x: 0, y: 0 }
   },
   
   disabled: {
+    angle: 90,
     colors: ['#64748B', '#475569'],
-    start: { x: 0, y: 0 },
     end: { x: 1, y: 0 },
-    angle: 90
+    start: { x: 0, y: 0 }
+  },
+  
+  google: {
+    angle: 180,
+    colors: ['#FFFFFF', '#F9FAFB'],
+    end: { x: 0, y: 1 },
+    start: { x: 0, y: 0 }
+  },
+  
+  primary: {
+    angle: 90,
+    colors: ['#000000', '#374151'],
+    end: { x: 1, y: 0 },
+    start: { x: 0, y: 0 }
+  },
+  
+  primaryHover: {
+    angle: 90,
+    colors: ['#1a1a1a', '#4B5563'],
+    end: { x: 1, y: 0 },
+    start: { x: 0, y: 0 }
   }
 };
 
 export const createGradientStyle = (gradientName: keyof typeof GRADIENTS): {
   colors: string[];
-  start: { x: number; y: number };
   end: { x: number; y: number };
+  start: { x: number; y: number };
   style: ViewStyle;
 } => {
   const gradient = GRADIENTS[gradientName];
   return {
     colors: gradient.colors,
-    start: gradient.start,
     end: gradient.end,
+    start: gradient.start,
     style: {
-      flex: 1,
       borderRadius: 12,
+      flex: 1,
     }
   };
 }; 

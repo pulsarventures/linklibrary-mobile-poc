@@ -16,7 +16,13 @@ export const collectionKeys = {
 
 // Fetch collections
 const fetchCollections = async (): Promise<Collection[]> => {
-  return apiClient.get<Collection[]>('/collections');
+  try {
+    const response = await apiClient.get<Collection[]>('/collections');
+    return Array.isArray(response) ? response : [];
+  } catch (error) {
+    console.error('Failed to fetch collections:', error);
+    return [];
+  }
 };
 
 // Fetch single collection
@@ -45,7 +51,9 @@ export const useCollections = () => {
     gcTime: 10 * 60 * 1000, // 10 minutes
     queryFn: fetchCollections,
     queryKey: collectionKeys.lists(),
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: 5 * 60 * 1000, // 5 minutes,
+    placeholderData: [],
+    select: (data) => data || [],
   });
 };
 

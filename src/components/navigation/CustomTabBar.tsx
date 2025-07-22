@@ -1,39 +1,49 @@
-import React from 'react';
-import { View, TouchableOpacity, StyleSheet, Platform } from 'react-native';
-import { BottomTabBarProps } from '@react-navigation/bottom-tabs';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import LinearGradient from 'react-native-linear-gradient';
-import { Text } from '@/components/ui/Text';
-import { PRIMARY_COLORS } from '@/theme/styles/colors';
-import { SPACING } from '@/theme/styles/spacing';
-import { IconByVariant } from '@/components/atoms';
 import type { IconName } from '@/theme/assets/icons';
 
+import { BottomTabBarProps } from '@react-navigation/bottom-tabs';
+import React from 'react';
+import { Platform, StyleSheet, TouchableOpacity, View } from 'react-native';
+import LinearGradient from 'react-native-linear-gradient';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+
+import { SPACING } from '@/theme/styles/spacing';
+
+import { IconByVariant } from '@/components/atoms';
+import { Text } from '@/components/ui/Text';
+
 const TAB_ICONS: Record<string, IconName> = {
+  Collections: 'library-big',
   Links: 'link',
-  Collections: 'collection',
-  Tags: 'tag',
+  Search: 'search',
   Settings: 'settings',
+  Tags: 'hash',
 };
 
-function CustomTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
+function CustomTabBar({ descriptors, navigation, state }: BottomTabBarProps) {
   const insets = useSafeAreaInsets();
+
+  // Filter out routes that have tabBarButton: () => null (hidden tabs) or are named "Add"
+  const visibleRoutes = state.routes.filter((route) => {
+    const { options } = descriptors[route.key];
+    return options.tabBarButton !== null && route.name !== 'Add';
+  });
 
   return (
     <View style={[styles.container, { paddingBottom: insets.bottom }]}>
-      {state.routes.map((route, index) => {
+      {visibleRoutes.map((route, index) => {
         const { options } = descriptors[route.key];
         const label = typeof options.tabBarLabel === 'string' 
           ? options.tabBarLabel 
           : options.title 
           ?? route.name;
-        const isFocused = state.index === index;
+        const isFocused = state.index === state.routes.findIndex(r => r.key === route.key);
+        const isSearchTab = route.name === 'Search';
 
         const onPress = () => {
           const event = navigation.emit({
-            type: 'tabPress',
-            target: route.key,
             canPreventDefault: true,
+            target: route.key,
+            type: 'tabPress',
           });
 
           if (!isFocused && !event.defaultPrevented) {
@@ -43,34 +53,48 @@ function CustomTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
 
         return (
           <TouchableOpacity
-            key={route.key}
+            accessibilityLabel={`${label} tab`}
             accessibilityRole="button"
             accessibilityState={isFocused ? { selected: true } : {}}
-            accessibilityLabel={`${label} tab`}
+            key={route.key}
             onPress={onPress}
             style={styles.tab}
           >
-            {isFocused ? (
+            {isFocused && !isSearchTab ? (
               <LinearGradient
                 colors={['#000000', '#374151']}
-                start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 0 }}
+                start={{ x: 0, y: 0 }}
                 style={styles.activeIndicator}
               />
             ) : null}
-            <IconByVariant
-              name={TAB_ICONS[route.name]}
-              size={isFocused ? 24 : 22}
-              color={isFocused ? '#000000' : PRIMARY_COLORS.text.muted}
-            />
-            <Text
-              style={[
-                styles.label,
-                isFocused ? styles.labelActive : styles.labelInactive,
-              ]}
-            >
-              {label}
-            </Text>
+            
+            {isSearchTab ? (
+              <View style={styles.searchButton}>
+                <IconByVariant
+                  color="#FFFFFF"
+                  name={TAB_ICONS[route.name] || 'search'}
+                  size={24}
+                />
+              </View>
+            ) : (
+              <IconByVariant
+                color={isFocused ? '#000000' : '#8E8E93'}
+                name={TAB_ICONS[route.name] || 'link'}
+                size={isFocused ? 24 : 22}
+              />
+            )}
+            
+            {!isSearchTab && (
+              <Text
+                style={[
+                  styles.label,
+                  isFocused ? styles.labelActive : styles.labelInactive,
+                ]}
+              >
+                {label}
+              </Text>
+            )}
           </TouchableOpacity>
         );
       })}
@@ -79,37 +103,21 @@ function CustomTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flexDirection: 'row',
-    backgroundColor: PRIMARY_COLORS.surface,
-    borderTopWidth: 1,
-    borderTopColor: PRIMARY_COLORS.border,
-    height: 84,
-    ...Platform.select({
-      ios: {
-        shadowColor: PRIMARY_COLORS.overlay,
-        shadowOffset: { width: 0, height: -2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 8,
-      },
-      android: {
-        elevation: 8,
-      },
-    }),
-  },
-  tab: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingTop: SPACING.md,
-  },
   activeIndicator: {
-    position: 'absolute',
-    top: -1,
-    left: '15%',
-    right: '15%',
-    height: 3,
     borderRadius: 1.5,
+    height: 3,
+    left: '15%',
+    position: 'absolute',
+    right: '15%',
+    top: -1,
+  },
+  container: {
+    backgroundColor: '#FFFFFF',
+    borderTopColor: '#E5E5EA',
+    borderTopWidth: 1,
+    flexDirection: 'row',
+    height: 84,
+    width: '100%',
   },
   label: {
     fontSize: 12,
@@ -120,8 +128,31 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   labelInactive: {
-    color: PRIMARY_COLORS.text.muted,
+    color: '#8E8E93',
     fontWeight: '500',
+  },
+  searchButton: {
+    alignItems: 'center',
+    backgroundColor: '#000000',
+    borderRadius: 24,
+    elevation: 8,
+    height: 48,
+    justifyContent: 'center',
+    marginTop: -24,
+    shadowColor: '#000000',
+    shadowOffset: {
+      height: 4,
+      width: 0,
+    },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    width: 48,
+  },
+  tab: {
+    alignItems: 'center',
+    flex: 1,
+    justifyContent: 'center',
+    paddingTop: SPACING.md,
   },
 });
 

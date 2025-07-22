@@ -1,30 +1,50 @@
-import { GoogleSignin, statusCodes, type User } from '@react-native-google-signin/google-signin';
 import { GOOGLE_CLIENT_ID } from '@env';
+import { GoogleSignin, statusCodes, type User } from '@react-native-google-signin/google-signin';
+
 import { safeErrorLog } from '@/utils/errorHandler';
 
 // Initialize Google Sign-In
 console.log('Configuring Google Sign-In with webClientId:', GOOGLE_CLIENT_ID);
 GoogleSignin.configure({
-  webClientId: GOOGLE_CLIENT_ID,
+  forceCodeForRefreshToken: true,
   iosClientId: '991185990145-21ebjs10ct5gckdj5pshsd84i3pvpdpc.apps.googleusercontent.com',
   offlineAccess: true,
-  forceCodeForRefreshToken: true,
   scopes: ['profile', 'email'],
+  webClientId: GOOGLE_CLIENT_ID,
 });
 
-interface GoogleSignInResult {
-  token: string;
+type GoogleSignInResult = {
   email: string;
   name: string;
+  token: string;
 }
 
-interface GoogleUser {
+type GoogleUser = {
   email: string;
-  familyName: string | null;
-  givenName: string | null;
+  familyName: null | string;
+  givenName: null | string;
   id: string;
-  name: string | null;
-  photo: string | null;
+  name: null | string;
+  photo: null | string;
+}
+
+export async function getCurrentUser(): Promise<null | User> {
+  try {
+    const currentUser = await GoogleSignin.getCurrentUser();
+    return currentUser;
+  } catch (error) {
+    safeErrorLog('Get current user error', error);
+    return null;
+  }
+}
+
+export async function hasPreviousSignIn(): Promise<boolean> {
+  try {
+    return GoogleSignin.hasPreviousSignIn();
+  } catch (error) {
+    safeErrorLog('Check sign in status error', error);
+    return false;
+  }
 }
 
 export async function signInWithGoogle(): Promise<GoogleSignInResult> {
@@ -36,7 +56,7 @@ export async function signInWithGoogle(): Promise<GoogleSignInResult> {
     try {
       await GoogleSignin.hasPlayServices();
       console.log('Google Play Services available');
-    } catch (error) {
+    } catch {
       console.log('Google Play Services not available (iOS or not installed)');
     }
     
@@ -72,9 +92,9 @@ export async function signInWithGoogle(): Promise<GoogleSignInResult> {
     console.log('Google Sign-In successful:', { email, name });
     
     return {
-      token: tokens.accessToken,
       email,
       name,
+      token: tokens.accessToken,
     };
     
   } catch (error: unknown) {
@@ -86,16 +106,21 @@ export async function signInWithGoogle(): Promise<GoogleSignInResult> {
         console.error('Error code:', code);
         
         switch (code) {
-          case statusCodes.SIGN_IN_CANCELLED:
+          case statusCodes.SIGN_IN_CANCELLED: {
             throw new Error('Google Sign-In was cancelled by user');
-          case statusCodes.IN_PROGRESS:
+          }
+          case statusCodes.IN_PROGRESS: {
             throw new Error('Google Sign-In already in progress');
-          case statusCodes.PLAY_SERVICES_NOT_AVAILABLE:
+          }
+          case statusCodes.PLAY_SERVICES_NOT_AVAILABLE: {
             throw new Error('Google Play Services not available on this device');
-          case statusCodes.SIGN_IN_REQUIRED:
+          }
+          case statusCodes.SIGN_IN_REQUIRED: {
             throw new Error('User needs to sign in to Google first');
-          default:
+          }
+          default: {
             throw new Error(`Google Sign-In failed with code: ${code} - ${error.message}`);
+          }
         }
       }
       
@@ -132,24 +157,5 @@ export async function signOutFromGoogle(): Promise<void> {
     
     // For other errors, just log them but don't fail the logout process
     console.warn('⚠️ Google sign out failed, but continuing with logout:', error);
-  }
-}
-
-export async function getCurrentUser(): Promise<User | null> {
-  try {
-    const currentUser = await GoogleSignin.getCurrentUser();
-    return currentUser;
-  } catch (error) {
-    safeErrorLog('Get current user error', error);
-    return null;
-  }
-}
-
-export async function hasPreviousSignIn(): Promise<boolean> {
-  try {
-    return await GoogleSignin.hasPreviousSignIn();
-  } catch (error) {
-    safeErrorLog('Check sign in status error', error);
-    return false;
   }
 } 

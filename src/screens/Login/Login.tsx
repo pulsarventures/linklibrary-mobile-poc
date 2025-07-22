@@ -1,27 +1,31 @@
-import React from 'react';
-import { View, StyleSheet, TouchableOpacity, Alert, ActivityIndicator, ScrollView } from 'react-native';
-import { useTranslation } from 'react-i18next';
-import { useNavigation } from '@react-navigation/native';
-import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import type { RootStackParamList } from '@/navigation/types';
-import { useTheme } from '@/theme';
-import { Button, Container, Input, Text } from '@/components/ui';
-import { SafeScreen } from '@/components/templates';
-import { useAuth } from '@/hooks/useAuth';
-import { useAuthStore } from '@/hooks/domain/user/useAuthStore';
-import { signInWithGoogle } from '@/services/auth/googleAuth';
-import { authApiService } from '@/services/auth-api.service';
 import type { User } from '@/hooks/domain/user/schema';
-import { storageService } from '@/services/storage';
+import type { RootStackParamList } from '@/navigation/types';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+
+import { useNavigation } from '@react-navigation/native';
+import React from 'react';
+import { useTranslation } from 'react-i18next';
+import { ActivityIndicator, Alert, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
+
+import { useAuthStore } from '@/hooks/domain/user/useAuthStore';
+import { useAuth } from '@/hooks/useAuth';
+import { useTheme } from '@/theme';
+
 import { AssetByVariant } from '@/components/atoms';
 import { IconByVariant } from '@/components/atoms';
+import { SafeScreen } from '@/components/templates';
+import { Button, Container, Input, Text } from '@/components/ui';
+
+import { authApiService } from '@/services/auth-api.service';
+import { signInWithGoogle } from '@/services/auth/googleAuth';
+import { storageService } from '@/services/storage';
 import { safeErrorLog } from '@/utils/errorHandler';
 
-type LoginScreenNavigationProp = NativeStackNavigationProp<RootStackParamList>;
+type LoginScreenNavigationProperty = NativeStackNavigationProp<RootStackParamList>;
 
 export function Login() {
   const { t } = useTranslation();
-  const navigation = useNavigation<LoginScreenNavigationProp>();
+  const navigation = useNavigation<LoginScreenNavigationProperty>();
   const { login } = useAuth();
   const { colors, layout } = useTheme();
   const [email, setEmail] = React.useState('');
@@ -40,7 +44,7 @@ export function Login() {
 
     try {
       setIsLoading(true);
-      await login({ username: email, password });
+      await login({ password, username: email });
     } catch (error) {
       safeErrorLog('Login failed', error);
       Alert.alert('Login Failed', 'Please check your credentials and try again');
@@ -61,8 +65,8 @@ export function Login() {
       console.log('🔵 Calling signInWithGoogle...');
       const googleResult = await signInWithGoogle();
       console.log('🔵 Google Sign-In successful, result:', { 
-        hasToken: !!googleResult.token, 
-        email: googleResult.email 
+        email: googleResult.email, 
+        hasToken: !!googleResult.token 
       });
       
       console.log('🔵 Calling backend Google Sign-In API...');
@@ -71,31 +75,31 @@ export function Login() {
 
       await storageService.storeTokens({
         access_token: authResult.access_token,
-        refresh_token: authResult.refresh_token,
-        token_type: authResult.token_type,
         access_token_expires_in: authResult.access_token_expires_in,
-        refresh_token_expires_in: authResult.refresh_token_expires_in,
         is_revoked: authResult.is_revoked,
+        refresh_token: authResult.refresh_token,
+        refresh_token_expires_in: authResult.refresh_token_expires_in,
+        token_type: authResult.token_type,
       });
       console.log('🔵 Tokens stored successfully');
 
       const user: User = {
-        id: parseInt(authResult.user.id.toString()),
+        avatar: authResult.user.avatar || null,
+        created_at: authResult.user.created_at,
         email: authResult.user.email,
         full_name: authResult.user.full_name,
-        avatar: authResult.user.avatar || null,
+        id: Number.parseInt(authResult.user.id.toString()),
         is_active: authResult.user.is_active,
         is_verified: authResult.user.is_verified,
-        created_at: authResult.user.created_at,
       };
 
       // Update auth store
       useAuthStore.setState({
-        user,
-        isAuthenticated: true,
-        isLoading: false,
         error: null,
         initialized: true,
+        isAuthenticated: true,
+        isLoading: false,
+        user,
       });
       console.log('🔵 Auth store updated successfully');
 
@@ -120,8 +124,8 @@ export function Login() {
         <View style={[styles.loadingOverlay, { backgroundColor: colors.background.primary }]}>
           <View style={styles.loadingContent}>
             <ActivityIndicator 
-              size="large" 
-              color={colors.accent.primary}
+              color={colors.accent.primary} 
+              size="large"
               style={styles.loadingSpinner}
             />
             <Text style={[styles.loadingText, { color: colors.text.primary }]}>
@@ -136,16 +140,16 @@ export function Login() {
   return (
     <SafeScreen>
       <ScrollView 
-        style={[styles.container, { backgroundColor: colors.background.primary }]}
         contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+        style={[styles.container, { backgroundColor: colors.background.primary }]}
       >
         <View style={styles.content}>
           {/* Logo */}
           <View style={styles.logoContainer}>
             <View style={[styles.logoWrapper, { backgroundColor: colors.accent.primary }]}>
-              <AssetByVariant path="tom" style={styles.logo} resizeMode="contain" />
+              <AssetByVariant path="tom" resizeMode="contain" style={styles.logo} />
             </View>
           </View>
 
@@ -171,19 +175,19 @@ export function Login() {
             <View style={styles.fieldContainer}>
               <Text style={[styles.label, { color: colors.text.primary }]}>Email</Text>
               <View style={styles.inputContainer}>
-                <IconByVariant name="mail" size={20} color={colors.text.tertiary} style={styles.inputIcon} />
+                <IconByVariant color={colors.text.tertiary} name="mail" size={20} style={styles.inputIcon} />
                 <Input
-                  placeholder="Enter your e-mail"
-                  placeholderTextColor={colors.text.tertiary}
-                  value={email}
-                  onChangeText={setEmail}
                   autoCapitalize="none"
                   keyboardType="email-address"
+                  onChangeText={setEmail}
+                  placeholder="Enter your e-mail"
+                  placeholderTextColor={colors.text.tertiary}
                   style={[styles.textInput, { 
-                    borderColor: colors.border.primary,
                     backgroundColor: colors.background.secondary,
+                    borderColor: colors.border.primary,
                     color: colors.text.primary
                   }]}
+                  value={email}
                 />
               </View>
             </View>
@@ -192,24 +196,24 @@ export function Login() {
             <View style={styles.fieldContainer}>
               <Text style={[styles.label, { color: colors.text.primary }]}>Password</Text>
               <View style={styles.inputContainer}>
-                <IconByVariant name="lock" size={20} color={colors.text.tertiary} style={styles.inputIcon} />
+                <IconByVariant color={colors.text.tertiary} name="lock" size={20} style={styles.inputIcon} />
                 <Input
+                  onChangeText={setPassword}
                   placeholder="Enter your password"
                   placeholderTextColor={colors.text.tertiary}
-                  value={password}
-                  onChangeText={setPassword}
                   secureTextEntry={!showPassword}
                   style={[styles.textInput, { 
-                    borderColor: colors.border.primary,
                     backgroundColor: colors.background.secondary,
+                    borderColor: colors.border.primary,
                     color: colors.text.primary
                   }]}
+                  value={password}
                 />
                 <TouchableOpacity 
-                  onPress={() => setShowPassword(!showPassword)}
+                  onPress={() => { setShowPassword(!showPassword); }}
                   style={styles.eyeIcon}
                 >
-                  <IconByVariant name="eye" size={20} color={colors.text.tertiary} />
+                  <IconByVariant color={colors.text.tertiary} name="eye" size={20} />
                 </TouchableOpacity>
               </View>
             </View>
@@ -217,15 +221,15 @@ export function Login() {
             {/* Remember Me & Forgot Password */}
             <View style={styles.optionsRow}>
               <TouchableOpacity 
+                onPress={() => { setRememberMe(!rememberMe); }}
                 style={styles.checkboxRow}
-                onPress={() => setRememberMe(!rememberMe)}
               >
                 <View style={[
                   styles.checkbox,
                   { borderColor: colors.border.primary },
                   rememberMe && { backgroundColor: colors.accent.primary, borderColor: colors.accent.primary }
                 ]}>
-                  {rememberMe && <IconByVariant name="check" size={12} color={colors.text.inverse} />}
+                  {rememberMe ? <IconByVariant color={colors.text.inverse} name="check" size={12} /> : null}
                 </View>
                 <Text style={[styles.checkboxLabel, { color: colors.text.primary }]}>
                   Remember me
@@ -241,8 +245,8 @@ export function Login() {
 
             {/* Sign In Button */}
             <TouchableOpacity
-              onPress={handleLogin}
               disabled={isLoading}
+              onPress={handleLogin}
               style={[
                 styles.signInButton,
                 { backgroundColor: colors.accent.primary },
@@ -250,7 +254,7 @@ export function Login() {
               ]}
             >
               {isLoading ? (
-                <ActivityIndicator size="small" color={colors.text.inverse} />
+                <ActivityIndicator color={colors.text.inverse} size="small" />
               ) : (
                 <Text style={[styles.signInButtonText, { color: colors.text.inverse }]}>
                   Sign in
@@ -268,15 +272,15 @@ export function Login() {
             {/* Social Buttons */}
             <View style={styles.socialButtons}>
               <TouchableOpacity
-                onPress={handleGoogleSignIn}
                 disabled={isGoogleLoading}
+                onPress={handleGoogleSignIn}
                 style={[styles.socialButton, { 
-                  borderColor: colors.border.primary,
-                  backgroundColor: colors.background.secondary
+                  backgroundColor: colors.background.secondary,
+                  borderColor: colors.border.primary
                 }]}
               >
                 {isGoogleLoading ? (
-                  <ActivityIndicator size="small" color="#4285F4" />
+                  <ActivityIndicator color="#4285F4" size="small" />
                 ) : (
                   <>
                     <IconByVariant name="google" size={20} />
@@ -289,11 +293,11 @@ export function Login() {
 
               <TouchableOpacity
                 style={[styles.socialButton, { 
-                  borderColor: colors.border.primary,
-                  backgroundColor: colors.background.secondary
+                  backgroundColor: colors.background.secondary,
+                  borderColor: colors.border.primary
                 }]}
               >
-                <IconByVariant name="apple" size={20} color={colors.text.primary} />
+                <IconByVariant color={colors.text.primary} name="apple" size={20} />
                 <Text style={[styles.socialButtonText, { color: colors.text.primary }]}>
                   Sign in
                 </Text>
@@ -305,7 +309,7 @@ export function Login() {
               <Text style={[styles.signUpText, { color: colors.text.secondary }]}>
                 Don't have an account?{' '}
               </Text>
-              <TouchableOpacity onPress={() => navigation.navigate('SignUp')}>
+              <TouchableOpacity onPress={() => { navigation.navigate('SignUp'); }}>
                 <Text style={[styles.signUpLink, { color: colors.accent.primary }]}>
                   Sign up
                 </Text>
@@ -319,43 +323,83 @@ export function Login() {
 }
 
 const styles = StyleSheet.create({
+  checkbox: {
+    alignItems: 'center',
+    borderRadius: 4,
+    borderWidth: 2,
+    height: 20,
+    justifyContent: 'center',
+    marginRight: 8,
+    width: 20,
+  },
+  checkboxLabel: {
+    fontSize: 14,
+    fontWeight: '500',
+  },
+  checkboxRow: {
+    alignItems: 'center',
+    flexDirection: 'row',
+  },
   container: {
     flex: 1,
   },
-  scrollContent: {
-    flexGrow: 1,
-    justifyContent: 'center',
-    paddingHorizontal: 24,
-    paddingVertical: 20,
-  },
   content: {
-    maxWidth: 400,
     alignSelf: 'center',
+    maxWidth: 400,
     width: '100%',
   },
-  loadingOverlay: {
-    flex: 1,
-    justifyContent: 'center',
+  divider: {
     alignItems: 'center',
-    paddingHorizontal: 24,
+    flexDirection: 'row',
+    marginBottom: 20,
+  },
+  dividerLine: {
+    flex: 1,
+    height: 1,
+  },
+  dividerText: {
+    fontSize: 14,
+    fontWeight: '500',
+    paddingHorizontal: 16,
+  },
+  eyeIcon: {
+    position: 'absolute',
+    right: 16,
+    top: 14,
+    zIndex: 1,
+  },
+  fieldContainer: {
+    marginBottom: 16,
+  },
+  forgotLink: {
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  form: {
+    width: '100%',
+  },
+  inputContainer: {
+    position: 'relative',
+  },
+  inputIcon: {
+    left: 16,
+    position: 'absolute',
+    top: 14,
+    zIndex: 1,
+  },
+  label: {
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: 8,
   },
   loadingContent: {
     alignItems: 'center',
   },
-  logoContainer: {
+  loadingOverlay: {
     alignItems: 'center',
-    marginBottom: 24,
-  },
-  logoWrapper: {
-    width: 64,
-    height: 64,
-    borderRadius: 16,
+    flex: 1,
     justifyContent: 'center',
-    alignItems: 'center',
-  },
-  logo: {
-    width: 32,
-    height: 32,
+    paddingHorizontal: 24,
   },
   loadingSpinner: {
     marginBottom: 16,
@@ -365,153 +409,113 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     textAlign: 'center',
   },
-  title: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    textAlign: 'center',
-    marginBottom: 6,
+  logo: {
+    height: 32,
+    width: 32,
   },
-  subtitle: {
-    fontSize: 16,
-    textAlign: 'center',
-    marginBottom: 20,
-  },
-  statusBar: {
-    flexDirection: 'row',
+  logoContainer: {
     alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    borderRadius: 12,
     marginBottom: 24,
   },
-  statusDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    marginRight: 8,
-  },
-  statusText: {
-    fontSize: 14,
-    fontWeight: '500',
-  },
-  form: {
-    width: '100%',
-  },
-  fieldContainer: {
-    marginBottom: 16,
-  },
-  label: {
-    fontSize: 16,
-    fontWeight: '600',
-    marginBottom: 8,
-  },
-  inputContainer: {
-    position: 'relative',
-  },
-  inputIcon: {
-    position: 'absolute',
-    left: 16,
-    top: 14,
-    zIndex: 1,
-  },
-  textInput: {
-    height: 48,
-    borderWidth: 1,
-    borderRadius: 12,
-    paddingLeft: 48,
-    paddingRight: 48,
-    fontSize: 16,
-  },
-  eyeIcon: {
-    position: 'absolute',
-    right: 16,
-    top: 14,
-    zIndex: 1,
+  logoWrapper: {
+    alignItems: 'center',
+    borderRadius: 16,
+    height: 64,
+    justifyContent: 'center',
+    width: 64,
   },
   optionsRow: {
+    alignItems: 'center',
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
     marginBottom: 20,
   },
-  checkboxRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  checkbox: {
-    width: 20,
-    height: 20,
-    borderWidth: 2,
-    borderRadius: 4,
-    marginRight: 8,
+  scrollContent: {
+    flexGrow: 1,
     justifyContent: 'center',
-    alignItems: 'center',
-  },
-  checkboxLabel: {
-    fontSize: 14,
-    fontWeight: '500',
-  },
-  forgotLink: {
-    fontSize: 14,
-    fontWeight: '600',
+    paddingHorizontal: 24,
+    paddingVertical: 20,
   },
   signInButton: {
-    height: 48,
-    borderRadius: 12,
-    justifyContent: 'center',
     alignItems: 'center',
+    borderRadius: 12,
+    height: 48,
+    justifyContent: 'center',
     marginBottom: 20,
   },
   signInButtonText: {
     fontSize: 16,
     fontWeight: '600',
   },
-  divider: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 20,
-  },
-  dividerLine: {
-    flex: 1,
-    height: 1,
-  },
-  dividerText: {
-    paddingHorizontal: 16,
+  signUpLink: {
     fontSize: 14,
-    fontWeight: '500',
-  },
-  socialButtons: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 24,
-    gap: 12,
-  },
-  socialButton: {
-    flex: 1,
-    height: 48,
-    borderWidth: 1,
-    borderRadius: 12,
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    gap: 8,
-  },
-  socialButtonText: {
-    fontSize: 16,
-    fontWeight: '500',
+    fontWeight: '600',
   },
   signUpRow: {
+    alignItems: 'center',
     flexDirection: 'row',
     justifyContent: 'center',
-    alignItems: 'center',
     paddingBottom: 20,
   },
   signUpText: {
     fontSize: 14,
   },
-  signUpLink: {
+  socialButton: {
+    alignItems: 'center',
+    borderRadius: 12,
+    borderWidth: 1,
+    flex: 1,
+    flexDirection: 'row',
+    gap: 8,
+    height: 48,
+    justifyContent: 'center',
+  },
+  socialButtons: {
+    flexDirection: 'row',
+    gap: 12,
+    justifyContent: 'space-between',
+    marginBottom: 24,
+  },
+  socialButtonText: {
+    fontSize: 16,
+    fontWeight: '500',
+  },
+  statusBar: {
+    alignItems: 'center',
+    borderRadius: 12,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    marginBottom: 24,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+  },
+  statusDot: {
+    borderRadius: 4,
+    height: 8,
+    marginRight: 8,
+    width: 8,
+  },
+  statusText: {
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: '500',
+  },
+  subtitle: {
+    fontSize: 16,
+    marginBottom: 20,
+    textAlign: 'center',
+  },
+  textInput: {
+    borderRadius: 12,
+    borderWidth: 1,
+    fontSize: 16,
+    height: 48,
+    paddingLeft: 48,
+    paddingRight: 48,
+  },
+  title: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    marginBottom: 6,
+    textAlign: 'center',
   },
 });

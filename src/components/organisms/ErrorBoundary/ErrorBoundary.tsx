@@ -1,12 +1,12 @@
 import React from 'react';
 import { Text, View } from 'react-native';
 
-interface Props {
-  children: React.ReactNode;
-  onReset?: () => void;
+type Props = {
+  readonly children: React.ReactNode;
+  readonly onReset?: () => void;
 }
 
-interface State {
+type State = {
   hasError: boolean;
 }
 
@@ -23,16 +23,16 @@ class ErrorBoundary extends React.Component<Props, State> {
   componentDidCatch(error: Error, info: React.ErrorInfo) {
     // You can log the error to an error reporting service here
     console.error('Error caught by boundary:', {
-      error: error.message,
       componentStack: info.componentStack,
+      error: error.message,
     });
   }
 
   render() {
     if (this.state.hasError) {
       return (
-        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-          <Text style={{ fontSize: 16, color: 'red' }}>
+        <View style={{ alignItems: 'center', flex: 1, justifyContent: 'center' }}>
+          <Text style={{ color: 'red', fontSize: 16 }}>
             Something went wrong. Please try again.
           </Text>
         </View>

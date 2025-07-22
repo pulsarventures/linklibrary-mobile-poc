@@ -22,8 +22,8 @@ function AssetByVariant({ extension = 'png', path, ...props }: Properties) {
       try {
         return z.custom<ImageSourcePropType>().parse(images(`./${path}.${extension}`));
       } catch (error) {
-        const err = error instanceof Error ? error : new Error('Failed to load default image');
-        console.error(`Couldn't load default image: ${path}.${extension}`, err.message);
+        const error_ = error instanceof Error ? error : new Error('Failed to load default image');
+        console.error(`Couldn't load default image: ${path}.${extension}`, error_.message);
         return undefined;
       }
     };
@@ -38,16 +38,16 @@ function AssetByVariant({ extension = 'png', path, ...props }: Properties) {
           .custom<ImageSourcePropType>()
           .parse(images(`./${variant}/${path}.${extension}`));
       } catch (error) {
-        const err = error instanceof Error ? error : new Error('Failed to load variant image');
+        const error_ = error instanceof Error ? error : new Error('Failed to load variant image');
         console.warn(
           `Couldn't load the image: ${path}.${extension} for the variant ${variant}, Fallback to default`,
-          err.message,
+          error_.message,
         );
         return getDefaultSource();
       }
     } catch (error) {
-      const err = error instanceof Error ? error : new Error('Failed to load image');
-      console.error(`Couldn't load the image: ${path}`, err.message);
+      const error_ = error instanceof Error ? error : new Error('Failed to load image');
+      console.error(`Couldn't load the image: ${path}`, error_.message);
       return undefined;
     }
   }, [path, extension, variant]);

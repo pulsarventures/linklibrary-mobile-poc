@@ -1,19 +1,19 @@
 declare module 'react-native-receive-sharing-intent' {
-  interface SharedFile {
-    weblink?: string;
+  type SharedFile = {
     contentUri?: string;
     fileName?: string;
     filePath?: string;
     mimeType?: string;
     text?: string;
+    weblink?: string;
   }
 
   const ReceiveSharingIntent: {
+    clearReceivedFiles: () => void;
     getReceivedFiles: (
       success: (files: SharedFile[]) => void,
       error: (error: any) => void
     ) => void;
-    clearReceivedFiles: () => void;
   };
 
   export default ReceiveSharingIntent;
