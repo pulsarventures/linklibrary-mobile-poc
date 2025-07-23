@@ -37,7 +37,12 @@ class ApiClient {
     const url = new URL(`${this.baseUrl}${endpoint}`);
     for (const [key, value] of Object.entries(queryParameters)) {
       if (value !== undefined && value !== null) {
-        url.searchParams.append(key, value.toString());
+        if (Array.isArray(value)) {
+          // Handle arrays by adding each value separately
+          value.forEach((v) => url.searchParams.append(key, v.toString()));
+        } else {
+          url.searchParams.append(key, value.toString());
+        }
       }
     }
 

@@ -9,13 +9,22 @@ export const linkKeys = {
   all: ['links'] as const,
   detail: (id: string) => [...linkKeys.details(), id] as const,
   details: () => [...linkKeys.all, 'detail'] as const,
-  list: (filters: any) => [...linkKeys.lists(), { filters }] as const,
+  list: (filters: any) => [...linkKeys.lists(), filters] as const,  // Remove extra nesting
   lists: () => [...linkKeys.all, 'list'] as const,
 };
 
 // Fetch links
-const fetchLinks = async (): Promise<Link[]> => {
-  const response = await LinksApiService.getLinks();
+const fetchLinks = async (parameters?: {
+  collection_id?: number;
+  is_favorite?: boolean;
+  limit?: number;
+  search?: string;
+  skip?: number;
+  sort_by?: string;
+  sort_desc?: boolean;
+  tag_ids?: number[];
+}): Promise<Link[]> => {
+  const response = await LinksApiService.getLinks(parameters);
   return response.items;
 };
 
@@ -42,12 +51,24 @@ const deleteLink = async (id: string): Promise<void> => {
 };
 
 // React Query hooks
-export const useLinks = () => {
+export const useLinks = (parameters?: {
+  collection_id?: number;
+  is_favorite?: boolean;
+  limit?: number;
+  search?: string;
+  skip?: number;
+  sort_by?: string;
+  sort_desc?: boolean;
+  tag_ids?: number[];
+}) => {
+  // Disable caching for filtered requests to ensure fresh data
+  const isFiltered = parameters && (parameters.collection_id || parameters.tag_ids?.length);
+  
   return useQuery({
-    gcTime: 5 * 60 * 1000, // 5 minutes
-    queryFn: fetchLinks,
-    queryKey: linkKeys.lists(),
-    staleTime: 2 * 60 * 1000, // 2 minutes
+    gcTime: isFiltered ? 0 : 5 * 60 * 1000, // No cache for filtered requests
+    queryFn: () => fetchLinks(parameters),
+    queryKey: linkKeys.list(parameters),
+    staleTime: isFiltered ? 0 : 2 * 60 * 1000, // No stale time for filtered requests
   });
 };
 

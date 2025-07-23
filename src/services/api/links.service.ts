@@ -53,29 +53,13 @@ export const LinksApiService = {
     skip: number;
     total: number;
   }> {
-    const queryParameters: Record<string, any> = {};
-    
-    for (const [key, value] of Object.entries(parameters)) {
-      if (value !== undefined && value !== null) {
-        if (Array.isArray(value)) {
-          // Handle arrays by adding each value separately
-          for (const v of value) {
-            if (!queryParameters[key]) queryParameters[key] = [];
-            queryParameters[key].push(v.toString());
-          }
-        } else {
-          queryParameters[key] = value.toString();
-        }
-      }
-    }
-
     return apiClient.get<{
       has_more: boolean;
       items: Link[];
       limit: number;
       skip: number;
       total: number;
-    }>('/links/', queryParameters);
+    }>('/links/', parameters);
   },
 
   // Update an existing link
