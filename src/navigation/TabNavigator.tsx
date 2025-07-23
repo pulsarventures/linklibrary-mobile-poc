@@ -30,7 +30,7 @@ export default function TabNavigator() {
       <Tab.Screen 
         component={Search} 
         name="Search"
-        options={{ title: '' }}
+        options={{ title: 'Chat' }}
       />
       <Tab.Screen 
         component={Tags} 

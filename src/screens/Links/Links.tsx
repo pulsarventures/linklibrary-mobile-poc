@@ -2,8 +2,8 @@ import type { RootTabParamList } from '@/navigation/types';
 import type { Link } from '@/types/link.types';
 import type { RouteProp } from '@react-navigation/native';
 
-import { useNavigation, useRoute } from '@react-navigation/native';
-import React, { useEffect, useMemo, useState } from 'react';
+import { useNavigation, useRoute, useFocusEffect } from '@react-navigation/native';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, Alert, FlatList, Linking, RefreshControl, StyleSheet, TouchableOpacity, View } from 'react-native';
 import Modal from 'react-native-modal';
 import Toast from 'react-native-toast-message';
@@ -38,6 +38,13 @@ export default function Links() {
   // Get collection and tag filter from route params
   const { collectionId, collectionName, tagId, tagName } = route.params || {};
   const isFiltered = !!(collectionId || tagId);
+  
+  // Debug when screen is focused
+  useFocusEffect(
+    useCallback(() => {
+      console.log('🔍 Links screen focused with params:', route.params);
+    }, [route.params])
+  );
 
   // Debug collections and tags data
   useEffect(() => {
@@ -55,14 +62,39 @@ export default function Links() {
   const linkQueryParameters = collectionId 
     ? { collection_id: collectionId } 
     : tagId 
-      ? { tag_ids: [tagId] }
+      ? { tag_id: tagId } // Use singular tag_id, not plural tag_ids
       : undefined;
+      
+  console.log('🔍 Links screen render - Query parameters:', {
+    collectionId,
+    tagId,
+    linkQueryParameters,
+    routeParams: route.params
+  });
+      
   const { 
     data: linksData,
     error,
     isLoading,
     refetch: refetchLinks
   } = useLinks(linkQueryParameters);
+  
+  console.log('🔍 useLinks result:', {
+    dataCount: linksData?.length || 0,
+    isLoading,
+    error: error?.message,
+    queryParams: linkQueryParameters
+  });
+
+  // Debug route params changes and force refetch when parameters change
+  useEffect(() => {
+    console.log('🔍 Route params changed:', route.params);
+    // Force refetch when filter parameters change
+    if (collectionId || tagId) {
+      console.log('🔍 Forcing refetch due to filter parameters:', { collectionId, tagId });
+      refetchLinks();
+    }
+  }, [route.params, collectionId, tagId, refetchLinks]);
 
   useEffect(() => {
     if (isAuthenticated) {

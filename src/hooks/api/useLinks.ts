@@ -22,7 +22,8 @@ const fetchLinks = async (parameters?: {
   skip?: number;
   sort_by?: string;
   sort_desc?: boolean;
-  tag_ids?: number[];
+  tag_id?: number;        // Single tag filter
+  tag_ids?: number[];     // Multiple tags filter (for advanced search)
 }): Promise<Link[]> => {
   const response = await LinksApiService.getLinks(parameters);
   return response.items;
@@ -59,14 +60,24 @@ export const useLinks = (parameters?: {
   skip?: number;
   sort_by?: string;
   sort_desc?: boolean;
-  tag_ids?: number[];
+  tag_id?: number;        // Single tag filter  
+  tag_ids?: number[];     // Multiple tags filter (for advanced search)
 }) => {
   // Disable caching for filtered requests to ensure fresh data
-  const isFiltered = parameters && (parameters.collection_id || parameters.tag_ids?.length);
+  const isFiltered = parameters && (parameters.collection_id || parameters.tag_id || parameters.tag_ids?.length);
+  
+  console.log('🔍 useLinks hook called:', {
+    parameters,
+    isFiltered,
+    queryKey: linkKeys.list(parameters)
+  });
   
   return useQuery({
     gcTime: isFiltered ? 0 : 5 * 60 * 1000, // No cache for filtered requests
-    queryFn: () => fetchLinks(parameters),
+    queryFn: () => {
+      console.log('🔍 fetchLinks queryFn called with:', parameters);
+      return fetchLinks(parameters);
+    },
     queryKey: linkKeys.list(parameters),
     staleTime: isFiltered ? 0 : 2 * 60 * 1000, // No stale time for filtered requests
   });

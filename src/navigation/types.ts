@@ -20,7 +20,7 @@ export type RootStackParamList = {
 export type RootTabParamList = {
   Add: { sharedUrl?: string }; // Keep Add for share functionality, but not in tabs
   Collections: undefined;
-  Links: undefined;
+  Links: { collectionId?: number; collectionName?: string; tagId?: number; tagName?: string };
   Search: undefined;
   Settings: undefined;
   Tags: undefined;

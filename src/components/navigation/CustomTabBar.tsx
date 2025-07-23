@@ -14,7 +14,7 @@ import { Text } from '@/components/ui/Text';
 const TAB_ICONS: Record<string, IconName> = {
   Collections: 'library-big',
   Links: 'link',
-  Search: 'search',
+  Search: 'message-circle',
   Settings: 'settings',
   Tags: 'hash',
 };
@@ -73,7 +73,7 @@ function CustomTabBar({ descriptors, navigation, state }: BottomTabBarProps) {
               <View style={styles.searchButton}>
                 <IconByVariant
                   color="#FFFFFF"
-                  name={TAB_ICONS[route.name] || 'search'}
+                  name={TAB_ICONS[route.name] || 'message-circle'}
                   size={24}
                 />
               </View>

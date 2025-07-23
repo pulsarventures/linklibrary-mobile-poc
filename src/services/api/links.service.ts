@@ -45,7 +45,8 @@ export const LinksApiService = {
     skip?: number;
     sort_by?: string;
     sort_desc?: boolean;
-    tag_ids?: number[];
+    tag_id?: number;        // Single tag filter
+    tag_ids?: number[];     // Multiple tags filter (for advanced search)
   } = {}): Promise<{
     has_more: boolean;
     items: Link[];
@@ -53,13 +54,23 @@ export const LinksApiService = {
     skip: number;
     total: number;
   }> {
-    return apiClient.get<{
+    console.log('🔍 LinksApiService.getLinks called with parameters:', parameters);
+    
+    const result = await apiClient.get<{
       has_more: boolean;
       items: Link[];
       limit: number;
       skip: number;
       total: number;
     }>('/links/', parameters);
+    
+    console.log('🔍 LinksApiService.getLinks result:', {
+      itemsCount: result.items?.length || 0,
+      total: result.total,
+      hasMore: result.has_more
+    });
+    
+    return result;
   },
 
   // Update an existing link

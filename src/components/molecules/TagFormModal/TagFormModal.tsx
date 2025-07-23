@@ -8,6 +8,7 @@ import {
   Pressable,
   StyleSheet,
   TextInput,
+  TouchableOpacity,
   View,
 } from 'react-native';
 
@@ -105,6 +106,12 @@ export function TagFormModal({
     onClose();
   };
 
+  const handleClear = () => {
+    setName('');
+    setColor('gray');
+    setErrors({});
+  };
+
   const colorOptions = [
     { label: 'Gray', value: 'gray' },
     { label: 'Blue', value: 'blue' },
@@ -126,26 +133,47 @@ export function TagFormModal({
       <View style={[styles.container, { backgroundColor: colors.background.primary }]}>
         {/* Header */}
         <View style={[styles.header, { borderBottomColor: colors.border.primary }]}>
-          <Pressable disabled={loading} onPress={handleClose}>
-            <Text style={[styles.cancelButton, { color: colors.text.secondary }]}>
-              Cancel
-            </Text>
-          </Pressable>
-          <Text style={[styles.title, { color: colors.text.primary }]}>
-            {isEditing ? 'Edit Tag' : 'New Tag'}
-          </Text>
-          <Pressable disabled={loading || !name.trim()} onPress={handleSubmit}>
-            <Text
+          <TouchableOpacity
+            activeOpacity={0.7}
+            disabled={loading}
+            onPress={handleClose}
+            style={styles.headerButton}
+          >
+            <Text style={[styles.buttonText, { color: colors.text.secondary }]}>Cancel</Text>
+          </TouchableOpacity>
+          
+          <View style={styles.headerButtons}>
+            <TouchableOpacity
+              activeOpacity={0.7}
+              onPress={handleClear}
+              style={[styles.headerButton, styles.clearButton, { borderColor: colors.border.primary }]}
+            >
+              <Text style={[styles.buttonText, { color: colors.text.secondary }]}>Clear</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              activeOpacity={0.7}
+              disabled={loading || !name.trim()}
+              onPress={handleSubmit}
               style={[
-                styles.saveButton,
-                {
-                  color: loading || !name.trim() ? colors.text.tertiary : colors.accent.primary,
-                },
+                styles.headerButton,
+                styles.addButton,
+                { backgroundColor: colors.accent.primary },
+                (loading || !name.trim()) && { opacity: 0.7 }
               ]}
             >
-              {loading ? 'Saving...' : 'Save'}
-            </Text>
-          </Pressable>
+              {loading ? (
+                <ActivityIndicator color="#fff" size="small" />
+              ) : isEditing ? (
+                <IconByVariant
+                  color="#fff"
+                  name="save"
+                  size={16}
+                />
+              ) : (
+                <Text style={[styles.buttonText, { color: '#fff' }]}>+ Add</Text>
+              )}
+            </TouchableOpacity>
+          </View>
         </View>
 
         {/* Content */}
@@ -201,9 +229,16 @@ export function TagFormModal({
 }
 
 const styles = StyleSheet.create({
-  cancelButton: {
-    fontSize: 16,
-    fontWeight: '500',
+  addButton: {
+    backgroundColor: '#007AFF',
+  },
+  buttonText: {
+    fontSize: 13,
+    fontWeight: '600',
+  },
+  clearButton: {
+    backgroundColor: 'transparent',
+    borderWidth: 1,
   },
   colorGrid: {
     flexDirection: 'row',
@@ -236,6 +271,17 @@ const styles = StyleSheet.create({
     paddingHorizontal: SPACING.lg,
     paddingVertical: SPACING.md,
   },
+  headerButton: {
+    alignItems: 'center',
+    borderRadius: 6,
+    height: 32,
+    justifyContent: 'center',
+    paddingHorizontal: 12,
+  },
+  headerButtons: {
+    flexDirection: 'row',
+    gap: 8,
+  },
   label: {
     fontSize: 16,
     fontWeight: '600',
@@ -251,13 +297,5 @@ const styles = StyleSheet.create({
     right: 0,
     top: 0,
     zIndex: 1000,
-  },
-  saveButton: {
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  title: {
-    fontSize: 18,
-    fontWeight: '600',
   },
 }); 

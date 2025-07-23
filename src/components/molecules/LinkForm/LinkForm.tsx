@@ -44,8 +44,12 @@ export function LinkForm({
   const [summary, setSummary] = useState(initialData?.summary || '');
   const [notes, setNotes] = useState(initialData?.notes || '');
   const [isFavorite, setIsFavorite] = useState(initialData?.is_favorite || false);
-  const [selectedCollection, setSelectedCollection] = useState<null | number>(initialData?.collection_id || null);
-  const [selectedTags, setSelectedTags] = useState<number[]>(initialData?.tag_ids || []);
+  const [selectedCollection, setSelectedCollection] = useState<null | number>(
+    initialData?.collection_id ? Number(initialData.collection_id) : null
+  );
+  const [selectedTags, setSelectedTags] = useState<number[]>(
+    initialData?.tag_ids ? initialData.tag_ids.map(Number) : []
+  );
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isExtractingMetadata, setIsExtractingMetadata] = useState(false);
   const [collectionModalVisible, setCollectionModalVisible] = useState(false);
@@ -68,14 +72,14 @@ export function LinkForm({
   useEffect(() => {
     if (initialData && collections.length > 0 && tags.length > 0) {
       // Re-set the collection and tags from initialData if they haven't been set yet
-      if (initialData.collection_id && selectedCollection !== initialData.collection_id) {
-        setSelectedCollection(initialData.collection_id);
+      if (initialData.collection_id && selectedCollection !== Number(initialData.collection_id)) {
+        setSelectedCollection(Number(initialData.collection_id));
       }
       if (initialData.tag_ids && initialData.tag_ids.length > 0) {
         const currentTagsString = JSON.stringify(selectedTags.sort());
-        const initialTagsString = JSON.stringify(initialData.tag_ids.sort());
+        const initialTagsString = JSON.stringify(initialData.tag_ids.map(Number).sort());
         if (currentTagsString !== initialTagsString) {
-          setSelectedTags(initialData.tag_ids);
+          setSelectedTags(initialData.tag_ids.map(Number));
         }
       }
     }
@@ -211,8 +215,62 @@ export function LinkForm({
     }
   };
 
+  const handleClear = () => {
+    setUrl('');
+    setTitle('');
+    setSummary('');
+    setNotes('');
+    setIsFavorite(false);
+    setSelectedTags([]);
+    
+    // Reset to default collection
+    const defaultCol = collections.find((c: Collection) => c.name.toLowerCase() === 'default');
+    setSelectedCollection(defaultCol ? defaultCol.id : null);
+  };
+
   return (
     <RNScrollView contentContainerStyle={styles.container}>
+      {/* Header Buttons */}
+      <RNView style={styles.headerContainer}>
+        {/* Cancel Button - Left Side */}
+        <RNTouchableOpacity
+          activeOpacity={0.7}
+          onPress={onCancel || (() => {})}
+          style={[styles.headerButton, styles.cancelButton]}
+        >
+          <RNText style={[styles.buttonText, { color: colors.text.secondary }]}>Cancel</RNText>
+        </RNTouchableOpacity>
+
+        {/* Action Buttons - Right Side */}
+        <RNView style={styles.headerButtons}>
+          <RNTouchableOpacity
+            activeOpacity={0.7}
+            onPress={handleClear}
+            style={[styles.headerButton, styles.clearButton, { borderColor: colors.border.primary }]}
+          >
+            <RNText style={[styles.buttonText, { color: colors.text.secondary }]}>Clear</RNText>
+          </RNTouchableOpacity>
+          <RNTouchableOpacity
+            activeOpacity={0.7}
+            disabled={isSubmitting}
+            onPress={handleSubmit}
+            style={[
+              styles.headerButton,
+              styles.addButton,
+              { backgroundColor: colors.accent.primary },
+              isSubmitting && { opacity: 0.7 }
+            ]}
+          >
+            {isSubmitting ? (
+              <RNActivityIndicator color="#fff" size="small" />
+            ) : (
+              <RNText style={[styles.buttonText, { color: '#fff' }]}>+ Add</RNText>
+            )}
+          </RNTouchableOpacity>
+        </RNView>
+      </RNView>
+
+      {/* Rest of the form content */}
       <RNView style={styles.urlContainer}>
         <RNTextInput
           autoCapitalize="none"
@@ -376,36 +434,6 @@ export function LinkForm({
           Favorite
         </RNText>
       </RNTouchableOpacity>
-
-      {/* Button Row */}
-      <RNView style={{ flexDirection: 'row', gap: 32, justifyContent: 'center', marginTop: 16 }}>
-        {onCancel && (
-          <RNTouchableOpacity
-            activeOpacity={0.7}
-            onPress={onCancel}
-            style={[styles.iconButton, styles.clearIconButton, { shadowColor: colors.text.primary }]}
-          >
-            <IconByVariant color={colors.text.secondary} name="trash" size={20} />
-          </RNTouchableOpacity>
-        )}
-        <RNTouchableOpacity
-          activeOpacity={0.7}
-          disabled={isSubmitting}
-          onPress={handleSubmit}
-          style={[
-            styles.iconButton, 
-            styles.createIconButton, 
-            { backgroundColor: colors.accent.primary, shadowColor: colors.accent.primary },
-            isSubmitting && { opacity: 0.7 }
-          ]}
-        >
-          {isSubmitting ? (
-            <RNActivityIndicator color="#fff" size="small" />
-          ) : (
-            <IconByVariant color="#fff" name="send" size={20} />
-          )}
-        </RNTouchableOpacity>
-      </RNView>
     </RNScrollView>
   );
 }
@@ -510,4 +538,36 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   urlContainer: { position: 'relative' },
+  headerContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  headerButtons: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    gap: 8,
+  },
+  headerButton: {
+    height: 32,
+    paddingHorizontal: 12,
+    borderRadius: 6,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  clearButton: {
+    backgroundColor: 'transparent',
+    borderWidth: 1,
+  },
+  cancelButton: {
+    backgroundColor: 'transparent',
+  },
+  addButton: {
+    backgroundColor: '#007AFF',
+  },
+  buttonText: {
+    fontSize: 13,
+    fontWeight: '600',
+  },
 }); 

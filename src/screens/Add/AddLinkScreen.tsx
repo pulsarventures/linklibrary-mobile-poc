@@ -46,6 +46,10 @@ export default function AddLinkScreen() {
     }
   };
 
+  const handleCancel = () => {
+    navigation.goBack();
+  };
+
   // Show loading state while collections and tags are loading
   if (isLoadingCollections || isLoadingTags) {
     return (
@@ -62,6 +66,7 @@ export default function AddLinkScreen() {
       <LinkForm
         collections={collections}
         onSubmit={handleSubmit}
+        onCancel={handleCancel}
         tags={tags}
         initialData={route.params?.sharedUrl ? { url: route.params.sharedUrl } as Partial<Link> : undefined}
       />

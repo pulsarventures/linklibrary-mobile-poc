@@ -1,7 +1,10 @@
 import type { Collection } from '../../types/collection.types';
+import type { RootTabParamList } from '@/navigation/types';
+import type { NavigationProp } from '@react-navigation/native';
 
+import { useNavigation } from '@react-navigation/native';
 import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, Alert, FlatList, Pressable, RefreshControl, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, Alert, FlatList, Pressable, RefreshControl, StyleSheet, TouchableOpacity, View } from 'react-native';
 import Animated, { 
   FadeIn, 
   Layout
@@ -25,6 +28,7 @@ export default function Collections() {
   const { colors } = useTheme();
   const { collections, createCollection, deleteCollection, error, fetchCollections, loading, updateCollection } = useCollectionsStore();
   const { user } = useAuthStore();
+  const navigation = useNavigation<NavigationProp<RootTabParamList>>();
   const [refreshing, setRefreshing] = useState(false);
   const [showFormModal, setShowFormModal] = useState(false);
   const [editingCollection, setEditingCollection] = useState<Collection | null>(null);
@@ -152,7 +156,24 @@ export default function Collections() {
         break;
       }
       case 'VIEW': {
-        // Navigate to collection view
+        const collection = collections.find(c => c.id === id);
+        if (collection) {
+          console.log('📚 Collection pressed:', { id: collection.id, name: collection.name });
+          // Navigate to Links screen with collection filter
+          navigation.navigate('Links', { 
+            collectionId: collection.id,
+            collectionName: collection.name,
+            // Clear any tag params to avoid conflicts
+            tagId: undefined,
+            tagName: undefined
+          });
+          console.log('📚 Navigation called to Links with params:', { 
+            collectionId: collection.id, 
+            collectionName: collection.name,
+            tagId: undefined,
+            tagName: undefined
+          });
+        }
         break;
       }
       default: {
@@ -241,15 +262,6 @@ export default function Collections() {
   return (
     <SafeScreen>
       <View style={styles.container}>
-        <View style={styles.header}>
-          <Button
-            onPress={() => { setShowFormModal(true); }}
-            style={styles.createButton}
-            variant="primary"
-          >
-            Create
-          </Button>
-        </View>
 
         <AnimatedFlatList
           contentContainerStyle={styles.list}
@@ -266,6 +278,18 @@ export default function Collections() {
           showsVerticalScrollIndicator={false}
         />
       </View>
+      
+      <TouchableOpacity
+        activeOpacity={0.8}
+        onPress={() => { setShowFormModal(true); }}
+        style={[styles.floatingButton, { backgroundColor: colors.accent.primary }]}
+      >
+        <IconByVariant
+          color={colors.text.inverse}
+          name="add"
+          size={24}
+        />
+      </TouchableOpacity>
       
       <CollectionFormModal
         collection={editingCollection}
@@ -311,15 +335,27 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     textAlign: 'center',
   },
-  header: {
+  floatingButton: {
     alignItems: 'center',
-    flexDirection: 'row',
+    borderRadius: 28,
+    bottom: 35,
+    elevation: 8,
+    height: 56,
     justifyContent: 'center',
-    marginBottom: SPACING.lg,
-    paddingHorizontal: SPACING.sm,
+    position: 'absolute',
+    right: 20,
+    shadowColor: '#000',
+    shadowOffset: {
+      height: 2,
+      width: 0,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    width: 56,
   },
   list: {
-    flex: 1,
+    flexGrow: 1,
+    paddingBottom: SPACING.xl,
   },
   retryButton: {
     borderRadius: 8,

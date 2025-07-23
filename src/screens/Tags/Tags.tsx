@@ -1,22 +1,26 @@
+import type { RootTabParamList } from '@/navigation/types';
 import type { Tag } from '@/types/tag.types';
+import type { NavigationProp } from '@react-navigation/native';
 
+import { useNavigation } from '@react-navigation/native';
 import { useQueryClient } from '@tanstack/react-query';
 import React, { useState } from 'react';
-import { ActivityIndicator, Alert, FlatList, RefreshControl, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, Alert, FlatList, RefreshControl, StyleSheet, TouchableOpacity, View } from 'react-native';
 import Toast from 'react-native-toast-message';
 
 import { useTagsStore } from '@/hooks/domain/tags/useTagsStore';
 import { SPACING } from '@/theme/styles/spacing';
 import { useTheme } from '@/theme/ThemeProvider/ThemeProvider';
 
+import { IconByVariant } from '@/components/atoms';
 import { TagFormModal, TagItem } from '@/components/molecules';
 import { SafeScreen } from '@/components/templates';
-import { Button, Text } from '@/components/ui';
 
 export default function Tags() {
   const { colors } = useTheme();
   const { createTag, deleteTag, isCreating, isDeleting, isLoading, isUpdating, tags, updateTag } = useTagsStore();
   const queryClient = useQueryClient();
+  const navigation = useNavigation<NavigationProp<RootTabParamList>>();
   
   // Debug logging
   console.log('📱 Tags screen render:', { 
@@ -27,13 +31,26 @@ export default function Tags() {
     tags: tags.map(t => ({ id: t.id, name: t.name })),
     tagsCount: tags.length
   });
-  const [selectedTag, setSelectedTag] = useState<null | Tag>(null);
   const [showFormModal, setShowFormModal] = useState(false);
   const [editingTag, setEditingTag] = useState<null | Tag>(null);
   const [refreshing, setRefreshing] = useState(false);
 
   const handleTagPress = (tag: Tag) => {
-    setSelectedTag(tag);
+    console.log('🏷️ Tag pressed:', { id: tag.id, name: tag.name });
+    // First navigate to Links tab, then set params to ensure they're received
+    navigation.navigate('Links', { 
+      tagId: tag.id,
+      tagName: tag.name,
+      // Clear any collection params to avoid conflicts
+      collectionId: undefined,
+      collectionName: undefined
+    });
+    console.log('🏷️ Navigation called to Links with params:', { 
+      tagId: tag.id, 
+      tagName: tag.name,
+      collectionId: undefined,
+      collectionName: undefined
+    });
   };
 
   const handleEditTag = (tag: Tag) => {
@@ -153,15 +170,6 @@ export default function Tags() {
   return (
     <SafeScreen>
       <View style={styles.container}>
-        <View style={styles.header}>
-          <Button
-            onPress={handleCreateTag}
-            style={styles.createButton}
-            variant="primary"
-          >
-            Create
-          </Button>
-        </View>
 
         <FlatList
           contentContainerStyle={styles.list}
@@ -186,6 +194,18 @@ export default function Tags() {
           showsVerticalScrollIndicator={false}
         />
       </View>
+      
+      <TouchableOpacity
+        activeOpacity={0.8}
+        onPress={handleCreateTag}
+        style={[styles.floatingButton, { backgroundColor: colors.accent.primary }]}
+      >
+        <IconByVariant
+          color={colors.text.inverse}
+          name="add"
+          size={24}
+        />
+      </TouchableOpacity>
       
       <TagFormModal
         loading={isCreating || isUpdating}
@@ -212,12 +232,23 @@ const styles = StyleSheet.create({
     height: 40,
     minWidth: 100,
   },
-  header: {
+  floatingButton: {
     alignItems: 'center',
-    flexDirection: 'row',
+    borderRadius: 28,
+    bottom: 35,
+    elevation: 8,
+    height: 56,
     justifyContent: 'center',
-    marginBottom: SPACING.lg,
-    paddingHorizontal: SPACING.sm,
+    position: 'absolute',
+    right: 20,
+    shadowColor: '#000',
+    shadowOffset: {
+      height: 2,
+      width: 0,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    width: 56,
   },
   list: {
     flexGrow: 1,
