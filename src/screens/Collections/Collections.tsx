@@ -3,7 +3,7 @@ import type { RootTabParamList } from '@/navigation/types';
 import type { NavigationProp } from '@react-navigation/native';
 
 import { useNavigation } from '@react-navigation/native';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, Alert, FlatList, Pressable, RefreshControl, StyleSheet, TouchableOpacity, View } from 'react-native';
 import Animated, { 
   FadeIn, 
@@ -16,6 +16,7 @@ import { useTheme } from '@/theme';
 import { SPACING } from '@/theme/styles/spacing';
 
 import { IconByVariant } from '@/components/atoms';
+import { SearchBar } from '@/components/molecules/SearchBar';
 import { SafeScreen } from '@/components/templates';
 import { Button, Text } from '@/components/ui';
 
@@ -33,6 +34,7 @@ export default function Collections() {
   const [showFormModal, setShowFormModal] = useState(false);
   const [editingCollection, setEditingCollection] = useState<Collection | null>(null);
   const [formLoading, setFormLoading] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
     if (user) {
@@ -182,6 +184,17 @@ export default function Collections() {
     }
   };
 
+  // Filter collections based on search query
+  const filteredCollections = useMemo(() => {
+    if (!searchQuery.trim() || !collections) return collections;
+    
+    const query = searchQuery.toLowerCase().trim();
+    return collections.filter(collection => 
+      collection.name.toLowerCase().includes(query) ||
+      collection.description?.toLowerCase().includes(query)
+    );
+  }, [collections, searchQuery]);
+
   const renderItem = ({ item }: { item: Collection }) => (
     <Animated.View
       entering={FadeIn.springify()}
@@ -259,13 +272,47 @@ export default function Collections() {
     );
   }
 
+  // Handle empty search results
+  if (searchQuery.trim() && !filteredCollections?.length) {
+    return (
+      <SafeScreen>
+        <View style={styles.container}>
+          <SearchBar
+            onChangeText={setSearchQuery}
+            placeholder="Search Collections..."
+            value={searchQuery}
+          />
+          <View style={[styles.container, styles.centered]}>
+            <IconByVariant
+              color={colors.text.secondary}
+              name="collection"
+              size={48}
+              style={styles.emptyIcon}
+            />
+            <Text style={[styles.emptyTitle, { color: colors.text.primary }]}>
+              No collections found
+            </Text>
+            <Text style={[styles.emptyText, { color: colors.text.secondary }]}>
+              No collections match "{searchQuery}"
+            </Text>
+          </View>
+        </View>
+      </SafeScreen>
+    );
+  }
+
   return (
     <SafeScreen>
       <View style={styles.container}>
-
+        <SearchBar
+          onChangeText={setSearchQuery}
+          placeholder="Search Collections..."
+          value={searchQuery}
+        />
+        
         <AnimatedFlatList
           contentContainerStyle={styles.list}
-          data={collections}
+          data={filteredCollections}
           keyExtractor={(item) => item.id.toString()}
           refreshControl={
             <RefreshControl

@@ -4,7 +4,7 @@ import type { NavigationProp } from '@react-navigation/native';
 
 import { useNavigation } from '@react-navigation/native';
 import { useQueryClient } from '@tanstack/react-query';
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { ActivityIndicator, Alert, FlatList, RefreshControl, StyleSheet, TouchableOpacity, View } from 'react-native';
 import Toast from 'react-native-toast-message';
 
@@ -13,6 +13,7 @@ import { SPACING } from '@/theme/styles/spacing';
 import { useTheme } from '@/theme/ThemeProvider/ThemeProvider';
 
 import { IconByVariant } from '@/components/atoms';
+import { SearchBar } from '@/components/molecules/SearchBar';
 import { TagFormModal, TagItem } from '@/components/molecules';
 import { SafeScreen } from '@/components/templates';
 
@@ -34,6 +35,7 @@ export default function Tags() {
   const [showFormModal, setShowFormModal] = useState(false);
   const [editingTag, setEditingTag] = useState<null | Tag>(null);
   const [refreshing, setRefreshing] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
 
   const handleTagPress = (tag: Tag) => {
     console.log('🏷️ Tag pressed:', { id: tag.id, name: tag.name });
@@ -157,6 +159,16 @@ export default function Tags() {
     }
   };
 
+  // Filter tags based on search query
+  const filteredTags = useMemo(() => {
+    if (!searchQuery.trim() || !tags) return tags;
+    
+    const query = searchQuery.toLowerCase().trim();
+    return tags.filter(tag => 
+      tag.name.toLowerCase().includes(query)
+    );
+  }, [tags, searchQuery]);
+
   if (isLoading) {
     return (
       <SafeScreen>
@@ -167,13 +179,47 @@ export default function Tags() {
     );
   }
 
+  // Handle empty search results
+  if (searchQuery.trim() && !filteredTags?.length) {
+    return (
+      <SafeScreen>
+        <View style={styles.container}>
+          <SearchBar
+            onChangeText={setSearchQuery}
+            placeholder="Search Tags..."
+            value={searchQuery}
+          />
+          <View style={[styles.container, styles.centered]}>
+            <IconByVariant
+              color={colors.text.secondary}
+              name="hash"
+              size={48}
+              style={styles.emptyIcon}
+            />
+            <Text style={[styles.emptyTitle, { color: colors.text.primary }]}>
+              No tags found
+            </Text>
+            <Text style={[styles.emptyText, { color: colors.text.secondary }]}>
+              No tags match "{searchQuery}"
+            </Text>
+          </View>
+        </View>
+      </SafeScreen>
+    );
+  }
+
   return (
     <SafeScreen>
       <View style={styles.container}>
+        <SearchBar
+          onChangeText={setSearchQuery}
+          placeholder="Search Tags..."
+          value={searchQuery}
+        />
 
         <FlatList
           contentContainerStyle={styles.list}
-          data={tags}
+          data={filteredTags}
           keyExtractor={(item) => item.id.toString()}
           refreshControl={
             <RefreshControl
@@ -231,6 +277,19 @@ const styles = StyleSheet.create({
   createButton: {
     height: 40,
     minWidth: 100,
+  },
+  emptyIcon: {
+    marginBottom: 16,
+  },
+  emptyText: {
+    fontSize: 16,
+    marginBottom: 24,
+    textAlign: 'center',
+  },
+  emptyTitle: {
+    fontSize: 20,
+    fontWeight: '600',
+    marginBottom: 8,
   },
   floatingButton: {
     alignItems: 'center',
