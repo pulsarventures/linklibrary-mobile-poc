@@ -337,26 +337,29 @@ export default function Links() {
           placeholder={collectionName ? `Search in ${collectionName}...` : tagName ? `Search in #${tagName}...` : "Search Links..."}
           value={searchQuery}
         />
-        <FlatList
-          contentContainerStyle={styles.list}
-          data={filteredLinks || []}
-          keyExtractor={(item: Link) => item.id}
-          refreshControl={
-            <RefreshControl
-              onRefresh={onRefresh}
-              refreshing={refreshing}
-              tintColor={colors.text.primary}
-            />
-          }
-          renderItem={({ item }: { readonly item: Link }) => (
-            <LinkItem
-              link={item}
-              onAction={handleLinkAction}
-              onPress={handleLinkPress}
-            />
-          )}
-          showsVerticalScrollIndicator={false}
-        />
+        
+        <View style={styles.listContainer}>
+          <FlatList
+            contentContainerStyle={styles.list}
+            data={filteredLinks || []}
+            keyExtractor={(item: Link) => item.id}
+            refreshControl={
+              <RefreshControl
+                onRefresh={onRefresh}
+                refreshing={refreshing}
+                tintColor={colors.text.primary}
+              />
+            }
+            renderItem={({ item }: { readonly item: Link }) => (
+              <LinkItem
+                link={item}
+                onAction={handleLinkAction}
+                onPress={handleLinkPress}
+              />
+            )}
+            showsVerticalScrollIndicator={false}
+          />
+        </View>
 
         <Modal
           hideModalContentWhileAnimating
@@ -432,6 +435,10 @@ const styles = StyleSheet.create({
   },
   list: {
     flexGrow: 1,
+  },
+  listContainer: {
+    flex: 1,
+    paddingTop: SPACING.md,
   },
   loadingText: {
     fontSize: 16,
