@@ -183,7 +183,7 @@ export default function Tags() {
   if (searchQuery.trim() && !filteredTags?.length) {
     return (
       <SafeScreen>
-        <View style={styles.container}>
+        <View style={styles.outerContainer}>
           <SearchBar
             onChangeText={setSearchQuery}
             placeholder="Search Tags..."
@@ -210,35 +210,37 @@ export default function Tags() {
 
   return (
     <SafeScreen>
-      <View style={styles.container}>
+      <View style={styles.outerContainer}>
         <SearchBar
           onChangeText={setSearchQuery}
           placeholder="Search Tags..."
           value={searchQuery}
         />
 
-        <FlatList
-          contentContainerStyle={styles.list}
-          data={filteredTags}
-          keyExtractor={(item) => item.id.toString()}
-          refreshControl={
-            <RefreshControl
-              colors={[colors.text.primary]}
-              onRefresh={handleRefresh}
-              refreshing={refreshing}
-              tintColor={colors.text.primary}
-            />
-          }
-          renderItem={({ item }) => (
-            <TagItem
-              onDelete={() => handleDeleteTag(item)}
-              onEdit={() => { handleEditTag(item); }}
-              onPress={() => { handleTagPress(item); }}
-              tag={item}
-            />
-          )}
-          showsVerticalScrollIndicator={false}
-        />
+        <View style={styles.container}>
+          <FlatList
+            contentContainerStyle={styles.list}
+            data={filteredTags}
+            keyExtractor={(item) => item.id.toString()}
+            refreshControl={
+              <RefreshControl
+                colors={[colors.text.primary]}
+                onRefresh={handleRefresh}
+                refreshing={refreshing}
+                tintColor={colors.text.primary}
+              />
+            }
+            renderItem={({ item }) => (
+              <TagItem
+                onDelete={() => handleDeleteTag(item)}
+                onEdit={() => { handleEditTag(item); }}
+                onPress={() => { handleTagPress(item); }}
+                tag={item}
+              />
+            )}
+            showsVerticalScrollIndicator={false}
+          />
+        </View>
       </View>
       
       <TouchableOpacity
@@ -273,6 +275,10 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: SPACING.lg,
     paddingTop: SPACING.md,
+  },
+  outerContainer: {
+    backgroundColor: 'transparent',
+    flex: 1,
   },
   createButton: {
     height: 40,

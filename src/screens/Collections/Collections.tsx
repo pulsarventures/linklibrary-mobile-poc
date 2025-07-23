@@ -276,7 +276,7 @@ export default function Collections() {
   if (searchQuery.trim() && !filteredCollections?.length) {
     return (
       <SafeScreen>
-        <View style={styles.container}>
+        <View style={styles.outerContainer}>
           <SearchBar
             onChangeText={setSearchQuery}
             placeholder="Search Collections..."
@@ -303,27 +303,29 @@ export default function Collections() {
 
   return (
     <SafeScreen>
-      <View style={styles.container}>
+      <View style={styles.outerContainer}>
         <SearchBar
           onChangeText={setSearchQuery}
           placeholder="Search Collections..."
           value={searchQuery}
         />
         
-        <AnimatedFlatList
-          contentContainerStyle={styles.list}
-          data={filteredCollections}
-          keyExtractor={(item) => item.id.toString()}
-          refreshControl={
-            <RefreshControl
-              onRefresh={onRefresh}
-              refreshing={refreshing}
-              tintColor={colors.accent.primary}
-            />
-          }
-          renderItem={renderItem}
-          showsVerticalScrollIndicator={false}
-        />
+        <View style={styles.container}>
+          <AnimatedFlatList
+            contentContainerStyle={styles.list}
+            data={filteredCollections}
+            keyExtractor={(item) => item.id.toString()}
+            refreshControl={
+              <RefreshControl
+                onRefresh={onRefresh}
+                refreshing={refreshing}
+                tintColor={colors.accent.primary}
+              />
+            }
+            renderItem={renderItem}
+            showsVerticalScrollIndicator={false}
+          />
+        </View>
       </View>
       
       <TouchableOpacity
@@ -358,6 +360,10 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: SPACING.lg,
     paddingTop: SPACING.md,
+  },
+  outerContainer: {
+    backgroundColor: 'transparent',
+    flex: 1,
   },
   createButton: {
     height: 40,
