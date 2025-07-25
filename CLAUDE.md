@@ -106,7 +106,12 @@ All stores follow the same pattern with actions like `fetch*`, `create*`, `updat
 - Run all quality checks before committing: `npm run lint`
 
 ## 🚨 CRITICAL: iOS Share Extension - DO NOT TOUCH
-The iOS Share Extension is THE HEART OF THE APP and is fully functional. See SHARE_EXTENSION_DO_NOT_TOUCH.md for complete details.
+The iOS Share Extension is THE HEART OF THE APP and is fully functional. 
+
+**📖 REQUIRED READING:**
+- `SHARE_EXTENSION_DO_NOT_TOUCH.md` - Critical share extension documentation
+- `IOS_ANDROID_SETUP_PROTECTION.md` - Complete setup protection guide
+- `TROUBLESHOOTING.md` - Issue resolution steps
 
 **NEVER modify these files/features:**
 - `ios/ShareExtension/ShareViewController.swift`
@@ -114,3 +119,5 @@ The iOS Share Extension is THE HEART OF THE APP and is fully functional. See SHA
 - App Groups capability: `group.com.pulsarventures.linklibraryai`
 - Share handling logic in `src/App.tsx`
 - Navigation logic for shared URLs
+- React Native version (0.78.2)
+- iOS/Android target versions
