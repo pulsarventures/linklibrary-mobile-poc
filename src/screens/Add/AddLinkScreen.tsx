@@ -20,21 +20,40 @@ export default function AddLinkScreen() {
   const createLinkMutation = useCreateLink();
   const { collections, fetchCollections, loading: isLoadingCollections } = useCollectionsStore();
   const { tags, isLoading: isLoadingTags } = useTagsStore();
+  
+  // Track the current shared URL to detect changes
+  const [currentSharedUrl, setCurrentSharedUrl] = React.useState<string | undefined>(route.params?.sharedUrl);
 
-  // Handle shared URL from route params
+  // Handle shared URL from route params - including updates when form is already open
   useEffect(() => {
     if (route.params?.sharedUrl) {
       console.log('📤 Processing shared URL:', route.params.sharedUrl);
       
-      // Show toast notification
-      Toast.show({
-        position: 'top',
-        text1: 'URL Received',
-        text2: 'Shared link has been added to the form',
-        type: 'success',
-      });
+      // Check if this is a new shared URL (different from current one)
+      const isNewShare = route.params.sharedUrl !== currentSharedUrl;
+      
+      if (isNewShare && currentSharedUrl) {
+        // New share came in while form was already open - show different message
+        Toast.show({
+          position: 'top',
+          text1: 'New URL Received',
+          text2: 'Form cleared and new shared link loaded',
+          type: 'info',
+        });
+      } else if (route.params.sharedUrl) {
+        // First time loading shared URL
+        Toast.show({
+          position: 'top',
+          text1: 'URL Received',
+          text2: 'Shared link has been added to the form',
+          type: 'success',
+        });
+      }
+      
+      // Update current shared URL
+      setCurrentSharedUrl(route.params.sharedUrl);
     }
-  }, [route.params?.sharedUrl]);
+  }, [route.params?.sharedUrl, currentSharedUrl]);
 
   const handleSubmit = async (linkData: any) => {
     try {
@@ -64,11 +83,12 @@ export default function AddLinkScreen() {
   return (
     <SafeScreen>
       <LinkForm
+        key={currentSharedUrl || 'no-share'} // Force re-render when shared URL changes
         collections={collections}
         onSubmit={handleSubmit}
         onCancel={handleCancel}
         tags={tags}
-        initialData={route.params?.sharedUrl ? { url: route.params.sharedUrl } as Partial<Link> : undefined}
+        initialData={currentSharedUrl ? { url: currentSharedUrl } as Partial<Link> : undefined}
       />
     </SafeScreen>
   );

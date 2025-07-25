@@ -10,7 +10,7 @@ import { useTheme } from '@/theme';
 import { AssetByVariant } from '@/components/atoms';
 import { SafeScreen } from '@/components/templates';
 
-export function Startup({ navigation }: RootScreenProps<'Startup'>) {
+function Startup({ navigation }: RootScreenProps<'Startup'>) {
   const { colors, layout } = useTheme();
   const { initializeAuth, initialized, isAuthenticated, isLoading } = useAuthStore();
 
@@ -34,7 +34,7 @@ export function Startup({ navigation }: RootScreenProps<'Startup'>) {
   useEffect(() => {
     if (initialized && !isLoading) {
       if (isAuthenticated) {
-        navigation.replace(Paths.Main, { screen: Paths.Links });
+        navigation.replace(Paths.Main, { screen: Paths.Links, params: {} });
       } else {
         navigation.replace(Paths.Login);
       }
@@ -65,3 +65,6 @@ export function Startup({ navigation }: RootScreenProps<'Startup'>) {
     </SafeScreen>
   );
 }
+
+export { Startup };
+export default Startup;

@@ -84,7 +84,7 @@ export default function ChatScreen() {
         
         <Text style={styles.title}>Meet Linky</Text>
         <Text style={styles.description}>
-          Your friendly AI companion for managing and discovering insights from your link library
+          Your friendly AI companion for managing and discovering insights from your links
         </Text>
         
         <Text style={styles.comingSoon}>Coming Soon!</Text>

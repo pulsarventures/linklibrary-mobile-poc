@@ -23,6 +23,8 @@ import { useAuthStore } from '@/hooks/domain/user/useAuthStore';
 import { navigationRef, Paths } from '@/navigation/paths';
 
 const { AppGroupsModule } = NativeModules;
+console.log('📤 🔍 All Native Modules:', Object.keys(NativeModules).sort());
+console.log('📤 🔍 AppGroupsModule object:', AppGroupsModule);
 
 // Enable Reanimated layout animations
 import { UIManager } from 'react-native';
@@ -96,69 +98,86 @@ function App() {
 
   // Check for shared content from iOS share extension
   const checkForSharedContent = async () => {
+    console.log('📤 🔍 CHECKING FOR SHARED CONTENT - START');
     try {
       if (!AppGroupsModule) {
-        console.log('📤 AppGroupsModule not available');
+        console.log('📤 ❌ AppGroupsModule not available - native module missing!');
         return;
       }
 
+      console.log('📤 ✅ AppGroupsModule available, calling getSharedContent...');
       const sharedData = await AppGroupsModule.getSharedContent();
+      console.log('📤 📦 Raw shared data received:', JSON.stringify(sharedData, null, 2));
+      
       if (sharedData) {
-        console.log('📤 Found shared data from iOS share extension:', sharedData);
+        console.log('📤 ✅ Found shared data from iOS share extension:', sharedData);
         
         let url = '';
         if (sharedData.type === 'url') {
           url = sharedData.data;
+          console.log('📤 🔗 URL type data:', url);
         } else if (sharedData.type === 'text') {
+          console.log('📤 📝 Text type data:', sharedData.data);
           // Try to extract URL from text
           const urlMatch = sharedData.data.match(/https?:\/\/\S+/);
           if (urlMatch) {
             url = urlMatch[0];
+            console.log('📤 🔗 Extracted URL from text:', url);
           }
         }
         
         if (url) {
-          console.log('📤 Extracted URL from shared content:', url);
+          console.log('📤 🎯 Final URL to process:', url);
           handleSharedUrl(url);
+        } else {
+          console.log('📤 ⚠️ No valid URL found in shared data');
         }
+      } else {
+        console.log('📤 ℹ️ No shared data found');
       }
     } catch (error) {
-      console.error('📤 Error checking for shared content:', error);
+      console.error('📤 💥 Error checking for shared content:', error);
+      console.error('📤 💥 Error details:', JSON.stringify(error, null, 2));
     }
+    console.log('📤 🔍 CHECKING FOR SHARED CONTENT - END');
   };
 
   const navigateToAddScreen = (url: string) => {
-    console.log('📤 Attempting to navigate to Add screen with URL:', url);
+    console.log('📤 🚀 NAVIGATION TO ADD SCREEN - START');
+    console.log('📤 🎯 Target URL:', url);
     
     if (navigationRef.isReady()) {
-      console.log('📤 Navigation is ready, navigating...');
+      console.log('📤 ✅ Navigation is ready, navigating immediately...');
       try {
         // Navigate to the Main navigator with Add screen params
         navigationRef.navigate('Main', {
           screen: 'Add',
           params: { sharedUrl: url }
         });
-        console.log('📤 Navigated to Add screen with URL');
+        console.log('📤 ✅ Successfully navigated to Add screen with URL');
       } catch (error) {
-        console.error('📤 Error navigating to Add screen:', error);
+        console.error('📤 💥 Error navigating to Add screen:', error);
+        console.error('📤 💥 Navigation error details:', JSON.stringify(error, null, 2));
       }
     } else {
-      console.log('📤 Navigation not ready, waiting...');
+      console.log('📤 ⏳ Navigation not ready, setting up listener...');
       // If navigation isn't ready, wait for it
       const unsubscribe = navigationRef.addListener('state', () => {
-        console.log('📤 Navigation state changed, attempting navigation...');
+        console.log('📤 🔄 Navigation state changed, attempting delayed navigation...');
         try {
           navigationRef.navigate('Main', {
             screen: 'Add',
             params: { sharedUrl: url }
           });
-          console.log('📤 Navigated to Add screen with URL (delayed)');
+          console.log('📤 ✅ Successfully navigated to Add screen with URL (delayed)');
           unsubscribe();
         } catch (error) {
-          console.error('📤 Error in delayed navigation:', error);
+          console.error('📤 💥 Error in delayed navigation:', error);
+          console.error('📤 💥 Delayed navigation error details:', JSON.stringify(error, null, 2));
         }
       });
     }
+    console.log('📤 🚀 NAVIGATION TO ADD SCREEN - END');
   };
 
   // Monitor auth state and process pending URL when user becomes authenticated

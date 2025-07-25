@@ -104,3 +104,13 @@ All stores follow the same pattern with actions like `fetch*`, `create*`, `updat
 - Prettier for consistent formatting
 - TypeScript strict mode enabled
 - Run all quality checks before committing: `npm run lint`
+
+## 🚨 CRITICAL: iOS Share Extension - DO NOT TOUCH
+The iOS Share Extension is THE HEART OF THE APP and is fully functional. See SHARE_EXTENSION_DO_NOT_TOUCH.md for complete details.
+
+**NEVER modify these files/features:**
+- `ios/ShareExtension/ShareViewController.swift`
+- `ios/AppGroupsModule.swift` and `ios/AppGroupsModule.m`
+- App Groups capability: `group.com.pulsarventures.linklibraryai`
+- Share handling logic in `src/App.tsx`
+- Navigation logic for shared URLs

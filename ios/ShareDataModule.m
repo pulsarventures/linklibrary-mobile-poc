@@ -5,4 +5,4 @@
 RCT_EXTERN_METHOD(getSharedData:(RCTPromiseResolveBlock)resolve
                   rejecter:(RCTPromiseRejectBlock)reject)
 
-@end 
+@end

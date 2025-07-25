@@ -1,16 +1,19 @@
-import { GOOGLE_CLIENT_ID } from '@env';
+import { GOOGLE_CLIENT_ID, IOS_CLIENT_ID } from '@env';
 import { GoogleSignin, statusCodes, type User } from '@react-native-google-signin/google-signin';
 
 import { safeErrorLog } from '@/utils/errorHandler';
 
 // Initialize Google Sign-In
-console.log('Configuring Google Sign-In with webClientId:', GOOGLE_CLIENT_ID);
+if (!GOOGLE_CLIENT_ID || !IOS_CLIENT_ID) {
+  throw new Error('Google Sign-In client IDs are not configured in environment variables');
+}
+
 GoogleSignin.configure({
-  forceCodeForRefreshToken: true,
-  iosClientId: '991185990145-21ebjs10ct5gckdj5pshsd84i3pvpdpc.apps.googleusercontent.com',
+  webClientId: GOOGLE_CLIENT_ID,
+  iosClientId: IOS_CLIENT_ID,
   offlineAccess: true,
   scopes: ['profile', 'email'],
-  webClientId: GOOGLE_CLIENT_ID,
+  forceCodeForRefreshToken: true,
 });
 
 type GoogleSignInResult = {
@@ -40,7 +43,7 @@ export async function getCurrentUser(): Promise<null | User> {
 
 export async function hasPreviousSignIn(): Promise<boolean> {
   try {
-    return GoogleSignin.hasPreviousSignIn();
+    return GoogleSignin.isSignedIn();
   } catch (error) {
     safeErrorLog('Check sign in status error', error);
     return false;
@@ -49,47 +52,25 @@ export async function hasPreviousSignIn(): Promise<boolean> {
 
 export async function signInWithGoogle(): Promise<GoogleSignInResult> {
   try {
-    console.log('Starting Google Sign-In...');
-    console.log('Google Client ID configured:', GOOGLE_CLIENT_ID);
-    
     // Check if Google Play Services is available
-    try {
-      await GoogleSignin.hasPlayServices();
-      console.log('Google Play Services available');
-    } catch {
-      console.log('Google Play Services not available (iOS or not installed)');
-    }
+    await GoogleSignin.hasPlayServices();
     
-    // Simple sign-in without all the complexity
-    const signInResult = await GoogleSignin.signIn();
-    console.log('Sign-in result type:', signInResult.type);
-    
-    if (signInResult.type !== 'success') {
-      throw new Error(`Google Sign-In was cancelled or failed. Type: ${signInResult.type}`);
-    }
-
-    console.log('Sign-in successful, getting tokens...');
+    // Sign in and get user data
+    const userInfo = await GoogleSignin.signIn();
     
     // Get access token
     const tokens = await GoogleSignin.getTokens();
-    console.log('Tokens received:', { hasAccessToken: !!tokens.accessToken, hasIdToken: !!tokens.idToken });
     
     if (!tokens.accessToken) {
       throw new Error('Failed to get access token from Google');
     }
 
-    // Get user info
-    const { user } = signInResult.data;
-    console.log('User data received:', { hasEmail: !!user.email, hasName: !!user.name });
-    
-    const email = user.email;
-    const name = user.name || user.givenName || '';
+    const email = userInfo.user.email;
+    const name = userInfo.user.name || userInfo.user.givenName || '';
 
     if (!email) {
       throw new Error('Failed to get user email from Google');
     }
-
-    console.log('Google Sign-In successful:', { email, name });
     
     return {
       email,
@@ -100,35 +81,24 @@ export async function signInWithGoogle(): Promise<GoogleSignInResult> {
   } catch (error: unknown) {
     safeErrorLog('Google Sign-In failed', error);
     
-    if (error instanceof Error) {
-      if ('code' in error) {
-        const code = (error as any).code;
-        console.error('Error code:', code);
-        
-        switch (code) {
-          case statusCodes.SIGN_IN_CANCELLED: {
-            throw new Error('Google Sign-In was cancelled by user');
-          }
-          case statusCodes.IN_PROGRESS: {
-            throw new Error('Google Sign-In already in progress');
-          }
-          case statusCodes.PLAY_SERVICES_NOT_AVAILABLE: {
-            throw new Error('Google Play Services not available on this device');
-          }
-          case statusCodes.SIGN_IN_REQUIRED: {
-            throw new Error('User needs to sign in to Google first');
-          }
-          default: {
-            throw new Error(`Google Sign-In failed with code: ${code} - ${error.message}`);
-          }
-        }
-      }
+    if (error instanceof Error && 'code' in error) {
+      const code = (error as any).code;
       
-      // Re-throw the original error with more context
-      throw new Error(`Google Sign-In failed: ${error.message}`);
+      switch (code) {
+        case statusCodes.SIGN_IN_CANCELLED:
+          throw new Error('Google Sign-In was cancelled by user');
+        case statusCodes.IN_PROGRESS:
+          throw new Error('Google Sign-In already in progress');
+        case statusCodes.PLAY_SERVICES_NOT_AVAILABLE:
+          throw new Error('Google Play Services not available on this device');
+        case statusCodes.SIGN_IN_REQUIRED:
+          throw new Error('User needs to sign in to Google first');
+        default:
+          throw new Error(`Google Sign-In failed with code: ${code} - ${error.message}`);
+      }
     }
     
-    throw new Error('Google Sign-In failed with unknown error');
+    throw new Error(error instanceof Error ? error.message : 'Google Sign-In failed with unknown error');
   }
 }
 

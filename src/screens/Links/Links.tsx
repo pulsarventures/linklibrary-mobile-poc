@@ -156,7 +156,14 @@ export default function Links() {
   };
 
   const handleCreateLink = () => {
-    navigation.navigate('Add' as never);
+    console.log('🔘 FLOATING BUTTON PRESSED - Navigating to Add screen');
+    try {
+      navigation.navigate('Add' as never);
+      console.log('🔘 ✅ Navigation call completed successfully');
+    } catch (error) {
+      console.error('🔘 ❌ Navigation error:', error);
+      console.error('🔘 ❌ Navigation error details:', JSON.stringify(error, null, 2));
+    }
   };
 
   const deleteLink = useDeleteLink();
@@ -360,8 +367,21 @@ export default function Links() {
             showsVerticalScrollIndicator={false}
           />
         </View>
+      </View>
+      
+      <TouchableOpacity
+        activeOpacity={0.8}
+        onPress={handleCreateLink}
+        style={[styles.floatingButton, { backgroundColor: colors.accent.primary }]}
+      >
+        <IconByVariant
+          color={colors.text.inverse}
+          name="add"
+          size={24}
+        />
+      </TouchableOpacity>
 
-        <Modal
+      <Modal
           hideModalContentWhileAnimating
           isVisible={!!editingLink}
           onBackButtonPress={() => { setEditingLink(null); }}
@@ -389,7 +409,6 @@ export default function Links() {
             )}
           </View>
         </Modal>
-      </View>
     </SafeScreen>
   );
 }
@@ -459,6 +478,24 @@ const styles = StyleSheet.create({
   },
   retryButton: {
     marginTop: SPACING.md,
+  },
+  floatingButton: {
+    alignItems: 'center',
+    borderRadius: 28,
+    bottom: 35,
+    elevation: 8,
+    height: 56,
+    justifyContent: 'center',
+    position: 'absolute',
+    right: 20,
+    shadowColor: '#000',
+    shadowOffset: {
+      height: 2,
+      width: 0,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    width: 56,
   },
   title: {
     marginBottom: SPACING.md,

@@ -3,16 +3,16 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 60;
+	objectVersion = 70;
 	objects = {
 
 /* Begin PBXBuildFile section */
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
 		81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
-		86643BC4992C453C9CFFFB30 /* Pods_linklibrary_mobile.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 20DD6C8A76B3618B3BEA04BD /* Pods_linklibrary_mobile.framework */; };
+		84A417D61867BE56DBFDF5BB /* Pods_linklibrary_mobile.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CCB53B38A61B695C1D551068 /* Pods_linklibrary_mobile.framework */; };
 		B23823962E2A671F00C17D8B /* AppGroupsModule.swift in Sources */ = {isa = PBXBuildFile; fileRef = B23823952E2A671F00C17D8B /* AppGroupsModule.swift */; };
-		B23823972E2A671F00C17D8B /* AppGroupsModule.m in Sources */ = {isa = PBXBuildFile; fileRef = B23823942E2A671F00C17D8B /* AppGroupsModule.m */; };
 		B238239B2E2A6F6000C17D8B /* ShareExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = B2EBA0982E1C022D009E9B2E /* ShareExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		B27346D62E32E0ED00B87771 /* AppGroupsModule.m in Sources */ = {isa = PBXBuildFile; fileRef = B27346D52E32E0ED00B87771 /* AppGroupsModule.m */; };
 		F571B3882BD7A3F80014213C /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = F571B3872BD7A3F80014213C /* PrivacyInfo.xcprivacy */; };
 		F5DC7AB12D9D8A92004DB744 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = F5DC7AB02D9D8A92004DB744 /* AppDelegate.swift */; };
 		F5DC7AB42D9D8AA2004DB744 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = F5DC7AB32D9D8AA2004DB744 /* GoogleService-Info.plist */; };
@@ -61,24 +61,23 @@
 		13B07F961A680F5B00A75B9A /* linklibrary_mobile.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = linklibrary_mobile.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		13B07FB51A68108700A75B9A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = linklibrary_mobile/Images.xcassets; sourceTree = "<group>"; };
 		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = linklibrary_mobile/Info.plist; sourceTree = "<group>"; };
-		20DD6C8A76B3618B3BEA04BD /* Pods_linklibrary_mobile.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_linklibrary_mobile.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		5EAC4DCC832357E078426E45 /* Pods-linklibrary_mobile.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-linklibrary_mobile.release.xcconfig"; path = "Target Support Files/Pods-linklibrary_mobile/Pods-linklibrary_mobile.release.xcconfig"; sourceTree = "<group>"; };
 		81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = linklibrary_mobile/LaunchScreen.storyboard; sourceTree = "<group>"; };
-		B23823942E2A671F00C17D8B /* AppGroupsModule.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppGroupsModule.m; sourceTree = "<group>"; };
+		929EA88917AEE97A83670C59 /* Pods-linklibrary_mobile.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-linklibrary_mobile.release.xcconfig"; path = "Target Support Files/Pods-linklibrary_mobile/Pods-linklibrary_mobile.release.xcconfig"; sourceTree = "<group>"; };
+		A3715295FCFD353C479F19AD /* Pods-linklibrary_mobile.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-linklibrary_mobile.debug.xcconfig"; path = "Target Support Files/Pods-linklibrary_mobile/Pods-linklibrary_mobile.debug.xcconfig"; sourceTree = "<group>"; };
 		B23823952E2A671F00C17D8B /* AppGroupsModule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppGroupsModule.swift; sourceTree = "<group>"; };
+		B27346D52E32E0ED00B87771 /* AppGroupsModule.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppGroupsModule.m; sourceTree = "<group>"; };
 		B2EBA0982E1C022D009E9B2E /* ShareExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = ShareExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		B2EBA0A72E1C028C009E9B2E /* linklibrary_mobile.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; name = linklibrary_mobile.entitlements; path = linklibrary_mobile/linklibrary_mobile.entitlements; sourceTree = "<group>"; };
-		BFC7F502A3964DDA421F4246 /* Pods-linklibrary_mobile.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-linklibrary_mobile.debug.xcconfig"; path = "Target Support Files/Pods-linklibrary_mobile/Pods-linklibrary_mobile.debug.xcconfig"; sourceTree = "<group>"; };
-		C8DD1A582B79948189FF2547 /* libPods-linklibrary_mobile.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-linklibrary_mobile.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		CCB53B38A61B695C1D551068 /* Pods_linklibrary_mobile.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_linklibrary_mobile.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
 		F571B3872BD7A3F80014213C /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		F5DC7AB02D9D8A92004DB744 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppDelegate.swift; path = linklibrary_mobile/AppDelegate.swift; sourceTree = "<group>"; };
 		F5DC7AB22D9D8AA1004DB744 /* linklibrary_mobile-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "linklibrary_mobile-Bridging-Header.h"; sourceTree = "<group>"; };
-		F5DC7AB32D9D8AA2004DB744 /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = "GoogleService-Info.plist"; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
+		F5DC7AB32D9D8AA2004DB744 /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		B2EBA0A32E1C022D009E9B2E /* Exceptions for "ShareExtension" folder in "ShareExtension" target */ = {
+		B2EBA0A32E1C022D009E9B2E /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
@@ -88,18 +87,7 @@
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		B2EBA0992E1C022D009E9B2E /* ShareExtension */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-				B2EBA0A32E1C022D009E9B2E /* Exceptions for "ShareExtension" folder in "ShareExtension" target */,
-			);
-			explicitFileTypes = {
-			};
-			explicitFolders = (
-			);
-			path = ShareExtension;
-			sourceTree = "<group>";
-		};
+		B2EBA0992E1C022D009E9B2E /* ShareExtension */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (B2EBA0A32E1C022D009E9B2E /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = ShareExtension; sourceTree = "<group>"; };
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -114,7 +102,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				86643BC4992C453C9CFFFB30 /* Pods_linklibrary_mobile.framework in Frameworks */,
+				84A417D61867BE56DBFDF5BB /* Pods_linklibrary_mobile.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -131,8 +119,8 @@
 		13B07FAE1A68108700A75B9A /* linklibrary_mobile */ = {
 			isa = PBXGroup;
 			children = (
-				B23823942E2A671F00C17D8B /* AppGroupsModule.m */,
 				B23823952E2A671F00C17D8B /* AppGroupsModule.swift */,
+				B27346D52E32E0ED00B87771 /* AppGroupsModule.m */,
 				B2EBA0A72E1C028C009E9B2E /* linklibrary_mobile.entitlements */,
 				F5DC7AB02D9D8A92004DB744 /* AppDelegate.swift */,
 				F571B3872BD7A3F80014213C /* PrivacyInfo.xcprivacy */,
@@ -149,8 +137,7 @@
 			isa = PBXGroup;
 			children = (
 				ED297162215061F000B7C4FE /* JavaScriptCore.framework */,
-				C8DD1A582B79948189FF2547 /* libPods-linklibrary_mobile.a */,
-				20DD6C8A76B3618B3BEA04BD /* Pods_linklibrary_mobile.framework */,
+				CCB53B38A61B695C1D551068 /* Pods_linklibrary_mobile.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -190,8 +177,8 @@
 		BBD78D7AC51CEA395F1C20DB /* Pods */ = {
 			isa = PBXGroup;
 			children = (
-				BFC7F502A3964DDA421F4246 /* Pods-linklibrary_mobile.debug.xcconfig */,
-				5EAC4DCC832357E078426E45 /* Pods-linklibrary_mobile.release.xcconfig */,
+				A3715295FCFD353C479F19AD /* Pods-linklibrary_mobile.debug.xcconfig */,
+				929EA88917AEE97A83670C59 /* Pods-linklibrary_mobile.release.xcconfig */,
 			);
 			path = Pods;
 			sourceTree = "<group>";
@@ -221,7 +208,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 13B07F931A680F5B00A75B9A /* Build configuration list for PBXNativeTarget "linklibrary_mobile" */;
 			buildPhases = (
-				88EAD930244305F323768763 /* [CP] Check Pods Manifest.lock */,
+				75B5C099A81807E1FC5F9B53 /* [CP] Check Pods Manifest.lock */,
 				B2EBA0832E1BC3EB009E9B2E /* ShellScript */,
 				B2EBA0812E1B0504009E9B2E /* ShellScript */,
 				FD10A7F022414F080027D42C /* Start Packager */,
@@ -229,9 +216,9 @@
 				13B07F8C1A680F5B00A75B9A /* Frameworks */,
 				13B07F8E1A680F5B00A75B9A /* Resources */,
 				00DD1BFF1BD5951E006B06BC /* Bundle React Native code and images */,
-				0E2CE418CBD6570AA71C93FA /* [CP] Embed Pods Frameworks */,
-				D4FF36D8B9C0E38D547A49BD /* [CP] Copy Pods Resources */,
 				B238239E2E2A6F6000C17D8B /* Embed Foundation Extensions */,
+				37944AF91C27C6003CAFEC95 /* [CP] Embed Pods Frameworks */,
+				C4CA2D8C3B2F7792326B5128 /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -351,7 +338,7 @@
 			shellPath = /bin/sh;
 			shellScript = "set -e\n\nWITH_ENVIRONMENT=\"../node_modules/react-native/scripts/xcode/with-environment.sh\"\nREACT_NATIVE_XCODE=\"../node_modules/react-native/scripts/react-native-xcode.sh\"\n\n/bin/sh -c \"$WITH_ENVIRONMENT $REACT_NATIVE_XCODE\"\n";
 		};
-		0E2CE418CBD6570AA71C93FA /* [CP] Embed Pods Frameworks */ = {
+		37944AF91C27C6003CAFEC95 /* [CP] Embed Pods Frameworks */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -368,7 +355,7 @@
 			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-linklibrary_mobile/Pods-linklibrary_mobile-frameworks.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
-		88EAD930244305F323768763 /* [CP] Check Pods Manifest.lock */ = {
+		75B5C099A81807E1FC5F9B53 /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -424,7 +411,7 @@
 			shellPath = /bin/sh;
 			shellScript = "if [ \"${CI}\" = \"TRUE\" ]; then\n    echo \"Installing CocoaPods in Xcode Cloud\"\n    cd \"${SRCROOT}\"\n    \n    # Add Homebrew to PATH\n    export PATH=\"/opt/homebrew/bin:/usr/local/bin:$PATH\"\n    \n    # Install CocoaPods\n    echo \"Installing CocoaPods...\"\n    /opt/homebrew/bin/brew install cocoapods || /usr/local/bin/brew install cocoapods\n    \n    echo \"Running pod install...\"\n    pod install --repo-update\n    echo \"Pod install completed\"\nfi\n";
 		};
-		D4FF36D8B9C0E38D547A49BD /* [CP] Copy Pods Resources */ = {
+		C4CA2D8C3B2F7792326B5128 /* [CP] Copy Pods Resources */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -474,8 +461,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B27346D62E32E0ED00B87771 /* AppGroupsModule.m in Sources */,
 				B23823962E2A671F00C17D8B /* AppGroupsModule.swift in Sources */,
-				B23823972E2A671F00C17D8B /* AppGroupsModule.m in Sources */,
 				F5DC7AB12D9D8A92004DB744 /* AppDelegate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -559,7 +546,7 @@
 		};
 		13B07F941A680F5B00A75B9A /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = BFC7F502A3964DDA421F4246 /* Pods-linklibrary_mobile.debug.xcconfig */;
+			baseConfigurationReference = A3715295FCFD353C479F19AD /* Pods-linklibrary_mobile.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
@@ -592,7 +579,7 @@
 		};
 		13B07F951A680F5B00A75B9A /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 5EAC4DCC832357E078426E45 /* Pods-linklibrary_mobile.release.xcconfig */;
+			baseConfigurationReference = 929EA88917AEE97A83670C59 /* Pods-linklibrary_mobile.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;

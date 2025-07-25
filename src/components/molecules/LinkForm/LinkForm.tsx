@@ -19,6 +19,8 @@ import Toast from 'react-native-toast-message';
 
 import { useTheme } from '@/theme';
 import { IconByVariant } from '@/components/atoms';
+import { TagFormModal } from '@/components/molecules';
+import { useTagsStore } from '@/hooks/domain/tags/useTagsStore';
 import { extractURLMetadata } from '@/utils/extractURLMetadata';
 
 interface LinkFormProps {
@@ -44,6 +46,8 @@ export function LinkForm({
   const [summary, setSummary] = useState(initialData?.summary || '');
   const [notes, setNotes] = useState(initialData?.notes || '');
   const [isFavorite, setIsFavorite] = useState(initialData?.is_favorite || false);
+  
+  const isEditing = !!initialData?.id;
   const [selectedCollection, setSelectedCollection] = useState<null | number>(
     initialData?.collection_id ? Number(initialData.collection_id) : null
   );
@@ -54,6 +58,10 @@ export function LinkForm({
   const [isExtractingMetadata, setIsExtractingMetadata] = useState(false);
   const [collectionModalVisible, setCollectionModalVisible] = useState(false);
   const [collectionSearch, setCollectionSearch] = useState('');
+  const [tagModalVisible, setTagModalVisible] = useState(false);
+  
+  // Use tags store for creating new tags
+  const { createTag, isCreating: isCreatingTag } = useTagsStore();
 
   // Filtered collections for search
   const filteredCollections = collections.filter((col: Collection) =>
@@ -228,6 +236,31 @@ export function LinkForm({
     setSelectedCollection(defaultCol ? defaultCol.id : null);
   };
 
+  const handleCreateTag = async (data: { color?: string; name: string; }) => {
+    try {
+      console.log('🔄 Creating tag from LinkForm:', data);
+      
+      // Create the tag using the store
+      createTag({ color: data.color || 'gray', name: data.name });
+      
+      // Close the modal
+      setTagModalVisible(false);
+      
+      Toast.show({
+        text1: 'Tag created successfully',
+        text2: 'The new tag will appear in the list shortly',
+        type: 'success',
+      });
+    } catch (error) {
+      console.error('❌ Failed to create tag:', error);
+      Toast.show({
+        text1: 'Failed to create tag',
+        text2: error instanceof Error ? error.message : 'Please try again',
+        type: 'error',
+      });
+    }
+  };
+
   return (
     <RNScrollView contentContainerStyle={styles.container}>
       {/* Header Buttons */}
@@ -263,6 +296,12 @@ export function LinkForm({
           >
             {isSubmitting ? (
               <RNActivityIndicator color="#fff" size="small" />
+            ) : isEditing ? (
+              <IconByVariant
+                color="#fff"
+                name="save"
+                size={16}
+              />
             ) : (
               <RNText style={[styles.buttonText, { color: '#fff' }]}>+ Add</RNText>
             )}
@@ -271,52 +310,64 @@ export function LinkForm({
       </RNView>
 
       {/* Rest of the form content */}
-      <RNView style={styles.urlContainer}>
-        <RNTextInput
-          autoCapitalize="none"
-          autoCorrect={false}
-          keyboardType="url"
-          onBlur={() => handleUrlBlur(url)}
-          onChangeText={setUrl}
-          placeholder="URL"
-          placeholderTextColor={colors.text.tertiary}
-          style={[styles.input, { borderColor: colors.border.primary, color: colors.text.primary }]}
-          value={url}
-        />
-        {isExtractingMetadata ? <RNView style={styles.loadingIndicator}>
-            <RNActivityIndicator color={colors.accent.primary} size="small" />
-          </RNView> : null}
+      <RNView>
+        <RNText style={[styles.sectionHeading, { color: colors.text.primary }]}>URL</RNText>
+        <RNView style={styles.urlContainer}>
+          <RNTextInput
+            autoCapitalize="none"
+            autoCorrect={false}
+            keyboardType="url"
+            onBlur={() => handleUrlBlur(url)}
+            onChangeText={setUrl}
+            placeholder="Enter URL"
+            placeholderTextColor={colors.text.tertiary}
+            style={[styles.input, { borderColor: colors.border.primary, color: colors.text.primary }]}
+            value={url}
+          />
+          {isExtractingMetadata ? <RNView style={styles.loadingIndicator}>
+              <RNActivityIndicator color={colors.accent.primary} size="small" />
+            </RNView> : null}
+        </RNView>
       </RNView>
 
-      <RNTextInput
-        onChangeText={setTitle}
-        placeholder="Title (auto-generated if empty)"
-        placeholderTextColor={colors.text.tertiary}
-        style={[styles.input, { borderColor: colors.border.primary, color: colors.text.primary }]}
-        value={title}
-      />
+      <RNView>
+        <RNText style={[styles.sectionHeading, { color: colors.text.primary }]}>Title</RNText>
+        <RNTextInput
+          onChangeText={setTitle}
+          placeholder="Enter title (auto-generated if empty)"
+          placeholderTextColor={colors.text.tertiary}
+          style={[styles.input, { borderColor: colors.border.primary, color: colors.text.primary }]}
+          value={title}
+        />
+      </RNView>
 
-      <RNTextInput
-        multiline
-        numberOfLines={4}
-        onChangeText={setSummary}
-        placeholder="Summary (auto-generated if empty)"
-        placeholderTextColor={colors.text.tertiary}
-        style={[styles.input, { borderColor: colors.border.primary, color: colors.text.primary }]}
-        textAlignVertical="top"
-        value={summary}
-      />
+      <RNView>
+        <RNText style={[styles.sectionHeading, { color: colors.text.primary }]}>Summary</RNText>
+        <RNTextInput
+          multiline
+          numberOfLines={4}
+          onChangeText={setSummary}
+          placeholder="Enter summary (auto-generated if empty)"
+          placeholderTextColor={colors.text.tertiary}
+          style={[styles.input, { borderColor: colors.border.primary, color: colors.text.primary }]}
+          textAlignVertical="top"
+          value={summary}
+        />
+      </RNView>
 
-      <RNTextInput
-        multiline
-        numberOfLines={4}
-        onChangeText={setNotes}
-        placeholder="Notes"
-        placeholderTextColor={colors.text.tertiary}
-        style={[styles.input, { borderColor: colors.border.primary, color: colors.text.primary, minHeight: 80 }]}
-        textAlignVertical="top"
-        value={notes}
-      />
+      <RNView>
+        <RNText style={[styles.sectionHeading, { color: colors.text.primary }]}>Notes</RNText>
+        <RNTextInput
+          multiline
+          numberOfLines={4}
+          onChangeText={setNotes}
+          placeholder="Enter notes (optional)"
+          placeholderTextColor={colors.text.tertiary}
+          style={[styles.input, { borderColor: colors.border.primary, color: colors.text.primary, minHeight: 80 }]}
+          textAlignVertical="top"
+          value={notes}
+        />
+      </RNView>
 
       {/* Collection Picker */}
       <RNText style={[styles.sectionHeading, { color: colors.text.primary }]}>Collection</RNText>
@@ -339,7 +390,7 @@ export function LinkForm({
       <RNView style={styles.tagsWrap}>
         <RNTouchableOpacity
           style={[styles.chip, { borderStyle: 'dashed', borderColor: colors.accent.primary }, isDark && { backgroundColor: '#23242a', borderColor: '#333' }]}
-          onPress={() => RNAlert.alert('Add Tag', 'Add Tag button pressed!')}
+          onPress={() => setTagModalVisible(true)}
         >
           <RNText style={{ color: colors.accent.primary, fontWeight: 'bold' }}>+ Add Tag</RNText>
         </RNTouchableOpacity>
@@ -434,6 +485,14 @@ export function LinkForm({
           Favorite
         </RNText>
       </RNTouchableOpacity>
+
+      {/* Tag Creation Modal */}
+      <TagFormModal
+        loading={isCreatingTag}
+        onClose={() => setTagModalVisible(false)}
+        onSubmit={handleCreateTag}
+        visible={tagModalVisible}
+      />
     </RNScrollView>
   );
 }
@@ -461,7 +520,7 @@ const styles = StyleSheet.create({
     borderColor: '#eee',
     borderWidth: 1,
   },
-  container: { gap: 16, padding: 24 },
+  container: { gap: 12, padding: 24 },
   createIconButton: {
     backgroundColor: '#007AFF', // fallback if accent.primary missing
   },
@@ -496,7 +555,7 @@ const styles = StyleSheet.create({
     shadowRadius: 6,
     width: 52,
   },
-  input: { borderRadius: 8, borderWidth: 1, fontSize: 16, marginBottom: 8, padding: 12 },
+  input: { borderRadius: 8, borderWidth: 1, fontSize: 16, marginBottom: 4, padding: 12 },
   loadingIndicator: { 
     position: 'absolute', 
     right: 12, 
@@ -526,10 +585,10 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   sectionHeading: {
-    fontSize: 17,
+    fontSize: 14,
     fontWeight: 'bold',
-    marginBottom: 8,
-    marginTop: 16,
+    marginBottom: 6,
+    marginTop: 4,
   },
   tagsWrap: {
     alignItems: 'flex-start',

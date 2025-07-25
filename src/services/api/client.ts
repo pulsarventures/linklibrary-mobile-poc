@@ -45,6 +45,12 @@ class ApiClient {
         }
       }
     }
+    
+    console.log('🌐 API GET request:', {
+      endpoint,
+      queryParameters,
+      finalUrl: url.toString()
+    });
 
     const headers = await this.getAuthHeaders();
     const response = await fetch(url.toString(), {

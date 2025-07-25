@@ -82,8 +82,8 @@ android {
         applicationId "com.pulsarventures.linklibraryai"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 1
-        versionName "1.0"
+        versionCode 31
+        versionName "1.0.31"
         manifestPlaceholders = [
             'android.app.lib_name': 'app-name'
         ]
@@ -100,15 +100,19 @@ android {
             keyAlias 'androiddebugkey'
             keyPassword 'android'
         }
+        release {
+            storeFile file('app-release-key.keystore')
+            storePassword 'android123'
+            keyAlias 'app-release'
+            keyPassword 'android123'
+        }
     }
     buildTypes {
         debug {
             signingConfig signingConfigs.debug
         }
         release {
-            // Caution! In production, you need to generate your own keystore file.
-            // see https://reactnative.dev/docs/signed-apk-android.
-            signingConfig signingConfigs.debug
+            signingConfig signingConfigs.release
             minifyEnabled enableProguardInReleaseBuilds
             proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
         }

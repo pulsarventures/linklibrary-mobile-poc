@@ -1,5 +1,9 @@
 import Foundation
 
+// Manual RCT type definitions to avoid import issues
+typealias RCTPromiseResolveBlock = (Any?) -> Void
+typealias RCTPromiseRejectBlock = (String?, String?, Error?) -> Void
+
 @objc(AppGroupsModule)
 class AppGroupsModule: NSObject {
     

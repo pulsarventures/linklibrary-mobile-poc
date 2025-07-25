@@ -20,7 +20,7 @@ module.exports = {
         moduleName: '@env',
         path: '.env',
         safe: false,
-        whitelist: ['API_URL_DEV', 'API_URL_PROD', 'GOOGLE_CLIENT_ID'],
+        whitelist: ['API_URL_DEV', 'API_URL_PROD', 'GOOGLE_CLIENT_ID', 'IOS_CLIENT_ID'],
       },
     ],
     'react-native-reanimated/plugin',

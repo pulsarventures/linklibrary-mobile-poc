@@ -13,6 +13,7 @@ class ShareViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        print("ShareViewController: viewDidLoad called")
         handleSharedContent()
     }
     
@@ -73,9 +74,11 @@ class ShareViewController: UIViewController {
     }
     
     func saveSharedData(_ data: [String: Any]) {
+        print("ShareViewController: Saving shared data: \(data)")
         let userDefaults = UserDefaults(suiteName: "group.com.pulsarventures.linklibraryai")
         userDefaults?.set(data, forKey: "SharedData")
         userDefaults?.synchronize()
+        print("ShareViewController: Data saved successfully")
     }
     
     func openMainApp() {
