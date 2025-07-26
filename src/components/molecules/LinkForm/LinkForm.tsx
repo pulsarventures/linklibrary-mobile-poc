@@ -20,7 +20,9 @@ import Toast from 'react-native-toast-message';
 import { useTheme } from '@/theme';
 import { IconByVariant } from '@/components/atoms';
 import { TagFormModal } from '@/components/molecules';
+import { CollectionFormModal } from '@/components/molecules/CollectionFormModal';
 import { useTagsStore } from '@/hooks/domain/tags/useTagsStore';
+import { useCollectionsStore } from '@/hooks/domain/collections/useCollectionsStore';
 import { extractURLMetadata } from '@/utils/extractURLMetadata';
 
 interface LinkFormProps {
@@ -62,6 +64,16 @@ export function LinkForm({
   
   // Use tags store for creating new tags
   const { createTag, isCreating: isCreatingTag } = useTagsStore();
+  
+  // Use collections store for creating new collections
+  const { createCollection } = useCollectionsStore();
+  
+  // State for create collection modal
+  const [createCollectionModalVisible, setCreateCollectionModalVisible] = useState(false);
+  const [isCreatingCollection, setIsCreatingCollection] = useState(false);
+  
+  // Track previous tags count to detect new tag creation
+  const [previousTagsCount, setPreviousTagsCount] = useState(tags?.length || 0);
 
   // Filtered collections for search
   const filteredCollections = collections.filter((col: Collection) =>
@@ -114,6 +126,30 @@ export function LinkForm({
       });
     }
   }, [initialData, collections, tags, selectedCollection, selectedTags]);
+
+  // Auto-select newly created tags
+  useEffect(() => {
+    if (tags && tags.length > previousTagsCount) {
+      // A new tag was added, find the newest one (highest ID)
+      const newestTag = tags.reduce((newest, tag) => 
+        tag.id > newest.id ? tag : newest
+      );
+      
+      // Auto-select it if it's not already selected
+      if (!selectedTags.includes(newestTag.id)) {
+        setSelectedTags(prev => [...prev, newestTag.id]);
+        
+        Toast.show({
+          text1: 'Tag created successfully',
+          text2: 'The new tag has been selected',
+          type: 'success',
+        });
+      }
+    }
+    
+    // Update the previous count
+    setPreviousTagsCount(tags?.length || 0);
+  }, [tags, previousTagsCount, selectedTags]);
 
   const handleUrlBlur = async (urlValue: string) => {
     // Skip metadata extraction only if we're editing an existing link with title/summary
@@ -237,27 +273,44 @@ export function LinkForm({
   };
 
   const handleCreateTag = async (data: { color?: string; name: string; }) => {
+    // Create the tag using the store mutation
+    createTag({ color: data.color || 'gray', name: data.name });
+    
+    // Close the modal immediately
+    setTagModalVisible(false);
+  };
+
+  const handleCreateCollection = async (data: { color?: string; description?: string; icon?: string; name: string; }) => {
+    // Close the modal immediately for better UX
+    setCreateCollectionModalVisible(false);
+    
+    // Start spinning animation on + button
+    setIsCreatingCollection(true);
+    
     try {
-      console.log('🔄 Creating tag from LinkForm:', data);
+      // Create the collection using the store (backend call)
+      const newCollection = await createCollection(data);
       
-      // Create the tag using the store
-      createTag({ color: data.color || 'gray', name: data.name });
-      
-      // Close the modal
-      setTagModalVisible(false);
+      // Auto-select the newly created collection
+      if (newCollection?.id) {
+        setSelectedCollection(newCollection.id);
+      }
       
       Toast.show({
-        text1: 'Tag created successfully',
-        text2: 'The new tag will appear in the list shortly',
+        text1: 'Collection created successfully',
+        text2: 'The new collection has been selected',
         type: 'success',
       });
     } catch (error) {
-      console.error('❌ Failed to create tag:', error);
+      console.error('❌ Failed to create collection:', error);
       Toast.show({
-        text1: 'Failed to create tag',
+        text1: 'Failed to create collection',
         text2: error instanceof Error ? error.message : 'Please try again',
         type: 'error',
       });
+    } finally {
+      // Stop spinning animation
+      setIsCreatingCollection(false);
     }
   };
 
@@ -370,7 +423,27 @@ export function LinkForm({
       </RNView>
 
       {/* Collection Picker */}
-      <RNText style={[styles.sectionHeading, { color: colors.text.primary }]}>Collection</RNText>
+      <RNView style={styles.sectionHeader}>
+        <RNText style={[styles.sectionHeading, { color: colors.text.primary }]}>Collection</RNText>
+        <RNTouchableOpacity
+          onPress={() => setCreateCollectionModalVisible(true)}
+          style={[styles.addIconButton, isCreatingCollection && { opacity: 0.7 }]}
+          disabled={isCreatingCollection}
+        >
+          {isCreatingCollection ? (
+            <RNActivityIndicator
+              color={colors.accent.primary}
+              size="small"
+            />
+          ) : (
+            <IconByVariant
+              name="add"
+              size={20}
+              color={colors.accent.primary}
+            />
+          )}
+        </RNTouchableOpacity>
+      </RNView>
       <RNTouchableOpacity
         style={[styles.dropdownButton, isDark && {
           backgroundColor: '#23242a',
@@ -389,7 +462,11 @@ export function LinkForm({
       <RNText style={[styles.sectionHeading, { color: colors.text.primary }]}>Tags</RNText>
       <RNView style={styles.tagsWrap}>
         <RNTouchableOpacity
-          style={[styles.chip, { borderStyle: 'dashed', borderColor: colors.accent.primary }, isDark && { backgroundColor: '#23242a', borderColor: '#333' }]}
+          style={[
+            styles.chip, 
+            { borderStyle: 'dashed', borderColor: colors.accent.primary }, 
+            isDark && { backgroundColor: '#23242a', borderColor: '#333' }
+          ]}
           onPress={() => setTagModalVisible(true)}
         >
           <RNText style={{ color: colors.accent.primary, fontWeight: 'bold' }}>+ Add Tag</RNText>
@@ -485,6 +562,13 @@ export function LinkForm({
           Favorite
         </RNText>
       </RNTouchableOpacity>
+
+      {/* Collection Creation Modal */}
+      <CollectionFormModal
+        onClose={() => setCreateCollectionModalVisible(false)}
+        onSubmit={handleCreateCollection}
+        visible={createCollectionModalVisible}
+      />
 
       {/* Tag Creation Modal */}
       <TagFormModal
@@ -628,5 +712,21 @@ const styles = StyleSheet.create({
   buttonText: {
     fontSize: 13,
     fontWeight: '600',
+  },
+  sectionHeader: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 6,
+    marginTop: 4,
+  },
+  addIconButton: {
+    alignItems: 'center',
+    backgroundColor: 'transparent',
+    borderRadius: 16,
+    height: 32,
+    justifyContent: 'center',
+    padding: 6,
+    width: 32,
   },
 }); 

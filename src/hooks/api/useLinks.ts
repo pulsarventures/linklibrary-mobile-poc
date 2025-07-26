@@ -223,4 +223,79 @@ export const useDeleteLink = () => {
       queryClient.removeQueries({ queryKey: linkKeys.detail(deletedId) });
     },
   });
+};
+
+// Toggle favorite with optimistic updates
+const toggleFavorite = async (linkId: string): Promise<Link> => {
+  return LinksApiService.toggleFavorite(linkId);
+};
+
+export const useToggleFavorite = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: toggleFavorite,
+    
+    // Optimistic update - runs immediately when mutation is called
+    onMutate: async (linkId: string) => {
+      console.log('🌟 Optimistic update: toggling favorite for link', linkId);
+      
+      // Cancel any outgoing refetches (so they don't overwrite our optimistic update)
+      await queryClient.cancelQueries({ queryKey: linkKeys.lists() });
+
+      // Snapshot the previous value for rollback
+      const previousLinks = queryClient.getQueriesData({ queryKey: linkKeys.lists() });
+
+      // Optimistically update all link lists
+      queryClient.setQueriesData(
+        { queryKey: linkKeys.lists() },
+        (oldData: Link[] | undefined) => {
+          if (!oldData) return [];
+          
+          return oldData.map(link => 
+            link.id === linkId 
+              ? { ...link, is_favorite: !link.is_favorite }
+              : link
+          );
+        }
+      );
+
+      // Return context with previous data for rollback
+      return { previousLinks };
+    },
+
+    // If mutation fails, rollback the optimistic update
+    onError: (error, linkId, context) => {
+      console.error('❌ Toggle favorite failed, rolling back optimistic update:', error);
+      
+      if (context?.previousLinks) {
+        // Restore all previous query data
+        context.previousLinks.forEach(([queryKey, data]) => {
+          queryClient.setQueryData(queryKey, data);
+        });
+      }
+    },
+
+    // Always refetch after success to ensure data consistency
+    onSettled: () => {
+      console.log('🔄 Toggle favorite settled, invalidating queries');
+      queryClient.invalidateQueries({ queryKey: linkKeys.lists() });
+    },
+
+    onSuccess: (updatedLink, linkId) => {
+      console.log('✅ Toggle favorite succeeded:', { linkId, is_favorite: updatedLink.is_favorite });
+      
+      // Update with the real data from server (in case there are other changes)
+      queryClient.setQueriesData(
+        { queryKey: linkKeys.lists() },
+        (oldData: Link[] | undefined) => {
+          if (!oldData) return [];
+          
+          return oldData.map(link => 
+            link.id === linkId ? updatedLink : link
+          );
+        }
+      );
+    },
+  });
 }; 

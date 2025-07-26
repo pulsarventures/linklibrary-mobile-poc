@@ -8,7 +8,7 @@ import { ActivityIndicator, Alert, FlatList, Linking, RefreshControl, StyleSheet
 import Modal from 'react-native-modal';
 import Toast from 'react-native-toast-message';
 
-import { useDeleteLink, useLinks } from '@/hooks/api/useLinks';
+import { useDeleteLink, useLinks, useToggleFavorite } from '@/hooks/api/useLinks';
 import { useCollectionsStore } from '@/hooks/domain/collections/useCollectionsStore';
 import { useTagsStore } from '@/hooks/domain/tags/useTagsStore';
 import { useAuthStore } from '@/hooks/domain/user/useAuthStore';
@@ -167,6 +167,7 @@ export default function Links() {
   };
 
   const deleteLink = useDeleteLink();
+  const toggleFavoriteMutation = useToggleFavorite();
 
   const handleLinkAction = async (actionType: string, linkId: string) => {
     try {
@@ -203,12 +204,17 @@ export default function Links() {
           break;
         }
         case 'TOGGLE_FAVORITE': {
-          await LinksApiService.toggleFavorite(linkId);
-          // Refresh the links list
-          await refetchLinks();
-          Toast.show({
-            text1: 'Favorite status updated',
-            type: 'success',
+          // Use optimistic update mutation for instant UI feedback
+          toggleFavoriteMutation.mutate(linkId, {
+            onError: (error) => {
+              // Error toast will be shown, optimistic update is automatically reverted
+              Toast.show({
+                text1: 'Failed to update favorite',
+                text2: error instanceof Error ? error.message : 'Please try again',
+                type: 'error',
+              });
+            },
+            // Note: No onSuccess toast needed - the visual feedback (star change) is immediate
           });
           break;
         }
