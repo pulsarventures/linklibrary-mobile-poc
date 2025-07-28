@@ -32,27 +32,7 @@ export default function AddLinkScreen() {
       // Check if this is a new shared URL (different from current one)
       const isNewShare = route.params.sharedUrl !== currentSharedUrl;
       
-      if (isNewShare && currentSharedUrl) {
-        // New share came in while form was already open - show different message
-        Toast.show({
-          position: 'top',
-          text1: 'New Link Received',
-          text2: 'Form cleared and new shared link loaded',
-          type: 'info',
-          text1Style: { color: '#000000' },
-          text2Style: { color: '#000000' },
-        });
-      } else if (route.params.sharedUrl) {
-        // First time loading shared URL
-        Toast.show({
-          position: 'top',
-          text1: 'Link Received',
-          text2: 'Shared link has been added to the form',
-          type: 'success',
-          text1Style: { color: '#000000' },
-          text2Style: { color: '#000000' },
-        });
-      }
+      // Remove toast messages for shared content
       
       // Update current shared URL
       setCurrentSharedUrl(route.params.sharedUrl);

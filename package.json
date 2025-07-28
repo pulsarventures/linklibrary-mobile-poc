@@ -4,7 +4,8 @@
   "private": true,
   "scripts": {
     "android": "react-native run-android",
-    "ios": "react-native run-ios",
+    "ios": "./scripts/clean-build-service.sh && react-native run-ios",
+    "ios:clean": "./scripts/clean-build-service.sh && react-native run-ios --reset-cache",
     "start": "react-native start",
     "test": "jest",
     "lint:rules": "eslint . --cache",
@@ -13,7 +14,8 @@
     "lint": "yarn lint:rules && yarn lint:code-format && yarn lint:type-check",
     "lint:fix": "yarn lint:rules --fix && yarn lint:code-format --write && yarn lint:type-check",
     "test:report": "jest --collectCoverage --coverageDirectory=\"./coverage\" --ci --reporters=default --reporters=jest-junit --coverage",
-    "pod-install": "npx pod-install"
+    "pod-install": "npx pod-install",
+    "clean:build": "./scripts/clean-build-service.sh"
   },
   "dependencies": {
     "@react-native-async-storage/async-storage": "1.21.0",

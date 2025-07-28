@@ -95,15 +95,8 @@ const ShareReceiver: React.FC<ShareReceiverProps> = ({ onUrl }) => {
             if (url) {
               console.log('📤 🎯 Successfully extracted URL:', url);
               
-              // Show alert for debugging
-              Alert.alert(
-                'Share Detected!',
-                `URL: ${url}`,
-                [
-                  { style: 'cancel', text: 'Cancel' },
-                  { onPress: () => { onUrl(url); }, text: 'Open' }
-                ]
-              );
+              // Process URL directly without alert
+              onUrl(url);
               
               return; // Process only the first valid URL
             }
@@ -195,14 +188,8 @@ const ShareReceiver: React.FC<ShareReceiverProps> = ({ onUrl }) => {
       const handleUrl = (url: string) => {
         console.log('📤 📥 Received URL via Linking:', url);
         if (url && url.startsWith('http')) {
-          Alert.alert(
-            'Link Detected!',
-            `URL: ${url}`,
-            [
-              { style: 'cancel', text: 'Cancel' },
-              { onPress: () => { onUrl(url); }, text: 'Open' }
-            ]
-          );
+          // Process URL directly without alert
+          onUrl(url);
         }
       };
 

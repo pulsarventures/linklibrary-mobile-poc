@@ -112,6 +112,7 @@ export function LinkForm({
   useEffect(() => {
     if (initialData?.url && !initialData?.title && !initialData?.summary) {
       // This is a new link creation with shared URL - extract metadata
+      console.log('Auto-extracting metadata for shared URL:', initialData.url);
       handleUrlBlur(initialData.url);
     }
   }, []); // Only run on mount
@@ -142,11 +143,7 @@ export function LinkForm({
       if (!selectedTags.includes(newestTag.id)) {
         setSelectedTags(prev => [...prev, newestTag.id]);
         
-        Toast.show({
-          text1: 'Tag created successfully',
-          text2: 'The new tag has been selected',
-          type: 'success',
-        });
+        // Remove tag creation success toast
       }
       
       // Stop the local loading animation since the tag was successfully created
@@ -163,14 +160,20 @@ export function LinkForm({
     
     let processedUrl = urlValue.trim();
     
+    // Skip if URL is empty
+    if (!processedUrl) {
+      return;
+    }
+    
     // Add https:// prefix if no protocol is present
-    if (processedUrl && !/^https?:\/\//i.test(processedUrl)) {
+    if (!/^https?:\/\//i.test(processedUrl)) {
       processedUrl = 'https://' + processedUrl;
+      // Update URL state with the corrected URL
       setUrl(processedUrl);
     }
 
-    // Skip if URL is empty or invalid
-    if (!processedUrl || (!processedUrl.startsWith("http://") && !processedUrl.startsWith("https://"))) {
+    // Skip if URL is invalid after processing
+    if (!processedUrl.startsWith("http://") && !processedUrl.startsWith("https://")) {
       return;
     }
 
@@ -184,9 +187,14 @@ export function LinkForm({
       const metadata = await extractURLMetadata(processedUrl);
       console.log('Extracted metadata:', metadata);
 
-      // Update title and summary if they're empty
+      // Update title and summary if they're empty, but preserve the URL
       setTitle(previous => previous.trim() || metadata.title || "");
       setSummary(previous => previous.trim() || metadata.description || "");
+
+      // Ensure URL is preserved after metadata extraction
+      if (url !== processedUrl) {
+        setUrl(processedUrl);
+      }
 
       // Show alert if metadata extraction failed
       if (!metadata.title && !metadata.description) {
@@ -244,12 +252,7 @@ export function LinkForm({
 
       await onSubmit(linkData);
       
-      // Show success message
-      Toast.show({
-        type: 'success',
-        text1: initialData ? 'Link Updated!' : 'Link Created!',
-        text2: initialData ? 'Your link has been updated successfully' : 'Your link has been saved successfully',
-      });
+      // Remove success toast message
       
     } catch (error) {
       console.error('❌ Failed to save link:', error);
@@ -322,11 +325,7 @@ export function LinkForm({
         setSelectedCollection(newCollection.id);
       }
       
-      Toast.show({
-        text1: 'Collection created successfully',
-        text2: 'The new collection has been selected',
-        type: 'success',
-      });
+      // Remove collection creation success toast
     } catch (error) {
       console.error('❌ Failed to create collection:', error);
       Toast.show({

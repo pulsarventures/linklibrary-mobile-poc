@@ -1,7 +1,7 @@
 import type { Link } from '../../../types/link.types';
 
 import React, { useState } from 'react';
-import { Alert, Linking, StyleSheet, View, TouchableOpacity, Animated } from 'react-native';
+import { Alert, Linking, StyleSheet, View, TouchableOpacity, Animated, Clipboard } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import { Copy, Check } from 'lucide-react-native';
 
@@ -35,8 +35,15 @@ export function LinkItem({ link, onAction, onPress }: LinkItemProps) {
   const [showCopied, setShowCopied] = useState(false);
   const copyAnimationRef = React.useRef(new Animated.Value(0));
 
-  const collection = collections.find(c => String(c.id) === link.collection_id);
-  const linkTags = tags.filter(tag => link.tag_ids.includes(String(tag.id)));
+  const collection = collections.find(c => String(c.id) === String(link.collection_id));
+  
+  // Try both string and number matching for tags
+  const linkTags = tags.filter(tag => 
+    link.tag_ids.includes(String(tag.id)) || link.tag_ids.includes(tag.id)
+  );
+
+
+
 
   // Format the time difference
   const getTimeAgo = (date: string) => {
@@ -75,16 +82,17 @@ export function LinkItem({ link, onAction, onPress }: LinkItemProps) {
     return { name: 'link' as const, color: '#10B981' };
   };
 
-  // Get tag colors for gradient backgrounds
+  // Get tag colors to match web app design
   const getTagGradient = (tagColor?: string) => {
     const colorMap: Record<string, { colors: string[], textColor: string }> = {
-      red: { colors: ['#FEE2E2', '#FECACA'], textColor: '#991B1B' },
-      blue: { colors: ['#DBEAFE', '#BFDBFE'], textColor: '#1E40AF' },
-      green: { colors: ['#D1FAE5', '#A7F3D0'], textColor: '#065F46' },
-      yellow: { colors: ['#FEF3C7', '#FDE68A'], textColor: '#92400E' },
-      purple: { colors: ['#EDE9FE', '#DDD6FE'], textColor: '#5B21B6' },
-      pink: { colors: ['#FCE7F3', '#FBCFE8'], textColor: '#BE185D' },
-      gray: { colors: ['#F3F4F6', '#E5E7EB'], textColor: '#374151' },
+      red: { colors: ['#FEE2E2'], textColor: '#DC2626' },
+      blue: { colors: ['#DBEAFE'], textColor: '#2563EB' },
+      green: { colors: ['#D1FAE5'], textColor: '#059669' },
+      yellow: { colors: ['#FEF3C7'], textColor: '#D97706' },
+      purple: { colors: ['#E9D5FF'], textColor: '#9333EA' },
+      pink: { colors: ['#FCE7F3'], textColor: '#EC4899' },
+      orange: { colors: ['#FED7AA'], textColor: '#EA580C' },
+      gray: { colors: ['#F3F4F6'], textColor: '#6B7280' },
     };
     
     return colorMap[tagColor || 'gray'] || colorMap.gray;
@@ -146,9 +154,9 @@ export function LinkItem({ link, onAction, onPress }: LinkItemProps) {
 
   const handleCopyLink = async () => {
     try {
-      // For now, just show the copied animation
-      // The actual clipboard functionality will be implemented later
-      console.log('Copying URL:', link.url);
+      // Copy URL to clipboard
+      await Clipboard.setString(link.url);
+      console.log('Copied URL to clipboard:', link.url);
       
       // Show copied state with animation
       setShowCopied(true);
@@ -272,57 +280,49 @@ export function LinkItem({ link, onAction, onPress }: LinkItemProps) {
             )}
 
             {/* Collection and Tags Row */}
-            <View style={styles.badgesRow}>
-              {/* Collection */}
-              {collection && (
-                <LinearGradient
-                  colors={['#3B82F615', '#1D4ED820']}
-                  style={styles.collectionBadge}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 0 }}
-                >
-                  <IconByVariant
-                    name="collection"
-                    size={10}
-                    color="#3B82F6"
-                  />
-                  <Text style={[styles.collectionText, { color: '#3B82F6' }]}>
-                    {collection.name}
-                  </Text>
-                </LinearGradient>
-              )}
-
-              {/* Tags */}
-              {linkTags.slice(0, 2).map(tag => {
-                const tagGradient = getTagGradient(tag.color);
-                return (
-                  <LinearGradient
-                    key={tag.id}
-                    colors={tagGradient.colors}
-                    style={styles.tagBadge}
-                    start={{ x: 0, y: 0 }}
-                    end={{ x: 1, y: 0 }}
-                  >
+            {(collection || linkTags.length > 0) && (
+              <View style={styles.badgesRow}>
+                {/* Collection */}
+                {collection && (
+                  <View style={[styles.collectionBadge, { backgroundColor: '#DBEAFE' }]}>
                     <IconByVariant
-                      name="hash"
-                      size={8}
-                      color={tagGradient.textColor}
+                      name="collection"
+                      size={10}
+                      color="#3B82F6"
                     />
-                    <Text style={[styles.tagText, { color: tagGradient.textColor }]}>
-                      {tag.name}
+                    <Text style={[styles.collectionText, { color: '#3B82F6' }]}>
+                      {collection.name}
                     </Text>
-                  </LinearGradient>
-                );
-              })}
-              
-              {linkTags.length > 2 && (
-                <View style={[styles.moreTagsBadge, { backgroundColor: colors.background.subtle }]}>
-                  <Text style={[styles.moreTagsText, { color: colors.text.tertiary }]}>
-                    +{linkTags.length - 2}
-                  </Text>
-                </View>
-              )}
-            </View>
+                  </View>
+                )}
+
+                {/* Tags */}
+                {linkTags.slice(0, 3).map(tag => {
+                  const tagGradient = getTagGradient(tag.color);
+                  return (
+                    <View
+                      key={tag.id}
+                      style={styles.tagBadge}
+                    >
+                      <Text style={[styles.tagHash, { color: tagGradient.textColor }]}>
+                        #
+                      </Text>
+                      <Text style={[styles.tagText, { color: tagGradient.textColor }]}>
+                        {tag.name}
+                      </Text>
+                    </View>
+                  );
+                })}
+                
+                {linkTags.length > 3 && (
+                  <View style={[styles.moreTagsBadge, { backgroundColor: colors.background.subtle }]}>
+                    <Text style={[styles.moreTagsText, { color: colors.text.tertiary }]}>
+                      +{linkTags.length - 3}
+                    </Text>
+                  </View>
+                )}
+              </View>
+            )}
           </View>
         </View>
 
@@ -334,7 +334,7 @@ export function LinkItem({ link, onAction, onPress }: LinkItemProps) {
             activeOpacity={0.8}
           >
             <IconByVariant
-              name="star"
+              name={link.is_favorite ? "star" : "star-outline"}
               size={18}
               color={link.is_favorite ? "#FFD700" : colors.text.secondary}
             />
@@ -456,44 +456,45 @@ const styles = StyleSheet.create({
   badgesRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 4,
+    gap: 6,
     alignItems: 'center',
-    marginTop: 4,
+    marginTop: 6,
   },
   collectionBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 6,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 8,
     gap: 3,
   },
   collectionText: {
     fontSize: 10,
-    fontWeight: '600',
+    fontWeight: '500',
   },
   tagBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 6,
-    gap: 3,
+    gap: 2,
   },
-  tagText: {
-    fontSize: 10,
+  tagHash: {
+    fontSize: 11,
     fontWeight: '600',
   },
+  tagText: {
+    fontSize: 11,
+    fontWeight: '500',
+  },
   moreTagsBadge: {
-    paddingHorizontal: 6,
-    paddingVertical: 3,
-    borderRadius: 4,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
     justifyContent: 'center',
     alignItems: 'center',
   },
   moreTagsText: {
-    fontSize: 10,
-    fontWeight: '600',
+    fontSize: 11,
+    fontWeight: '500',
   },
   actionsRow: {
     flexDirection: 'row',
