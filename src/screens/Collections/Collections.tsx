@@ -26,7 +26,7 @@ import { useCollectionsStore } from '../../hooks/domain/collections/useCollectio
 const AnimatedFlatList = Animated.createAnimatedComponent(FlatList<Collection>);
 
 export default function Collections() {
-  const { colors } = useTheme();
+  const { colors, isDark } = useTheme();
   const { collections, createCollection, deleteCollection, error, fetchCollections, loading, updateCollection } = useCollectionsStore();
   const { user } = useAuthStore();
   const navigation = useNavigation<NavigationProp<RootTabParamList>>();
@@ -331,12 +331,12 @@ export default function Collections() {
       <TouchableOpacity
         activeOpacity={0.8}
         onPress={() => { setShowFormModal(true); }}
-        style={[styles.floatingButton, { backgroundColor: colors.accent.primary }]}
+        style={[styles.floatingButton, { backgroundColor: isDark ? '#6b7280' : '#000000' }]}
       >
         <IconByVariant
-          color={colors.text.inverse}
+          color="#ffffff"
           name="add"
-          size={24}
+          size={22}
         />
       </TouchableOpacity>
       
@@ -390,10 +390,10 @@ const styles = StyleSheet.create({
   },
   floatingButton: {
     alignItems: 'center',
-    borderRadius: 28,
+    borderRadius: 26,
     bottom: 35,
     elevation: 8,
-    height: 56,
+    height: 52,
     justifyContent: 'center',
     position: 'absolute',
     right: 20,
@@ -404,7 +404,7 @@ const styles = StyleSheet.create({
     },
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
-    width: 56,
+    width: 52,
   },
   list: {
     flexGrow: 1,

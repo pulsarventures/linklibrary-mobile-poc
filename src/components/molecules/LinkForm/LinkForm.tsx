@@ -72,6 +72,9 @@ export function LinkForm({
   const [createCollectionModalVisible, setCreateCollectionModalVisible] = useState(false);
   const [isCreatingCollection, setIsCreatingCollection] = useState(false);
   
+  // State for create tag modal with local loading
+  const [isCreatingTagLocal, setIsCreatingTagLocal] = useState(false);
+  
   // Track previous tags count to detect new tag creation
   const [previousTagsCount, setPreviousTagsCount] = useState(tags?.length || 0);
 
@@ -145,6 +148,9 @@ export function LinkForm({
           type: 'success',
         });
       }
+      
+      // Stop the local loading animation since the tag was successfully created
+      setIsCreatingTagLocal(false);
     }
     
     // Update the previous count
@@ -273,11 +279,31 @@ export function LinkForm({
   };
 
   const handleCreateTag = async (data: { color?: string; name: string; }) => {
-    // Create the tag using the store mutation
-    createTag({ color: data.color || 'gray', name: data.name });
-    
-    // Close the modal immediately
+    // Close the modal immediately for better UX
     setTagModalVisible(false);
+    
+    // Start spinning animation on + button
+    setIsCreatingTagLocal(true);
+    
+    try {
+      // Create the tag using the store mutation
+      createTag({ color: data.color || 'gray', name: data.name });
+      
+      // Note: Tag auto-selection and success message are handled by the useEffect
+      // that monitors tags array changes
+    } catch (error) {
+      console.error('❌ Failed to create tag:', error);
+      Toast.show({
+        text1: 'Failed to create tag',
+        text2: error instanceof Error ? error.message : 'Please try again',
+        type: 'error',
+      });
+    } finally {
+      // Stop spinning animation after a short delay to ensure the mutation has processed
+      setTimeout(() => {
+        setIsCreatingTagLocal(false);
+      }, 1000);
+    }
   };
 
   const handleCreateCollection = async (data: { color?: string; description?: string; icon?: string; name: string; }) => {
@@ -343,7 +369,7 @@ export function LinkForm({
             style={[
               styles.headerButton,
               styles.addButton,
-              { backgroundColor: colors.accent.primary },
+              { backgroundColor: isDark ? '#6b7280' : '#000000' },
               isSubmitting && { opacity: 0.7 }
             ]}
           >
@@ -459,18 +485,28 @@ export function LinkForm({
       </RNTouchableOpacity>
 
       {/* Tag Selector */}
-      <RNText style={[styles.sectionHeading, { color: colors.text.primary }]}>Tags</RNText>
-      <RNView style={styles.tagsWrap}>
+      <RNView style={styles.sectionHeader}>
+        <RNText style={[styles.sectionHeading, { color: colors.text.primary }]}>Tags</RNText>
         <RNTouchableOpacity
-          style={[
-            styles.chip, 
-            { borderStyle: 'dashed', borderColor: colors.accent.primary }, 
-            isDark && { backgroundColor: '#23242a', borderColor: '#333' }
-          ]}
           onPress={() => setTagModalVisible(true)}
+          style={[styles.addIconButton, isCreatingTagLocal && { opacity: 0.7 }]}
+          disabled={isCreatingTagLocal}
         >
-          <RNText style={{ color: colors.accent.primary, fontWeight: 'bold' }}>+ Add Tag</RNText>
+          {isCreatingTagLocal ? (
+            <RNActivityIndicator
+              color={colors.accent.primary}
+              size="small"
+            />
+          ) : (
+            <IconByVariant
+              name="add"
+              size={20}
+              color={colors.accent.primary}
+            />
+          )}
         </RNTouchableOpacity>
+      </RNView>
+      <RNView style={styles.tagsWrap}>
         {(tags || []).map((tag) => {
           const isSelected = selectedTags.includes(tag.id);
           return (
@@ -485,8 +521,8 @@ export function LinkForm({
                 styles.chip,
                 isDark && { backgroundColor: '#23242a', borderColor: '#333' },
                 isSelected && {
-                  backgroundColor: colors.accent.primary,
-                  borderColor: colors.accent.primary,
+                  backgroundColor: isDark ? '#6b7280' : '#000000',
+                  borderColor: isDark ? '#6b7280' : '#000000',
                   elevation: 2,
                   shadowColor: colors.accent.primary,
                   shadowOpacity: 0.18,
@@ -534,7 +570,7 @@ export function LinkForm({
               ListEmptyComponent={<RNText style={{ color: colors.text.tertiary, textAlign: 'center', marginVertical: 16 }}>No collections found</RNText>}
             />
             <RNTouchableOpacity
-              style={[styles.button, { backgroundColor: colors.accent.primary }]}
+              style={[styles.button, { backgroundColor: isDark ? '#6b7280' : '#000000' }]}
               onPress={() => setCollectionModalVisible(false)}
             >
               <RNText style={{ color: '#fff', textAlign: 'center' }}>Close</RNText>
@@ -548,7 +584,7 @@ export function LinkForm({
         onPress={() => { setIsFavorite(fav => !fav); }}
         style={[
           styles.favoriteButton,
-          isFavorite && { backgroundColor: colors.accent.primary + '22', borderColor: colors.accent.primary },
+          isFavorite && { backgroundColor: (isDark ? '#6b7280' : '#000000') + '22', borderColor: isDark ? '#6b7280' : '#000000' },
           isDark && { backgroundColor: '#23242a', borderColor: '#333' }
         ]}
       >
@@ -572,7 +608,6 @@ export function LinkForm({
 
       {/* Tag Creation Modal */}
       <TagFormModal
-        loading={isCreatingTag}
         onClose={() => setTagModalVisible(false)}
         onSubmit={handleCreateTag}
         visible={tagModalVisible}

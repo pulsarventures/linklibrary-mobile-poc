@@ -33,7 +33,7 @@ export function TagFormModal({
   tag,
   visible,
 }: TagFormModalProps) {
-  const { colors } = useTheme();
+  const { colors, isDark } = useTheme();
   const nameInputReference = useRef<TextInput>(null);
   const [name, setName] = useState('');
   const [color, setColor] = useState('gray');
@@ -113,14 +113,14 @@ export function TagFormModal({
   };
 
   const colorOptions = [
-    { label: 'Gray', value: 'gray' },
-    { label: 'Blue', value: 'blue' },
-    { label: 'Green', value: 'green' },
-    { label: 'Red', value: 'red' },
-    { label: 'Yellow', value: 'yellow' },
-    { label: 'Purple', value: 'purple' },
-    { label: 'Pink', value: 'pink' },
-    { label: 'Orange', value: 'orange' },
+    { label: 'Gray', value: 'gray', color: '#6B7280' },
+    { label: 'Blue', value: 'blue', color: '#3B82F6' },
+    { label: 'Green', value: 'green', color: '#10B981' },
+    { label: 'Red', value: 'red', color: '#EF4444' },
+    { label: 'Yellow', value: 'yellow', color: '#F59E0B' },
+    { label: 'Purple', value: 'purple', color: '#8B5CF6' },
+    { label: 'Pink', value: 'pink', color: '#EC4899' },
+    { label: 'Orange', value: 'orange', color: '#F97316' },
   ];
 
   return (
@@ -157,7 +157,7 @@ export function TagFormModal({
               style={[
                 styles.headerButton,
                 styles.addButton,
-                { backgroundColor: colors.accent.primary },
+                { backgroundColor: isDark ? '#6b7280' : '#000000' },
                 (loading || !name.trim()) && { opacity: 0.7 }
               ]}
             >
@@ -210,7 +210,7 @@ export function TagFormModal({
                   style={[
                     styles.colorOption,
                     {
-                      backgroundColor: colorOption.value,
+                      backgroundColor: colorOption.color,
                       borderColor: color === colorOption.value ? colors.accent.primary : 'transparent',
                     },
                   ]}

@@ -44,15 +44,24 @@ export const GRADIENTS = {
   }
 };
 
-export const createGradientStyle = (gradientName: keyof typeof GRADIENTS): {
+export const createGradientStyle = (gradientName: keyof typeof GRADIENTS, isDark?: boolean): {
   colors: string[];
   end: { x: number; y: number };
   start: { x: number; y: number };
   style: ViewStyle;
 } => {
   const gradient = GRADIENTS[gradientName];
+  
+  // Override primary gradient for dark theme
+  let colors = gradient.colors;
+  if (gradientName === 'primary' && isDark) {
+    colors = ['#6b7280', '#4b5563']; // Gray gradient for dark mode
+  } else if (gradientName === 'primary' && !isDark) {
+    colors = ['#000000', '#374151']; // Keep black gradient for light mode
+  }
+  
   return {
-    colors: gradient.colors,
+    colors,
     end: gradient.end,
     start: gradient.start,
     style: {

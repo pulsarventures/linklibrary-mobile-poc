@@ -79,26 +79,27 @@ export const useCollectionsStore = create<CollectionsState>()(
 
           // Don't fetch if auth is not initialized
           if (!initialized) {
-            console.log('🔍 FETCHCOLLECTIONS SKIPPED - Auth not initialized');
+            // Auth not initialized
             return;
           }
 
           // Don't fetch if not authenticated
           if (!isAuthenticated) {
-            console.log('🔍 FETCHCOLLECTIONS SKIPPED - User not authenticated');
+            // User not authenticated
             set({ error: 'Authentication required. Please log in.', loading: false });
             return;
           }
 
           // Don't fetch if already fetching
           if (state.activeRequests.has(key)) {
-            console.log('🔍 FETCHCOLLECTIONS SKIPPED - Already fetching');
+            // Already fetching
             return;
           }
 
-          // Don't fetch if data is already loaded and params haven't changed
-          if (!force && state.loaded && state.currentParams && isEqual(state.currentParams, parameters)) {
-            console.log('🔍 FETCHCOLLECTIONS SKIPPED - Same params');
+          // Don't fetch if data is already loaded and params haven't changed and data is fresh
+          const isDataFresh = Date.now() - state.lastFetchTime < 2 * 60 * 1000; // 2 minutes
+          if (!force && state.loaded && state.currentParams && isEqual(state.currentParams, parameters) && isDataFresh) {
+            // Same params and fresh data, skipping
             return;
           }
 
@@ -109,7 +110,7 @@ export const useCollectionsStore = create<CollectionsState>()(
           }));
 
           try {
-            console.log('🔍 FETCHCOLLECTIONS START - Params:', parameters);
+            // Fetching collections
             const response = await CollectionsApiService.getCollections(parameters);
             set({
               collections: response.items ?? [],
@@ -118,7 +119,7 @@ export const useCollectionsStore = create<CollectionsState>()(
               loaded: true,
               loading: false,
             });
-            console.log('🔍 FETCHCOLLECTIONS SUCCESS');
+            // Fetch successful
           } catch (error) {
             console.error('🔍 FETCHCOLLECTIONS ERROR:', error);
             // If auth error, reset the store

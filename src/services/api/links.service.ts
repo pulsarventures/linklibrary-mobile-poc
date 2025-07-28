@@ -6,7 +6,7 @@ import { apiClient } from './client';
 export const LinksApiService = {
   // Create a new link
   async createLink(data: Partial<Link>): Promise<Link> {
-    console.log('🔐 Creating link with data:', data);
+    // Creating link
     
     const payload = {
       collection_id: data.collection_id,
@@ -19,11 +19,11 @@ export const LinksApiService = {
       url: data.url,
     };
     
-    console.log('🔐 CreateLink payload:', payload);
+    // Payload ready
     
     try {
       const response = await apiClient.post<Link>('/links/', payload);
-      console.log('🔐 CreateLink success response:', response);
+      // Link created successfully
       return response;
     } catch (error: any) {
       console.error('🔐 CreateLink error:', error);
@@ -54,7 +54,7 @@ export const LinksApiService = {
     skip: number;
     total: number;
   }> {
-    console.log('🔍 LinksApiService.getLinks called with parameters:', parameters);
+    // Getting links
     
     const result = await apiClient.get<{
       has_more: boolean;
@@ -64,11 +64,7 @@ export const LinksApiService = {
       total: number;
     }>('/links/', parameters);
     
-    console.log('🔍 LinksApiService.getLinks result:', {
-      itemsCount: result.items?.length || 0,
-      total: result.total,
-      hasMore: result.has_more
-    });
+    // Links retrieved
     
     return result;
   },
