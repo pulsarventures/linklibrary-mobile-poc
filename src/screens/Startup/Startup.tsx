@@ -21,12 +21,12 @@ function Startup({ navigation }: RootScreenProps<'Startup'>) {
         await initializeAuth();
       } catch (error) {
         console.error('Initialization error:', error);
-        // Force mark as initialized even if auth fails
-        // This ensures we don't get stuck on the startup screen
+        // Even if initialization fails, we should mark it as initialized
+        // to move past the splash screen
+        navigation.replace(Paths.Login);
       }
     };
 
-    // Start initialization immediately
     initialize();
   }, []); // Only run on mount
 

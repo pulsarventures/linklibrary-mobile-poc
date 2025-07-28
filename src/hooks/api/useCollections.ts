@@ -48,10 +48,10 @@ const deleteCollection = async (id: string): Promise<void> => {
 // React Query hooks
 export const useCollections = () => {
   return useQuery({
-    gcTime: 60 * 60 * 1000, // 1 hour - collections don't change often
+    gcTime: 10 * 60 * 1000, // 10 minutes
     queryFn: fetchCollections,
     queryKey: collectionKeys.lists(),
-    staleTime: 15 * 60 * 1000, // 15 minutes - longer stale time for better UX
+    staleTime: 5 * 60 * 1000, // 5 minutes,
     placeholderData: [],
     select: (data) => data || [],
   });
@@ -60,10 +60,10 @@ export const useCollections = () => {
 export const useCollection = (id: string) => {
   return useQuery({
     enabled: !!id,
-    gcTime: 60 * 60 * 1000, // 1 hour
+    gcTime: 10 * 60 * 1000, // 10 minutes
     queryFn: () => fetchCollection(id),
     queryKey: collectionKeys.detail(id),
-    staleTime: 15 * 60 * 1000, // 15 minutes
+    staleTime: 5 * 60 * 1000, // 5 minutes
   });
 };
 

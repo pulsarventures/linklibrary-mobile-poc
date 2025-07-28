@@ -5,8 +5,7 @@
     "paths": {
       "@/*": ["./src/*"]
     },
-    "noUnusedLocals": true,
-    "jsx": "react-jsx"
+    "noUnusedLocals": true
   },
   "include": [
     "tests/**/*",

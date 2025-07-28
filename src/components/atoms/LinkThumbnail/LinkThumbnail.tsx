@@ -14,14 +14,16 @@ interface LinkThumbnailProps {
 
 // Utility functions for domain handling  
 const getDomainInitials = (url: string, title?: string): string => {
-  // Getting initials for URL
+  console.log('🔍 Getting initials for URL:', url);
   
   try {
     if (!url) {
+      console.log('❌ Empty URL, using title fallback');
       return getTitleInitials(title);
     }
 
     const domain = new URL(url).hostname.replace('www.', '');
+    console.log('✅ Parsed domain:', domain);
     
     const parts = domain.split('.');
 
@@ -29,34 +31,42 @@ const getDomainInitials = (url: string, title?: string): string => {
       const domainName = parts[0];
       if (domainName.length >= 2) {
         const initials = domainName.substring(0, 2).toUpperCase();
+        console.log('✅ Domain initials:', initials);
         return initials;
       } else if (domainName.length === 1 && parts[1]) {
         const initials = (domainName + parts[1].charAt(0)).toUpperCase();
+        console.log('✅ Combined initials:', initials);
         return initials;
       }
     }
 
     const initials = domain.substring(0, 2).toUpperCase();
+    console.log('✅ Domain substring initials:', initials);
     return initials;
   } catch (error) {
+    console.log('❌ URL parsing failed:', error);
     return getTitleInitials(title);
   }
 };
 
 const getTitleInitials = (title?: string): string => {
   if (!title) {
+    console.log('📝 No title, using default "WB"');
     return 'WB'; // "Web Bookmark" instead of "LI"
   }
   
   const words = title.trim().split(' ').filter(word => word.length > 0);
   if (words.length >= 2) {
     const initials = (words[0][0] + words[1][0]).toUpperCase();
+    console.log('📝 Title initials from 2 words:', initials);
     return initials;
   } else if (words.length === 1 && words[0].length >= 2) {
     const initials = words[0].substring(0, 2).toUpperCase();
+    console.log('📝 Title initials from 1 word:', initials);
     return initials;
   }
   
+  console.log('📝 Fallback to default "WB"');
   return 'WB';
 };
 
@@ -147,6 +157,7 @@ export function LinkThumbnail({
   const tryFaviconRef = useRef<(src: string, fallbackSources: string[]) => void>();
   
   tryFaviconRef.current = (src: string, fallbackSources: string[] = []) => {
+    console.log('🔍 Trying favicon:', src);
     
     // Clear previous timeout
     if (timeoutRef.current) {
@@ -163,6 +174,7 @@ export function LinkThumbnail({
 
     // Set timeout to try next source or fallback to initials
     timeoutRef.current = setTimeout(() => {
+      console.log('⏰ Favicon timeout for:', src);
       if (fallbackSources.length > 0) {
         // Try next favicon source
         const nextSrc = fallbackSources[0];
@@ -170,6 +182,7 @@ export function LinkThumbnail({
         tryFaviconRef.current?.(nextSrc, remainingSources);
       } else {
         // All sources failed, use initials
+        console.log('❌ All favicon sources failed, using initials');
         setFaviconError(true);
         setShowFavicon(false);
         setCurrentFaviconUrl(null);
@@ -208,10 +221,12 @@ export function LinkThumbnail({
       faviconSources.push(`https://icons.duckduckgo.com/ip3/${hostname}.ico`);
       
     } catch (error) {
+      console.log('❌ Invalid URL for favicon sources:', url);
       // Still try Google service with raw URL (might work in some cases)
       faviconSources.push(`https://www.google.com/s2/favicons?domain=${url}&sz=32`);
     }
 
+    console.log('📋 Favicon sources for', url, ':', faviconSources);
 
     if (faviconSources.length > 0) {
       const [firstSrc, ...remainingSources] = faviconSources;
@@ -224,6 +239,7 @@ export function LinkThumbnail({
   }, [url, faviconUrl, isVideo]);
 
   const handleFaviconLoad = () => {
+    console.log('✅ Favicon loaded successfully');
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current);
     }
@@ -232,6 +248,7 @@ export function LinkThumbnail({
   };
 
   const handleFaviconError = () => {
+    console.log('❌ Favicon failed to load:', currentFaviconUrl);
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current);
     }
@@ -239,6 +256,7 @@ export function LinkThumbnail({
     // Try next fallback source if available
     const fallbackSources = fallbackSourcesRef.current;
     if (fallbackSources.length > 0) {
+      console.log('🔄 Trying next fallback source');
       const nextSrc = fallbackSources[0];
       const remainingSources = fallbackSources.slice(1);
       
@@ -248,6 +266,7 @@ export function LinkThumbnail({
       }, 100);
     } else {
       // No more fallback sources, use initials
+      console.log('❌ All favicon sources exhausted, using initials');
       setShowFavicon(false);
       setFaviconError(true);
       setCurrentFaviconUrl(null);

@@ -28,14 +28,14 @@ export function Button({
   style,
   variant = 'primary',
 }: ButtonProps) {
-  const { colors, isDark } = useTheme();
+  const { colors } = useTheme();
   
   const getTextColor = () => {
     if (variant === 'google') return colors.text.primary;
     if (variant === 'apple') return colors.text.inverse;
     if (variant === 'danger') return colors.text.inverse;
-    if (variant === 'primary') return '#ffffff'; // Always white text for good contrast
-    if (variant === 'gradient') return '#ffffff'; // Always white text for good contrast
+    if (variant === 'primary') return colors.text.inverse;
+    if (variant === 'gradient') return colors.text.inverse;
     return colors.text.primary;
   };
 
@@ -63,7 +63,7 @@ export function Button({
 
   // Gradient button
   if (variant === 'gradient') {
-    const gradientConfig = createGradientStyle('primary', isDark);
+    const gradientConfig = createGradientStyle('primary');
     
     return (
       <TouchableOpacity
@@ -107,7 +107,7 @@ export function Button({
 
   // Primary button with gradient
   if (variant === 'primary') {
-    const gradientConfig = createGradientStyle(disabled ? 'disabled' : 'primary', isDark);
+    const gradientConfig = createGradientStyle(disabled ? 'disabled' : 'primary');
     
     return (
       <TouchableOpacity
@@ -153,7 +153,7 @@ export function Button({
 
   // Apple button with gradient
   if (variant === 'apple') {
-    const gradientConfig = createGradientStyle('apple', isDark);
+    const gradientConfig = createGradientStyle('apple');
     
     return (
       <TouchableOpacity

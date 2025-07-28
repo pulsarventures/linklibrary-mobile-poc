@@ -46,60 +46,55 @@ class ApiClient {
       }
     }
     
-    // Reduced logging for performance
+    console.log('🌐 API GET request:', {
+      endpoint,
+      queryParameters,
+      finalUrl: url.toString()
+    });
 
     const headers = await this.getAuthHeaders();
-    
-    // Add timeout for all requests
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 second timeout
-    
-    try {
-      const response = await fetch(url.toString(), {
-        headers,
-        method: 'GET',
-        signal: controller.signal,
-      });
-      
-      clearTimeout(timeoutId);
-      return this.handleResponse<T>(response, false, 'GET');
-    } catch (error) {
-      clearTimeout(timeoutId);
-      if (error.name === 'AbortError') {
-        throw new Error('Request timed out. Please check your connection.');
-      }
-      throw error;
-    }
+    const response = await fetch(url.toString(), {
+      headers,
+      method: 'GET',
+    });
+
+    return this.handleResponse<T>(response, false, 'GET');
   }
 
   public async post<T>(endpoint: string, data?: any): Promise<T> {
     const url = `${this.baseUrl}${endpoint}`;
     const headers = await this.getAuthHeaders();
 
-    // Request logging removed for performance
+    // Only log non-auth requests to reduce noise
+    if (!endpoint.includes('/auth/')) {
+      console.log('📡 Making API POST request:', {
+        data: data ? { ...data, token: data.token ? `${data.token.slice(0, 10)}...` : undefined } : undefined,
+        endpoint,
+        hasData: !!data,
+        headers: Object.fromEntries(headers.entries()),
+        method: 'POST',
+        url
+      });
+    }
 
-    // Add timeout for all requests
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 second timeout
-    
     try {
       const response = await fetch(url, {
         body: data ? JSON.stringify(data) : undefined,
         headers,
         method: 'POST',
-        signal: controller.signal,
       });
 
-      clearTimeout(timeoutId);
-
-      // Response logging removed for performance
+      // Only log non-auth responses to reduce noise
+      if (!endpoint.includes('/auth/')) {
+        console.log('📥 API response:', {
+          headers: Object.fromEntries(response.headers.entries()),
+          status: response.status,
+          statusText: response.statusText
+        });
+      }
 
       return this.handleResponse<T>(response, false, 'POST', data);
     } catch (error) {
-      clearTimeout(timeoutId);
-      if (error.name === 'AbortError') {
-        throw new Error('Request timed out. Please check your connection.');
-      }
       console.error('🚨 API request failed:', {
         message: error instanceof Error ? error.message : 'Unknown error',
         name: error instanceof Error ? error.name : 'Unknown',
@@ -115,7 +110,12 @@ class ApiClient {
       'Content-Type': 'application/x-www-form-urlencoded',
     });
 
-    // Form request logging removed for performance
+    console.log('📡 Making form API request:', {
+      formData,
+      headers: Object.fromEntries(headers.entries()),
+      method: 'POST',
+      url: `${this.baseUrl}${endpoint}`
+    });
 
     try {
       const response = await fetch(`${this.baseUrl}${endpoint}`, {
@@ -124,7 +124,11 @@ class ApiClient {
         method: 'POST',
       });
 
-      // Form response logging removed for performance
+      console.log('📥 Form API response:', {
+        headers: Object.fromEntries(response.headers.entries()),
+        status: response.status,
+        statusText: response.statusText
+      });
 
       return this.handleResponse<T>(response);
     } catch (error) {
@@ -155,9 +159,13 @@ class ApiClient {
       'Content-Type': 'application/json',
     });
 
+    console.log('🔑 Token from storage:', token ? `${token.slice(0, 20)}...` : 'null');
+
     if (token) {
       headers.append('Authorization', `Bearer ${token}`);
     }
+
+    console.log('📤 Request headers:', Object.fromEntries(headers.entries()));
     return headers;
   }
 
@@ -196,7 +204,7 @@ class ApiClient {
         const shouldRefresh = await this.shouldAttemptRefresh();
         
         if (!shouldRefresh) {
-          // No valid refresh token available
+          console.log('🔑 No valid refresh token available, requiring login');
           // Don't clear tokens here - let the auth store handle it
           throw new Error('Authentication required. Please log in.');
         }
@@ -213,7 +221,7 @@ class ApiClient {
           const retryResponse = await fetch(response.url, requestConfig);
           return this.handleResponse<T>(retryResponse, true, originalMethod, originalBody);
         } catch (error) {
-          // Token refresh failed
+          console.log('🔑 Token refresh failed:', error);
           // Only clear tokens if refresh fails and we had tokens to begin with
           await storageService.clearTokens();
           throw new Error('Authentication required. Please log in.');
@@ -247,13 +255,13 @@ class ApiClient {
         throw new Error('Refresh token is required');
       }
 
-      // Attempting token refresh
+      console.log('🔑 Attempting token refresh...');
       
       // Import authApiService dynamically to avoid circular imports
       const { authApiService } = await import('../auth-api.service');
       const response = await authApiService.refreshToken(refreshToken);
       
-      // Token refresh successful
+      console.log('🔑 Token refresh successful, storing new tokens');
       
       // Store new tokens
       await storageService.storeTokens({
@@ -268,7 +276,7 @@ class ApiClient {
       this.processQueue();
       return response;
     } catch (error) {
-      // Token refresh failed
+      console.log('🔑 Token refresh failed:', error);
       this.processQueue(error);
       throw error;
     } finally {
@@ -303,6 +311,13 @@ class ApiClient {
     
     // Only attempt refresh if we have a refresh token AND it's valid
     const shouldAttempt = !!refreshToken && isRefreshTokenValid;
+    
+    // Only log when we're actually going to attempt refresh
+    if (shouldAttempt) {
+      console.log('🔑 Will attempt token refresh - token exists and is valid');
+    } else {
+      console.log('🔑 Skipping token refresh - no valid refresh token available');
+    }
     
     return shouldAttempt;
   }

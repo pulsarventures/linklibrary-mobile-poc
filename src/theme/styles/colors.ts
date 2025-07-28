@@ -137,25 +137,25 @@ export const DARK_COLORS: ThemeColors = {
   },
   background: {
     error: '#450a0a',
-    primary: '#1a1b1f',    // Dark blue-gray background like in screenshots
-    secondary: '#252730',   // Slightly lighter for cards/surfaces
-    subtle: '#2d2f38',     // For subtle backgrounds
-    surface: '#252730',    // Card backgrounds
-    tertiary: '#373943'    // For borders and dividers
+    primary: '#000000',
+    secondary: '#1a1a1a',
+    subtle: '#374151',
+    surface: '#1a1a1a',
+    tertiary: '#374151'
   },
   border: {
-    primary: '#373943'     // Subtle border color
+    primary: '#374151'
   },
-  card: '#252730',         // Card background matching screenshots
+  card: '#1a1a1a',
   error: '#ef4444',
-  muted: '#373943',
+  muted: '#374151',
   success: '#22c55e',
   text: {
     error: '#ef4444',
-    inverse: '#1a1b1f',
-    primary: '#ffffff',     // White text for good contrast
-    secondary: '#a1a1aa',   // Light gray for secondary text
-    tertiary: '#71717a'     // Muted gray for tertiary text
+    inverse: '#000000',
+    primary: '#ffffff',
+    secondary: '#9ca3af',
+    tertiary: '#6b7280'
   }
 };
 

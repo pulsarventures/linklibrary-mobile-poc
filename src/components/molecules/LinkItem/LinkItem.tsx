@@ -1,9 +1,8 @@
 import type { Link } from '../../../types/link.types';
 
 import React, { useState } from 'react';
-import { Alert, Linking, StyleSheet, View, TouchableOpacity, Animated } from 'react-native';
+import { Alert, Linking, StyleSheet, View, TouchableOpacity } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
-import { Copy, Check } from 'lucide-react-native';
 
 import { useCollectionsStore } from '@/hooks/domain/collections/useCollectionsStore';
 import { useTagsStore } from '@/hooks/domain/tags/useTagsStore';
@@ -32,8 +31,6 @@ export function LinkItem({ link, onAction, onPress }: LinkItemProps) {
   const { collections } = useCollectionsStore();
   const { tags } = useTagsStore();
   const [isDeleting, setIsDeleting] = useState(false);
-  const [showCopied, setShowCopied] = useState(false);
-  const copyAnimationRef = React.useRef(new Animated.Value(0));
 
   const collection = collections.find(c => String(c.id) === link.collection_id);
   const linkTags = tags.filter(tag => link.tag_ids.includes(String(tag.id)));
@@ -144,35 +141,9 @@ export function LinkItem({ link, onAction, onPress }: LinkItemProps) {
     );
   };
 
-  const handleCopyLink = async () => {
-    try {
-      // For now, just show the copied animation
-      // The actual clipboard functionality will be implemented later
-      console.log('Copying URL:', link.url);
-      
-      // Show copied state with animation
-      setShowCopied(true);
-      
-      // Animate scale and fade
-      Animated.sequence([
-        Animated.timing(copyAnimationRef.current, {
-          toValue: 1,
-          duration: 200,
-          useNativeDriver: true,
-        }),
-        Animated.delay(1200),
-        Animated.timing(copyAnimationRef.current, {
-          toValue: 0,
-          duration: 200,
-          useNativeDriver: true,
-        }),
-      ]).start(() => {
-        setShowCopied(false);
-      });
-      
-    } catch (error) {
-      console.error('Failed to copy link:', error);
-    }
+  const handleCopyLink = () => {
+    // TODO: Implement copy to clipboard
+    console.log('Copy link:', link.url);
   };
 
   const handleToggleFavorite = () => {
@@ -207,196 +178,157 @@ export function LinkItem({ link, onAction, onPress }: LinkItemProps) {
         end={{ x: 1, y: 1 }}
       />
 
+      {/* Favorite Star Corner */}
+      <View style={styles.favoriteCorner}>
+        <TouchableOpacity
+          onPress={handleToggleFavorite}
+          style={styles.favoriteButton}
+        >
+          <IconByVariant
+            name="star"
+            size={18}
+            color={link.is_favorite ? "#FFD700" : "#D1D5DB"}
+          />
+        </TouchableOpacity>
+      </View>
 
-      {/* Main Content */}
-      <View style={styles.mainContent}>
-        {/* Top Row: Thumbnail and Content */}
-        <View style={styles.contentRow}>
-          {/* Left: Thumbnail and Time */}
-          <TouchableOpacity 
-            onPress={handleOpenLink}
-            style={styles.thumbnailContainer}
-            activeOpacity={0.85}
+      {/* Main Content Row */}
+      <View style={styles.contentRow}>
+        {/* Left: Thumbnail and Time */}
+        <View style={styles.thumbnailContainer}>
+          <LinkThumbnail
+            url={link.url.startsWith('http') ? link.url : `https://${link.url}`}
+            faviconUrl={link.favicon_url}
+            title={link.title}
+            size="md"
+          />
+          <Text style={[styles.timeAgo, { color: colors.text.tertiary, marginTop: 4 }]}>
+            {getTimeAgo(link.created_at)}
+          </Text>
+        </View>
+
+        {/* Center: Content */}
+        <View style={styles.content}>
+          {/* Title */}
+          <Text 
+            numberOfLines={2} 
+            style={[styles.title, { color: colors.text.primary }]}
           >
-            <LinkThumbnail
-              url={link.url.startsWith('http') ? link.url : `https://${link.url}`}
-              faviconUrl={link.favicon_url}
-              title={link.title}
-              size="md"
-            />
-            <Text style={[styles.timeAgo, { color: colors.text.tertiary, marginTop: 4 }]}>
-              {getTimeAgo(link.created_at)}
-            </Text>
-          </TouchableOpacity>
+            {link.title}
+          </Text>
 
-          {/* Right: Content */}
-          <View style={styles.content}>
-            {/* Title */}
-            <TouchableOpacity 
-              onPress={handleOpenLink}
-              activeOpacity={0.85}
-            >
+          {/* Summary */}
+          {link.summary && (
+            <View style={styles.summaryContainer}>
               <Text 
-                numberOfLines={2} 
-                style={[styles.title, { color: colors.text.primary }]}
+                numberOfLines={2}
+                style={[styles.summary, { color: colors.text.secondary }]}
               >
-                {link.title}
+                {link.summary}
               </Text>
-            </TouchableOpacity>
+            </View>
+          )}
 
-            {/* Summary */}
-            {link.summary && (
-              <View style={styles.summaryContainer}>
-                <Text 
-                  numberOfLines={2}
-                  style={[styles.summary, { color: colors.text.secondary }]}
-                >
-                  {link.summary}
+          {/* Notes */}
+          {link.notes && (
+            <View style={styles.notesContainer}>
+              <Text style={[styles.notesLabel, { color: colors.text.tertiary }]}>
+                NOTES
+              </Text>
+              <Text 
+                numberOfLines={3}
+                style={[styles.notes, { color: colors.text.secondary }]}
+              >
+                {link.notes}
+              </Text>
+            </View>
+          )}
+
+          {/* Collection and Tags Row */}
+          <View style={styles.badgesRow}>
+            {/* Collection */}
+            {collection && (
+              <LinearGradient
+                colors={['#3B82F615', '#1D4ED820']}
+                style={styles.collectionBadge}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
+              >
+                <IconByVariant
+                  name="collection"
+                  size={10}
+                  color="#3B82F6"
+                />
+                <Text style={[styles.collectionText, { color: '#3B82F6' }]}>
+                  {collection.name}
                 </Text>
-              </View>
+              </LinearGradient>
             )}
 
-            {/* Notes */}
-            {link.notes && (
-              <View style={styles.notesContainer}>
-                <Text style={[styles.notesLabel, { color: colors.text.tertiary }]}>
-                  NOTES
-                </Text>
-                <Text 
-                  numberOfLines={3}
-                  style={[styles.notes, { color: colors.text.secondary }]}
-                >
-                  {link.notes}
-                </Text>
-              </View>
-            )}
-
-            {/* Collection and Tags Row */}
-            <View style={styles.badgesRow}>
-              {/* Collection */}
-              {collection && (
+            {/* Tags */}
+            {linkTags.slice(0, 2).map(tag => {
+              const tagGradient = getTagGradient(tag.color);
+              return (
                 <LinearGradient
-                  colors={['#3B82F615', '#1D4ED820']}
-                  style={styles.collectionBadge}
+                  key={tag.id}
+                  colors={tagGradient.colors}
+                  style={styles.tagBadge}
                   start={{ x: 0, y: 0 }}
                   end={{ x: 1, y: 0 }}
                 >
                   <IconByVariant
-                    name="collection"
-                    size={10}
-                    color="#3B82F6"
+                    name="hash"
+                    size={8}
+                    color={tagGradient.textColor}
                   />
-                  <Text style={[styles.collectionText, { color: '#3B82F6' }]}>
-                    {collection.name}
+                  <Text style={[styles.tagText, { color: tagGradient.textColor }]}>
+                    {tag.name}
                   </Text>
                 </LinearGradient>
-              )}
-
-              {/* Tags */}
-              {linkTags.slice(0, 2).map(tag => {
-                const tagGradient = getTagGradient(tag.color);
-                return (
-                  <LinearGradient
-                    key={tag.id}
-                    colors={tagGradient.colors}
-                    style={styles.tagBadge}
-                    start={{ x: 0, y: 0 }}
-                    end={{ x: 1, y: 0 }}
-                  >
-                    <IconByVariant
-                      name="hash"
-                      size={8}
-                      color={tagGradient.textColor}
-                    />
-                    <Text style={[styles.tagText, { color: tagGradient.textColor }]}>
-                      {tag.name}
-                    </Text>
-                  </LinearGradient>
-                );
-              })}
-              
-              {linkTags.length > 2 && (
-                <View style={[styles.moreTagsBadge, { backgroundColor: colors.background.subtle }]}>
-                  <Text style={[styles.moreTagsText, { color: colors.text.tertiary }]}>
-                    +{linkTags.length - 2}
-                  </Text>
-                </View>
-              )}
-            </View>
+              );
+            })}
+            
+            {linkTags.length > 2 && (
+              <View style={[styles.moreTagsBadge, { backgroundColor: colors.background.subtle }]}>
+                <Text style={[styles.moreTagsText, { color: colors.text.tertiary }]}>
+                  +{linkTags.length - 2}
+                </Text>
+              </View>
+            )}
           </View>
         </View>
 
-        {/* Bottom Row: Action Buttons */}
-        <View style={[styles.actionsRow, { borderTopColor: colors.border.primary }]}>
+        {/* Right: Action Buttons */}
+        <View style={styles.actionsColumn}>
           <TouchableOpacity
-            onPress={handleToggleFavorite}
-            style={[styles.actionButton, { backgroundColor: `${colors.background.primary}95` }]}
-            activeOpacity={0.8}
+            onPress={handleOpenLink}
+            style={[styles.actionButton, { backgroundColor: `${colors.background.primary}90` }]}
           >
-            <IconByVariant
-              name="star"
-              size={18}
-              color={link.is_favorite ? "#FFD700" : colors.text.secondary}
-            />
+            <IconByVariant name="external" size={14} color={colors.text.secondary} />
           </TouchableOpacity>
 
-          <View style={styles.copyButtonContainer}>
-            <TouchableOpacity
-              onPress={handleCopyLink}
-              style={[styles.actionButton, { backgroundColor: `${colors.background.primary}95` }]}
-              activeOpacity={0.8}
-            >
-              {showCopied ? (
-                <Animated.View
-                  style={{
-                    transform: [
-                      {
-                        scale: copyAnimationRef.current.interpolate({
-                          inputRange: [0, 1],
-                          outputRange: [0.8, 1.2],
-                        }),
-                      },
-                    ],
-                    opacity: copyAnimationRef.current,
-                  }}
-                >
-                  <Check size={18} color="#000000" />
-                </Animated.View>
-              ) : (
-                <Copy size={18} color={colors.text.secondary} />
-              )}
-            </TouchableOpacity>
-            {showCopied && (
-              <Animated.Text
-                style={[
-                  styles.copiedText,
-                  {
-                    opacity: copyAnimationRef.current,
-                  },
-                ]}
-              >
-                Copied!
-              </Animated.Text>
-            )}
-          </View>
+          <TouchableOpacity
+            onPress={handleCopyLink}
+            style={[styles.actionButton, { backgroundColor: `${colors.background.primary}90` }]}
+          >
+            <IconByVariant name="link" size={14} color={colors.text.secondary} />
+          </TouchableOpacity>
           
           <TouchableOpacity
             onPress={handleEdit}
-            style={[styles.actionButton, { backgroundColor: `${colors.background.primary}95` }]}
-            activeOpacity={0.8}
+            style={[styles.actionButton, { backgroundColor: `${colors.background.primary}90` }]}
           >
-            <IconByVariant name="edit" size={18} color={colors.text.secondary} />
+            <IconByVariant name="edit" size={14} color={colors.text.secondary} />
           </TouchableOpacity>
           
           <TouchableOpacity
             onPress={handleDelete}
-            style={[styles.actionButton, { backgroundColor: `${colors.background.primary}95` }]}
+            style={[styles.actionButton, { backgroundColor: `${colors.background.primary}90` }]}
             disabled={isDeleting}
-            activeOpacity={0.8}
           >
             <IconByVariant 
               name="trash" 
-              size={18} 
+              size={14} 
               color={isDeleting ? colors.text.tertiary : "#EF4444"} 
             />
           </TouchableOpacity>
@@ -409,64 +341,72 @@ export function LinkItem({ link, onAction, onPress }: LinkItemProps) {
 const styles = StyleSheet.create({
   container: {
     marginHorizontal: SPACING.md,
-    marginVertical: 6,
-    borderRadius: 16,
-    borderWidth: 0.75,
+    marginVertical: SPACING.xs,
+    borderRadius: 12,
+    borderWidth: 1,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.12,
-    shadowRadius: 10,
-    elevation: 5,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    elevation: 2,
     overflow: 'hidden',
     position: 'relative',
   },
   gradientBackground: {
     ...StyleSheet.absoluteFillObject,
-    borderRadius: 16,
+    borderRadius: 12,
   },
-  mainContent: {
-    flex: 1,
+  favoriteCorner: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    width: 40,
+    height: 40,
+    zIndex: 10,
+  },
+  favoriteButton: {
+    position: 'absolute',
+    top: 8,
+    left: 8,
+    padding: 4,
   },
   contentRow: {
     flexDirection: 'row',
-    padding: SPACING.xs,
+    padding: SPACING.md,
     alignItems: 'flex-start',
-    gap: SPACING.xs,
+    gap: SPACING.md,
   },
   content: {
     flex: 1,
-    gap: 2,
+    gap: SPACING.xs,
   },
   title: {
-    fontSize: 15,
-    lineHeight: 20,
-    fontWeight: '600',
-    marginBottom: 4,
-    letterSpacing: -0.2,
+    fontSize: 14,
+    lineHeight: 18,
+    fontWeight: '500',
+    marginBottom: SPACING.xs,
   },
   summaryContainer: {
-    marginBottom: 4,
+    marginBottom: SPACING.xs,
   },
   summary: {
-    fontSize: 13,
-    lineHeight: 18,
-    opacity: 0.85,
-    fontWeight: '400',
+    fontSize: 12,
+    lineHeight: 16,
+    opacity: 0.8,
   },
   badgesRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 4,
     alignItems: 'center',
-    marginTop: 4,
   },
   collectionBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 6,
-    gap: 3,
+    paddingHorizontal: 6,
+    paddingVertical: 3,
+    borderRadius: 4,
+    gap: 2,
   },
   collectionText: {
     fontSize: 10,
@@ -475,10 +415,10 @@ const styles = StyleSheet.create({
   tagBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 6,
-    gap: 3,
+    paddingHorizontal: 6,
+    paddingVertical: 3,
+    borderRadius: 4,
+    gap: 2,
   },
   tagText: {
     fontSize: 10,
@@ -495,47 +435,19 @@ const styles = StyleSheet.create({
     fontSize: 10,
     fontWeight: '600',
   },
-  actionsRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
+  actionsColumn: {
+    flexDirection: 'column',
+    gap: 4,
     alignItems: 'center',
-    paddingHorizontal: SPACING.md,
-    paddingVertical: SPACING.xs,
-    borderTopWidth: 0.5,
-    marginTop: 2,
   },
   actionButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 10,
+    width: 24,
+    height: 24,
+    borderRadius: 6,
     justifyContent: 'center',
     alignItems: 'center',
-    borderWidth: 0,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  copyButtonContainer: {
-    position: 'relative',
-    alignItems: 'center',
-  },
-  copiedText: {
-    position: 'absolute',
-    top: -25,
-    left: -8,
-    right: -8,
-    fontSize: 10,
-    fontWeight: '600',
-    color: '#000000',
-    textAlign: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.95)',
-    paddingVertical: 2,
-    paddingHorizontal: 6,
-    borderRadius: 4,
-    zIndex: 1000,
-    elevation: 5,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.1)',
   },
   timeAgo: {
     fontSize: 10,
@@ -545,8 +457,6 @@ const styles = StyleSheet.create({
   thumbnailContainer: {
     marginTop: 24,
     alignItems: 'center',
-    padding: 4,
-    borderRadius: 8,
   },
   notesContainer: {
     marginBottom: SPACING.xs,
@@ -559,10 +469,8 @@ const styles = StyleSheet.create({
     marginBottom: 2,
   },
   notes: {
-    fontSize: 13,
-    lineHeight: 18,
-    opacity: 0.75,
-    fontWeight: '400',
-    fontStyle: 'italic',
+    fontSize: 12,
+    lineHeight: 16,
+    opacity: 0.8,
   },
 }); 

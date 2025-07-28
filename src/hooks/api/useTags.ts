@@ -48,10 +48,10 @@ const deleteTag = async (id: string): Promise<void> => {
 // React Query hooks
 export const useTags = () => {
   return useQuery({
-    gcTime: 60 * 60 * 1000, // 1 hour - tags don't change often
+    gcTime: 10 * 60 * 1000, // 10 minutes
     queryFn: fetchTags,
     queryKey: tagKeys.lists(),
-    staleTime: 15 * 60 * 1000, // 15 minutes - longer stale time for better UX
+    staleTime: 5 * 60 * 1000, // 5 minutes,
     placeholderData: [],
     select: (data) => data || [],
   });
@@ -60,10 +60,10 @@ export const useTags = () => {
 export const useTag = (id: string) => {
   return useQuery({
     enabled: !!id,
-    gcTime: 60 * 60 * 1000, // 1 hour
+    gcTime: 10 * 60 * 1000, // 10 minutes
     queryFn: () => fetchTag(id),
     queryKey: tagKeys.detail(id),
-    staleTime: 15 * 60 * 1000, // 15 minutes
+    staleTime: 5 * 60 * 1000, // 5 minutes
   });
 };
 
