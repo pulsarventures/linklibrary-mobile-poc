@@ -1,4 +1,4 @@
-import { StyleSheet, View } from 'react-native';
+import { StyleSheet, TouchableOpacity, View } from 'react-native';
 
 import { useTheme } from '@/theme';
 
@@ -7,7 +7,12 @@ import { SafeScreen } from '@/components/templates';
 import { Text } from '@/components/ui';
 
 export default function ChatScreen() {
-  const { colors } = useTheme();
+  const { colors, isDark } = useTheme();
+
+  const handleJoinWaitlist = () => {
+    // Future: Open beta signup form or email
+    console.log('Join waitlist pressed');
+  };
 
   const styles = StyleSheet.create({
     comingSoon: {
@@ -69,6 +74,24 @@ export default function ChatScreen() {
       marginBottom: 12,
       textAlign: 'center',
     },
+    floatingButton: {
+      alignItems: 'center',
+      borderRadius: 28,
+      bottom: 35,
+      elevation: 8,
+      height: 56,
+      justifyContent: 'center',
+      position: 'absolute',
+      right: 20,
+      shadowColor: '#000',
+      shadowOffset: {
+        height: 2,
+        width: 0,
+      },
+      shadowOpacity: 0.25,
+      shadowRadius: 3.84,
+      width: 56,
+    },
   });
 
   return (
@@ -127,6 +150,19 @@ export default function ChatScreen() {
           </View>
         </View>
       </View>
+      
+      {/* Floating Action Button */}
+      <TouchableOpacity
+        activeOpacity={0.8}
+        onPress={handleJoinWaitlist}
+        style={[styles.floatingButton, { backgroundColor: isDark ? '#6b7280' : '#000000' }]}
+      >
+        <IconByVariant
+          color="#ffffff"
+          name="bell"
+          size={24}
+        />
+      </TouchableOpacity>
     </SafeScreen>
   );
 }

@@ -1,6 +1,6 @@
 import type { Link } from '@/types/link.types';
 
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient, useInfiniteQuery } from '@tanstack/react-query';
 
 import { LinksApiService } from '@/services/api/links.service';
 
@@ -13,7 +13,7 @@ export const linkKeys = {
   lists: () => [...linkKeys.all, 'list'] as const,
 };
 
-// Fetch links
+// Fetch links with pagination
 const fetchLinks = async (parameters?: {
   collection_id?: number;
   is_favorite?: boolean;
@@ -24,6 +24,22 @@ const fetchLinks = async (parameters?: {
   sort_desc?: boolean;
   tag_id?: number;        // Single tag filter
   tag_ids?: number[];     // Multiple tags filter (for advanced search)
+}) => {
+  const response = await LinksApiService.getLinks(parameters);
+  return response; // Return full response with pagination metadata
+};
+
+// Legacy fetch for backward compatibility
+const fetchLinksItems = async (parameters?: {
+  collection_id?: number;
+  is_favorite?: boolean;
+  limit?: number;
+  search?: string;
+  skip?: number;
+  sort_by?: string;
+  sort_desc?: boolean;
+  tag_id?: number;
+  tag_ids?: number[];
 }): Promise<Link[]> => {
   const response = await LinksApiService.getLinks(parameters);
   return response.items;
@@ -37,7 +53,7 @@ const fetchLink = async (id: string): Promise<Link> => {
 
 // Create link
 const createLink = async (linkData: Partial<Link>): Promise<Link> => {
-  console.log('🔗 Creating link with data:', linkData);
+  // Creating link
   return LinksApiService.createLink(linkData);
 };
 
@@ -52,6 +68,41 @@ const deleteLink = async (id: string): Promise<void> => {
 };
 
 // React Query hooks
+// Infinite query for links with pagination
+export const useInfiniteLinks = (parameters?: {
+  collection_id?: number;
+  is_favorite?: boolean;
+  search?: string;
+  sort_by?: string;
+  sort_desc?: boolean;
+  tag_id?: number;
+  tag_ids?: number[];
+}) => {
+  const ITEMS_PER_PAGE = 10;
+  
+  return useInfiniteQuery({
+    queryKey: linkKeys.list({ ...parameters, infinite: true }),
+    queryFn: ({ pageParam = 0 }) => {
+      return fetchLinks({
+        ...parameters,
+        limit: ITEMS_PER_PAGE,
+        skip: pageParam * ITEMS_PER_PAGE,
+      });
+    },
+    getNextPageParam: (lastPage, allPages) => {
+      // Return next page number if there are more items
+      return lastPage.has_more ? allPages.length : undefined;
+    },
+    initialPageParam: 0,
+    staleTime: 5 * 60 * 1000, // 5 minutes - keep data fresh
+    gcTime: 30 * 60 * 1000, // 30 minutes - keep in memory longer
+    // Enable background prefetch for better UX
+    refetchOnMount: false, // Don't refetch if we have cached data
+    refetchOnWindowFocus: false,
+  });
+};
+
+// Legacy useLinks hook for backward compatibility 
 export const useLinks = (parameters?: {
   collection_id?: number;
   is_favorite?: boolean;
@@ -63,23 +114,14 @@ export const useLinks = (parameters?: {
   tag_id?: number;        // Single tag filter  
   tag_ids?: number[];     // Multiple tags filter (for advanced search)
 }) => {
-  // Disable caching for filtered requests to ensure fresh data
-  const isFiltered = parameters && (parameters.collection_id || parameters.tag_id || parameters.tag_ids?.length);
-  
-  console.log('🔍 useLinks hook called:', {
-    parameters,
-    isFiltered,
-    queryKey: linkKeys.list(parameters)
-  });
-  
+  // Now cache ALL requests for better UX
   return useQuery({
-    gcTime: isFiltered ? 0 : 5 * 60 * 1000, // No cache for filtered requests
+    gcTime: 30 * 60 * 1000, // 30 minutes cache for all requests
     queryFn: () => {
-      console.log('🔍 fetchLinks queryFn called with:', parameters);
-      return fetchLinks(parameters);
+      return fetchLinksItems(parameters);
     },
     queryKey: linkKeys.list(parameters),
-    staleTime: isFiltered ? 0 : 2 * 60 * 1000, // No stale time for filtered requests
+    staleTime: 5 * 60 * 1000, // 5 minutes stale time for all requests
   });
 };
 
@@ -113,7 +155,7 @@ export const useCreateLink = () => {
       }
     },
     onMutate: async (variables) => {
-      console.log('🚀 useCreateLink mutation started with:', variables);
+      // useCreateLink mutation started
       
       // Optimistic update: immediately add the new link to the store
       try {
@@ -144,7 +186,7 @@ export const useCreateLink = () => {
         const newLinks = [optimisticLink, ...links];
         setLinks(newLinks);
         
-        console.log('✅ Optimistic update applied - new link added to top of list');
+        // Optimistic update applied
         
         // Return context for rollback if needed
         return { previousLinks: links };
@@ -154,7 +196,7 @@ export const useCreateLink = () => {
       }
     },
     onSuccess: async (newLink, variables, context) => {
-      console.log('✅ useCreateLink mutation succeeded:', newLink);
+      // useCreateLink mutation succeeded
       
       // Invalidate and refetch TanStack Query cache
       queryClient.invalidateQueries({ queryKey: linkKeys.lists() });
@@ -172,7 +214,7 @@ export const useCreateLink = () => {
         const newLinks = [newLink, ...linksWithoutOptimistic];
         setLinks(newLinks);
         
-        console.log('✅ Real link data replaced optimistic update');
+        // Real link data replaced optimistic update
       } catch (error) {
         console.error('❌ Failed to replace optimistic update:', error);
         // Fallback: just refresh the entire store
@@ -180,7 +222,7 @@ export const useCreateLink = () => {
           const { useLinksStore } = await import('@/hooks/domain/links/useLinksStore');
           const { fetchLinks } = useLinksStore.getState();
           await fetchLinks();
-          console.log('✅ Links store refreshed after creating new link');
+          // Links store refreshed
         } catch (refreshError) {
           console.error('❌ Failed to refresh links store:', refreshError);
         }
@@ -238,7 +280,7 @@ export const useToggleFavorite = () => {
     
     // Optimistic update - runs immediately when mutation is called
     onMutate: async (linkId: string) => {
-      console.log('🌟 Optimistic update: toggling favorite for link', linkId);
+      // Optimistic update: toggling favorite
       
       // Cancel any outgoing refetches (so they don't overwrite our optimistic update)
       await queryClient.cancelQueries({ queryKey: linkKeys.lists() });
@@ -246,17 +288,47 @@ export const useToggleFavorite = () => {
       // Snapshot the previous value for rollback
       const previousLinks = queryClient.getQueriesData({ queryKey: linkKeys.lists() });
 
-      // Optimistically update all link lists
+      // Optimistically update all link lists (including infinite queries)
       queryClient.setQueriesData(
         { queryKey: linkKeys.lists() },
-        (oldData: Link[] | undefined) => {
-          if (!oldData) return [];
+        (oldData: any) => {
+          if (!oldData) return oldData;
           
-          return oldData.map(link => 
-            link.id === linkId 
-              ? { ...link, is_favorite: !link.is_favorite }
-              : link
-          );
+          try {
+            // Handle infinite query data structure
+            if (oldData.pages && Array.isArray(oldData.pages)) {
+              return {
+                ...oldData,
+                pages: oldData.pages.map((page: any) => {
+                  if (page && page.items && Array.isArray(page.items)) {
+                    return {
+                      ...page,
+                      items: page.items.map((link: Link) => 
+                        link.id === linkId 
+                          ? { ...link, is_favorite: !link.is_favorite }
+                          : link
+                      )
+                    };
+                  }
+                  return page;
+                })
+              };
+            }
+            
+            // Handle regular array
+            if (Array.isArray(oldData)) {
+              return oldData.map((link: Link) => 
+                link.id === linkId 
+                  ? { ...link, is_favorite: !link.is_favorite }
+                  : link
+              );
+            }
+            
+            return oldData;
+          } catch (error) {
+            console.error('Error in optimistic update:', error);
+            return oldData; // Return unchanged data on error
+          }
         }
       );
 
@@ -269,31 +341,61 @@ export const useToggleFavorite = () => {
       console.error('❌ Toggle favorite failed, rolling back optimistic update:', error);
       
       if (context?.previousLinks) {
-        // Restore all previous query data
+        // Restore all previous query data safely
         context.previousLinks.forEach(([queryKey, data]) => {
-          queryClient.setQueryData(queryKey, data);
+          if (data !== undefined) {
+            queryClient.setQueryData(queryKey, data);
+          }
         });
       }
     },
 
     // Always refetch after success to ensure data consistency
     onSettled: () => {
-      console.log('🔄 Toggle favorite settled, invalidating queries');
+      // Toggle favorite settled
       queryClient.invalidateQueries({ queryKey: linkKeys.lists() });
     },
 
     onSuccess: (updatedLink, linkId) => {
-      console.log('✅ Toggle favorite succeeded:', { linkId, is_favorite: updatedLink.is_favorite });
+      // Toggle favorite succeeded
       
       // Update with the real data from server (in case there are other changes)
       queryClient.setQueriesData(
         { queryKey: linkKeys.lists() },
-        (oldData: Link[] | undefined) => {
-          if (!oldData) return [];
+        (oldData: any) => {
+          if (!oldData) return oldData;
           
-          return oldData.map(link => 
-            link.id === linkId ? updatedLink : link
-          );
+          try {
+            // Handle infinite query data structure
+            if (oldData.pages && Array.isArray(oldData.pages)) {
+              return {
+                ...oldData,
+                pages: oldData.pages.map((page: any) => {
+                  if (page && page.items && Array.isArray(page.items)) {
+                    return {
+                      ...page,
+                      items: page.items.map((link: Link) => 
+                        link.id === linkId ? updatedLink : link
+                      )
+                    };
+                  }
+                  return page;
+                })
+              };
+            }
+            
+            // Handle regular array
+            if (Array.isArray(oldData)) {
+              return oldData.map((link: Link) => 
+                link.id === linkId ? updatedLink : link
+              );
+            }
+            
+            return oldData;
+          } catch (error) {
+            console.error('Error in success update:', error);
+            return oldData; // Return unchanged data on error
+          }
         }
       );
     },

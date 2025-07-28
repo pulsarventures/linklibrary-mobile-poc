@@ -8,7 +8,7 @@ import { ActivityIndicator, Alert, FlatList, Linking, RefreshControl, StyleSheet
 import Modal from 'react-native-modal';
 import Toast from 'react-native-toast-message';
 
-import { useDeleteLink, useLinks, useToggleFavorite } from '@/hooks/api/useLinks';
+import { useDeleteLink, useInfiniteLinks, useToggleFavorite } from '@/hooks/api/useLinks';
 import { useCollectionsStore } from '@/hooks/domain/collections/useCollectionsStore';
 import { useTagsStore } from '@/hooks/domain/tags/useTagsStore';
 import { useAuthStore } from '@/hooks/domain/user/useAuthStore';
@@ -25,7 +25,7 @@ import { Button, Text } from '@/components/ui';
 import { LinksApiService } from '@/services/links-api.service';
 
 export default function Links() {
-  const { colors } = useTheme();
+  const { colors, isDark } = useTheme();
   const navigation = useNavigation();
   const route = useRoute<RouteProp<RootTabParamList, 'Links'>>();
   const { collections, fetchCollections, loading: isLoadingCollections } = useCollectionsStore();
@@ -39,74 +39,45 @@ export default function Links() {
   const { collectionId, collectionName, tagId, tagName } = route.params || {};
   const isFiltered = !!(collectionId || tagId);
   
-  // Debug when screen is focused
+  // Screen focus tracking
   useFocusEffect(
     useCallback(() => {
-      console.log('🔍 Links screen focused with params:', route.params);
+      // Track screen focus for analytics if needed
     }, [route.params])
   );
 
-  // Debug collections and tags data
-  useEffect(() => {
-    console.log('📊 Collections and Tags Data:', {
-      collections: collections?.length || 0,
-      collectionsData: collections,
-      isLoadingCollections,
-      isLoadingTags,
-      tags: tags?.length || 0,
-      tagsData: tags
-    });
-  }, [collections, tags, isLoadingCollections, isLoadingTags]);
-
-  // Use React Query for links data with optional collection or tag filter
+  // Use Infinite Query for links data with pagination
   const linkQueryParameters = collectionId 
     ? { collection_id: collectionId } 
     : tagId 
       ? { tag_id: tagId } // Use singular tag_id, not plural tag_ids
       : undefined;
       
-  console.log('🔍 Links screen render - Query parameters:', {
-    collectionId,
-    tagId,
-    linkQueryParameters,
-    routeParams: route.params
-  });
-      
   const { 
-    data: linksData,
+    data: infiniteLinksData,
     error,
     isLoading,
+    isFetchingNextPage,
+    hasNextPage,
+    fetchNextPage,
     refetch: refetchLinks
-  } = useLinks(linkQueryParameters);
+  } = useInfiniteLinks(linkQueryParameters);
   
-  console.log('🔍 useLinks result:', {
-    dataCount: linksData?.length || 0,
-    isLoading,
-    error: error?.message,
-    queryParams: linkQueryParameters
-  });
+  // Flatten the paginated data
+  const linksData = React.useMemo(() => {
+    if (!infiniteLinksData?.pages) return [];
+    return infiniteLinksData.pages.flatMap(page => page.items);
+  }, [infiniteLinksData]);
+  
+  // Links data loaded
 
-  // Debug route params changes and force refetch when parameters change
-  useEffect(() => {
-    console.log('🔍 Route params changed:', route.params);
-    // Force refetch when filter parameters change
-    if (collectionId || tagId) {
-      console.log('🔍 Forcing refetch due to filter parameters:', { collectionId, tagId });
-      refetchLinks();
-    }
-  }, [route.params, collectionId, tagId, refetchLinks]);
-
-  useEffect(() => {
-    if (isAuthenticated) {
-      loadInitialData();
-    }
-  }, [isAuthenticated]);
-
-  const loadInitialData = async () => {
+  const loadInitialData = useCallback(async () => {
     try {
-      // Fetch collections to have them in cache (tags are auto-fetched by React Query)
-      await fetchCollections();
-      await refetchLinks();
+      // Load collections and links in parallel for faster startup
+      await Promise.all([
+        fetchCollections(),
+        refetchLinks()
+      ]);
     } catch (error) {
       console.error('Failed to load initial data:', error);
       Toast.show({
@@ -114,7 +85,16 @@ export default function Links() {
         type: 'error',
       });
     }
-  };
+  }, [fetchCollections, refetchLinks]);
+
+  // Force refetch when filter parameters change
+  useEffect(() => {
+    if (collectionId || tagId) {
+      refetchLinks();
+    }
+  }, [collectionId, tagId, refetchLinks]);
+
+  // Remove manual data loading - TanStack Query handles this automatically
 
   const onRefresh = async () => {
     setRefreshing(true);
@@ -125,6 +105,22 @@ export default function Links() {
     } finally {
       setRefreshing(false);
     }
+  };
+
+  const handleLoadMore = () => {
+    if (hasNextPage && !isFetchingNextPage) {
+      fetchNextPage();
+    }
+  };
+
+  const renderFooter = () => {
+    if (!isFetchingNextPage) return null;
+    
+    return (
+      <View style={styles.footerLoader}>
+        <ActivityIndicator color={colors.text.primary} size="small" />
+      </View>
+    );
   };
 
   const handleLinkPress = async (link: Link) => {
@@ -156,10 +152,10 @@ export default function Links() {
   };
 
   const handleCreateLink = () => {
-    console.log('🔘 FLOATING BUTTON PRESSED - Navigating to Add screen');
+    // Navigate to Add screen
     try {
       navigation.navigate('Add' as never);
-      console.log('🔘 ✅ Navigation call completed successfully');
+      // Navigation completed
     } catch (error) {
       console.error('🔘 ❌ Navigation error:', error);
       console.error('🔘 ❌ Navigation error details:', JSON.stringify(error, null, 2));
@@ -231,7 +227,8 @@ export default function Links() {
     }
   };
 
-  if (isLoading && !refreshing) {
+  // Show loading screen only on first load when we have no data
+  if (isLoading && !refreshing && (!linksData || linksData.length === 0)) {
     return (
       <SafeScreen>
         <View style={[styles.container, styles.centered]}>
@@ -371,6 +368,9 @@ export default function Links() {
               />
             )}
             showsVerticalScrollIndicator={false}
+            onEndReached={handleLoadMore}
+            onEndReachedThreshold={0.5}
+            ListFooterComponent={renderFooter}
           />
         </View>
       </View>
@@ -378,12 +378,12 @@ export default function Links() {
       <TouchableOpacity
         activeOpacity={0.8}
         onPress={handleCreateLink}
-        style={[styles.floatingButton, { backgroundColor: colors.accent.primary }]}
+        style={[styles.floatingButton, { backgroundColor: isDark ? '#6b7280' : '#000000' }]}
       >
         <IconByVariant
-          color={colors.text.inverse}
+          color="#ffffff"
           name="add"
-          size={24}
+          size={22}
         />
       </TouchableOpacity>
 
@@ -487,10 +487,10 @@ const styles = StyleSheet.create({
   },
   floatingButton: {
     alignItems: 'center',
-    borderRadius: 28,
+    borderRadius: 26,
     bottom: 35,
     elevation: 8,
-    height: 56,
+    height: 52,
     justifyContent: 'center',
     position: 'absolute',
     right: 20,
@@ -501,9 +501,13 @@ const styles = StyleSheet.create({
     },
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
-    width: 56,
+    width: 52,
   },
   title: {
     marginBottom: SPACING.md,
+  },
+  footerLoader: {
+    paddingVertical: SPACING.md,
+    alignItems: 'center',
   },
 }); 

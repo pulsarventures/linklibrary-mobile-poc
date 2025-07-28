@@ -60,22 +60,13 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     try {
       set({ isLoading: true });
       
-      // Use storageService to get tokens and check validity
+      // Get tokens and check validity BEFORE making API calls
       const accessToken = await storageService.getAccessToken();
       const refreshToken = await storageService.getRefreshToken();
       const isAccessTokenValid = await storageService.isAccessTokenValid();
-      const isRefreshTokenValid = await storageService.isRefreshTokenValid();
 
-      console.log('🔍 INIT AUTH - Tokens found:', {
-        hasAccessToken: !!accessToken,
-        hasRefreshToken: !!refreshToken,
-        isAccessTokenValid,
-        isRefreshTokenValid
-      });
-
-      // If no tokens found, mark as initialized and return
+      // Fast path: No tokens = not authenticated
       if (!accessToken || !refreshToken) {
-        console.log('🔍 INIT AUTH - No tokens found, user not authenticated');
         set({ 
           error: null,
           initialized: true,
@@ -86,119 +77,32 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         return;
       }
 
-      // Check if access token is expired
-      const isExpired = !isAccessTokenValid;
-      console.log('🔍 INIT AUTH - Token expired?', isExpired);
-
-      // If access token is expired, try to refresh
-      if (isExpired && refreshToken) {
-        console.log('🔍 INIT AUTH - Attempting token refresh');
-        try {
-          const response = await authApiService.refreshToken(refreshToken);
-          console.log('🔍 INIT AUTH - Token refresh successful');
-          
-          // Store new tokens
-          await storageService.storeTokens({
-            access_token: response.access_token,
-            access_token_expires_in: response.access_token_expires_in,
-            is_revoked: false,
-            refresh_token: response.refresh_token || refreshToken,
-            refresh_token_expires_in: response.refresh_token_expires_in,
-            token_type: response.token_type,
-          });
-
-          if (response.user) {
-            console.log('🔍 INIT AUTH - User authenticated via refresh');
-            set({ 
-              error: null,
-              initialized: true,
-              isAuthenticated: true,
-              isLoading: false,
-              user: response.user
-            });
-            return;
-          }
-        } catch (error) {
-          console.log('🔍 INIT AUTH - Token refresh failed (normal for expired tokens):', error instanceof Error ? error.message : 'Unknown error');
-          // Clear tokens and continue to try with current token
-          await storageService.clearTokens();
-          set({ 
-            error: null,
-            initialized: true,
-            isAuthenticated: false,
-            isLoading: false,
-            user: null
-          });
-          return;
-        }
+      // Smart path: If token is still valid, trust it without API call
+      if (isAccessTokenValid) {
+        // Token is valid, just trust it and mark as authenticated
+        // The first real API call will handle token refresh if actually needed
+        set({ 
+          error: null,
+          initialized: true,
+          isAuthenticated: true,
+          isLoading: false,
+          user: null // User data will be fetched when actually needed
+        });
+        
+        // Skip background user preload since we already trust the token
+        // User data will be fetched when actually needed
+        
+        return;
       }
 
-      // Try to get user data with current token (if not expired or refresh failed)
-      if (!isExpired || !refreshToken) {
-        console.log('🔍 INIT AUTH - Attempting to get user data with current token');
-        try {
-          const response = await authApiService.me();
-          console.log('🔍 INIT AUTH - User data retrieved successfully');
-          set({ 
-            error: null,
-            initialized: true,
-            isAuthenticated: true,
-            isLoading: false,
-            user: response.user
-          });
-          return;
-        } catch (error) {
-          console.log('🔍 INIT AUTH - Failed to get user data (normal for fresh install):', error instanceof Error ? error.message : 'Unknown error');
-          // If we can't get user data, try to refresh token as last resort
-          if (refreshToken) {
-            try {
-              console.log('🔍 INIT AUTH - Last resort: attempting token refresh with token:', refreshToken.slice(0, 20) + '...');
-              const response = await authApiService.refreshToken(refreshToken);
-              
-              console.log('🔍 INIT AUTH - Token refresh successful, storing new tokens');
-              
-              // Store new tokens
-              await storageService.storeTokens({
-                access_token: response.access_token,
-                access_token_expires_in: response.access_token_expires_in,
-                is_revoked: false,
-                refresh_token: response.refresh_token || refreshToken,
-                refresh_token_expires_in: response.refresh_token_expires_in,
-                token_type: response.token_type,
-              });
-
-              if (response.user) {
-                console.log('🔍 INIT AUTH - User authenticated via last resort refresh');
-                set({ 
-                  error: null,
-                  initialized: true,
-                  isAuthenticated: true,
-                  isLoading: false,
-                  user: response.user
-                });
-                return;
-              }
-            } catch (refreshError) {
-              console.log('🔍 INIT AUTH - Last resort refresh failed (normal for fresh install):', refreshError instanceof Error ? refreshError.message : 'Unknown error');
-            }
-          }
-          
-          // Clear tokens on final failure
-          await storageService.clearTokens();
-          set({ 
-            error: null,
-            initialized: true,
-            isAuthenticated: false,
-            isLoading: false,
-            user: null
-          });
-        }
+      // Skip slow refresh token attempt during initialization
+      // Just clear invalid tokens and require fresh login
+      if (refreshToken) {
+        console.warn('Token expired, clearing tokens for fresh login');
+        await storageService.clearTokens();
       }
-    } catch (error) {
-      console.log('🔍 INIT AUTH - Initialization failed (normal for fresh install):', error instanceof Error ? error.message : 'Unknown error');
-      // Clear any stored tokens if initialization fails
-      await storageService.clearTokens();
-      
+
+      // All paths failed - require fresh login
       set({ 
         error: null,
         initialized: true,
@@ -206,6 +110,28 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         isLoading: false,
         user: null
       });
+    } catch (error) {
+      console.warn('Auth initialization error:', error);
+      await storageService.clearTokens();
+      set({ 
+        error: null,
+        initialized: true,
+        isAuthenticated: false,
+        isLoading: false,
+        user: null
+      });
+    } finally {
+      // Ensure we're always marked as initialized
+      const currentState = get();
+      if (!currentState.initialized) {
+        set({ 
+          error: null,
+          initialized: true,
+          isAuthenticated: false,
+          isLoading: false,
+          user: null
+        });
+      }
     }
   },
   initialized: false,
@@ -264,7 +190,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       // Sign out from Google
       await signOutFromGoogle();
     } catch (error) {
-      console.log('ℹ️ Google sign out completed with info:', error);
+      // Google sign out completed
       // Don't let Google sign out errors block the logout process
     }
     

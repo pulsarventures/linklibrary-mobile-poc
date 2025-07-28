@@ -31,7 +31,6 @@ const extractDomain = (url: string): string => {
 
 const getDomainInitials = (url: string): string => {
   try {
-    console.log('Getting initials for URL:', url);
     const domain = extractDomain(url);
     
     // Handle YouTube URLs specially
@@ -72,26 +71,22 @@ const getDomainInitials = (url: string): string => {
 
     // Split domain into parts
     const parts = domain.split('.');
-    console.log('Domain parts:', parts);
 
     // For subdomains, use the main domain part
     if (parts.length > 2) {
       const mainDomain = parts[parts.length - 2];
-      console.log('Using main domain for subdomain:', mainDomain);
       return mainDomain.substring(0, 2).toUpperCase();
     }
 
     // For regular domains, use the first part
     if (parts.length >= 2) {
       const domainName = parts[0];
-      console.log('Using first part of domain:', domainName);
       if (domainName.length >= 2) {
         return domainName.substring(0, 2).toUpperCase();
       }
     }
 
     // Fallback to first two characters of the full domain
-    console.log('Falling back to full domain:', domain);
     return domain.substring(0, 2).toUpperCase();
   } catch (error) {
     console.error('Error getting domain initials:', error);
@@ -258,11 +253,9 @@ useEffect(() => {
                 if (response.ok) {
                   setFaviconSrc(proxyUrl);
                   setShowFavicon(true);
-                  console.log('✅ Favicon loaded from proxy');
                 }
               })
               .catch(() => {
-                console.log('❌ Failed to load favicon from proxy');
               });
             return;
           }
@@ -283,16 +276,13 @@ useEffect(() => {
               if (response.ok && response.headers.get('content-type')?.includes('image')) {
                 setFaviconSrc(currentUrl);
                 setShowFavicon(true);
-                console.log('✅ Favicon loaded from:', currentUrl);
               } else {
                 throw new Error('Invalid response');
               }
             })
             .catch(error => {
               if (error.name === 'AbortError') {
-                console.log('⏰ Favicon timeout for:', currentUrl);
               } else {
-                console.log('❌ Failed to load favicon from:', currentUrl);
               }
               index++;
               tryNextFavicon();

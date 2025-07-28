@@ -33,7 +33,7 @@ export function CollectionFormModal({
   onSubmit,
   visible,
 }: CollectionFormModalProps) {
-  const { colors } = useTheme();
+  const { colors, isDark } = useTheme();
   const nameInputReference = useRef<TextInput>(null);
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
@@ -165,7 +165,7 @@ export function CollectionFormModal({
               style={[
                 styles.headerButton,
                 styles.addButton,
-                { backgroundColor: colors.accent.primary },
+                { backgroundColor: isDark ? '#6b7280' : '#000000' },
                 (loading || !name.trim()) && { opacity: 0.7 }
               ]}
             >

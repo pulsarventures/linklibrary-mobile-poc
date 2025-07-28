@@ -18,38 +18,22 @@ import { TagFormModal, TagItem } from '@/components/molecules';
 import { SafeScreen } from '@/components/templates';
 
 export default function Tags() {
-  const { colors } = useTheme();
+  const { colors, isDark } = useTheme();
   const { createTag, deleteTag, isCreating, isDeleting, isLoading, isUpdating, tags, updateTag } = useTagsStore();
   const queryClient = useQueryClient();
   const navigation = useNavigation<NavigationProp<RootTabParamList>>();
   
-  // Debug logging
-  console.log('📱 Tags screen render:', { 
-    isCreating, 
-    isDeleting, 
-    isLoading, 
-    isUpdating, 
-    tags: tags.map(t => ({ id: t.id, name: t.name })),
-    tagsCount: tags.length
-  });
   const [showFormModal, setShowFormModal] = useState(false);
   const [editingTag, setEditingTag] = useState<null | Tag>(null);
   const [refreshing, setRefreshing] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
 
   const handleTagPress = (tag: Tag) => {
-    console.log('🏷️ Tag pressed:', { id: tag.id, name: tag.name });
     // First navigate to Links tab, then set params to ensure they're received
     navigation.navigate('Links', { 
       tagId: tag.id,
       tagName: tag.name,
       // Clear any collection params to avoid conflicts
-      collectionId: undefined,
-      collectionName: undefined
-    });
-    console.log('🏷️ Navigation called to Links with params:', { 
-      tagId: tag.id, 
-      tagName: tag.name,
       collectionId: undefined,
       collectionName: undefined
     });
@@ -97,16 +81,14 @@ export default function Tags() {
 
   const handleCreateTagSubmit = async (data: { color?: string; name: string; }) => {
     try {
-      console.log('🔄 Creating tag:', data);
       await createTag({ color: data.color || 'gray', name: data.name });
-      console.log('✅ Tag creation completed');
       Toast.show({
         text1: 'Tag created successfully',
         type: 'success',
       });
       setShowFormModal(false);
     } catch (error) {
-      console.error('❌ Failed to create tag:', error);
+      console.error('Failed to create tag:', error);
       Toast.show({
         text1: 'Failed to create tag',
         text2: error instanceof Error ? error.message : 'Please try again',
@@ -148,12 +130,10 @@ export default function Tags() {
   const handleRefresh = async () => {
     setRefreshing(true);
     try {
-      console.log('🔄 Refreshing tags...');
       await queryClient.invalidateQueries({ queryKey: ['tags'] });
       await queryClient.refetchQueries({ queryKey: ['tags'] });
-      console.log('✅ Tags refreshed successfully');
     } catch (error) {
-      console.error('❌ Failed to refresh tags:', error);
+      console.error('Failed to refresh tags:', error);
     } finally {
       setRefreshing(false);
     }
@@ -246,12 +226,12 @@ export default function Tags() {
       <TouchableOpacity
         activeOpacity={0.8}
         onPress={handleCreateTag}
-        style={[styles.floatingButton, { backgroundColor: colors.accent.primary }]}
+        style={[styles.floatingButton, { backgroundColor: isDark ? '#6b7280' : '#000000' }]}
       >
         <IconByVariant
-          color={colors.text.inverse}
+          color="#ffffff"
           name="add"
-          size={24}
+          size={22}
         />
       </TouchableOpacity>
       
@@ -299,10 +279,10 @@ const styles = StyleSheet.create({
   },
   floatingButton: {
     alignItems: 'center',
-    borderRadius: 28,
+    borderRadius: 26,
     bottom: 35,
     elevation: 8,
-    height: 56,
+    height: 52,
     justifyContent: 'center',
     position: 'absolute',
     right: 20,
@@ -313,7 +293,7 @@ const styles = StyleSheet.create({
     },
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
-    width: 56,
+    width: 52,
   },
   list: {
     flexGrow: 1,

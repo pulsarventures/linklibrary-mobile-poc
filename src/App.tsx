@@ -20,11 +20,10 @@ import { setupErrorHandling } from '@/utils/errorHandler';
 import { AppState, Linking, NativeModules } from 'react-native';
 
 import { useAuthStore } from '@/hooks/domain/user/useAuthStore';
-import { navigationRef, Paths } from '@/navigation/paths';
+import { navigationRef } from '@/navigation/paths';
 
 const { AppGroupsModule } = NativeModules;
-console.log('📤 🔍 All Native Modules:', Object.keys(NativeModules).sort());
-console.log('📤 🔍 AppGroupsModule object:', AppGroupsModule);
+// Remove expensive native module logging on every startup
 
 // Enable Reanimated layout animations
 import { UIManager } from 'react-native';
@@ -38,14 +37,18 @@ setupErrorHandling();
 // Enable screens optimization
 enableScreens();
 
-// Create query client with proper config
+// Create query client with optimized config for faster startup
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      retry: 2,
+      retry: 1, // Reduce retries for faster failure handling
       staleTime: 5 * 60 * 1000, // 5 minutes
+      gcTime: 30 * 60 * 1000, // 30 minutes - keep data longer
       placeholderData: (previousData: unknown) => previousData || [],
       select: (data) => data || [],
+      // Enable background refetch for better UX
+      refetchOnWindowFocus: false,
+      refetchOnMount: 'always',
     },
   },
 });
@@ -55,40 +58,34 @@ function App() {
   const pendingSharedUrl = useRef<null | string>(null);
 
   useEffect(() => {
-    initializeI18n()
-      .then(() => { setIsI18nInitialized(true); })
-      .catch(error => {
-        console.error('Failed to initialize i18n:', error);
-        // Still set as initialized to not block the app, but translations might not work
-        setIsI18nInitialized(true);
-      });
+    // Initialize i18n in background, don't block UI
+    setIsI18nInitialized(true); // Show UI immediately
+    
+    // Initialize i18n asynchronously
+    initializeI18n().catch(error => {
+      console.error('Failed to initialize i18n:', error);
+      // Translations might not work but app will still function
+    });
   }, []);
 
   const handleSharedUrl = (url: string) => {
-    console.log('📤 🎯 SHARE HANDLER CALLED! Received shared URL:', url);
-    
     // Validate URL first
     if (!url?.startsWith('http')) {
-      console.log('📤 Invalid URL received:', url);
       return;
     }
     
     // Check if user is authenticated
     const { initialized, isAuthenticated } = useAuthStore.getState();
     
-    console.log('📤 Auth state - initialized:', initialized, 'authenticated:', isAuthenticated);
-    
     if (!initialized) {
       // Store the URL to process later when auth is initialized
       pendingSharedUrl.current = url;
-      console.log('📤 Auth not initialized, storing URL for later');
       return;
     }
     
     if (!isAuthenticated) {
       // Store the URL to process after user logs in
       pendingSharedUrl.current = url;
-      console.log('📤 User not authenticated, storing URL for later');
       return;
     }
     
@@ -98,95 +95,72 @@ function App() {
 
   // Check for shared content from iOS share extension
   const checkForSharedContent = async () => {
-    console.log('📤 🔍 CHECKING FOR SHARED CONTENT - START');
     try {
       if (!AppGroupsModule) {
-        console.log('📤 ❌ AppGroupsModule not available - native module missing!');
         return;
       }
 
-      console.log('📤 ✅ AppGroupsModule available, calling getSharedContent...');
       const sharedData = await AppGroupsModule.getSharedContent();
-      console.log('📤 📦 Raw shared data received:', JSON.stringify(sharedData, null, 2));
       
       if (sharedData) {
-        console.log('📤 ✅ Found shared data from iOS share extension:', sharedData);
-        
         let url = '';
         if (sharedData.type === 'url') {
           url = sharedData.data;
-          console.log('📤 🔗 URL type data:', url);
         } else if (sharedData.type === 'text') {
-          console.log('📤 📝 Text type data:', sharedData.data);
           // Try to extract URL from text
           const urlMatch = sharedData.data.match(/https?:\/\/\S+/);
           if (urlMatch) {
             url = urlMatch[0];
-            console.log('📤 🔗 Extracted URL from text:', url);
           }
         }
         
         if (url) {
-          console.log('📤 🎯 Final URL to process:', url);
           handleSharedUrl(url);
-        } else {
-          console.log('📤 ⚠️ No valid URL found in shared data');
         }
-      } else {
-        console.log('📤 ℹ️ No shared data found');
       }
     } catch (error) {
-      console.error('📤 💥 Error checking for shared content:', error);
-      console.error('📤 💥 Error details:', JSON.stringify(error, null, 2));
+      console.error('📤 Error checking for shared content:', error);
     }
-    console.log('📤 🔍 CHECKING FOR SHARED CONTENT - END');
   };
 
   const navigateToAddScreen = (url: string) => {
-    console.log('📤 🚀 NAVIGATION TO ADD SCREEN - START');
-    console.log('📤 🎯 Target URL:', url);
-    
     if (navigationRef.isReady()) {
-      console.log('📤 ✅ Navigation is ready, navigating immediately...');
       try {
-        // Navigate to the Main navigator with Add screen params
         navigationRef.navigate('Main', {
           screen: 'Add',
           params: { sharedUrl: url }
         });
-        console.log('📤 ✅ Successfully navigated to Add screen with URL');
       } catch (error) {
-        console.error('📤 💥 Error navigating to Add screen:', error);
-        console.error('📤 💥 Navigation error details:', JSON.stringify(error, null, 2));
+        console.error('📤 Error navigating to Add screen:', error);
       }
     } else {
-      console.log('📤 ⏳ Navigation not ready, setting up listener...');
       // If navigation isn't ready, wait for it
       const unsubscribe = navigationRef.addListener('state', () => {
-        console.log('📤 🔄 Navigation state changed, attempting delayed navigation...');
         try {
           navigationRef.navigate('Main', {
             screen: 'Add',
             params: { sharedUrl: url }
           });
-          console.log('📤 ✅ Successfully navigated to Add screen with URL (delayed)');
           unsubscribe();
         } catch (error) {
-          console.error('📤 💥 Error in delayed navigation:', error);
-          console.error('📤 💥 Delayed navigation error details:', JSON.stringify(error, null, 2));
+          console.error('📤 Error in delayed navigation:', error);
         }
       });
     }
-    console.log('📤 🚀 NAVIGATION TO ADD SCREEN - END');
   };
 
   // Monitor auth state and process pending URL when user becomes authenticated
   useEffect(() => {
     const unsubscribe = useAuthStore.subscribe((state) => {
-      if (state.isAuthenticated && state.initialized && pendingSharedUrl.current) {
-        console.log('📤 User authenticated, processing pending URL:', pendingSharedUrl.current);
-        navigateToAddScreen(pendingSharedUrl.current);
-        pendingSharedUrl.current = null;
+      if (state.isAuthenticated && state.initialized) {
+        // Process pending shared URL
+        if (pendingSharedUrl.current) {
+          navigateToAddScreen(pendingSharedUrl.current);
+          pendingSharedUrl.current = null;
+        }
+        
+        // The links will be prefetched automatically when the Links screen mounts
+        // due to the optimized query configuration
       }
     });
 
@@ -196,7 +170,6 @@ function App() {
   // Monitor app state changes and check for shared content
   useEffect(() => {
     const handleAppStateChange = (nextAppState: string) => {
-      console.log('📤 App state changed to:', nextAppState);
       if (nextAppState === 'active') {
         // Check for shared content when app becomes active
         setTimeout(() => {
@@ -205,8 +178,8 @@ function App() {
       }
     };
 
-    // Check for shared content on app launch
-    checkForSharedContent();
+    // Delay shared content check to not block initial render
+    setTimeout(checkForSharedContent, 1000);
 
     const appStateSubscription = AppState.addEventListener('change', handleAppStateChange);
     return () => appStateSubscription?.remove();
@@ -215,7 +188,6 @@ function App() {
   // Handle deep link URL scheme
   useEffect(() => {
     const handleDeepLink = (url: string) => {
-      console.log('📤 Received deep link:', url);
       if (url.startsWith('linklibrarymobile://')) {
         // Check for shared content when deep link is received
         setTimeout(() => {
@@ -224,12 +196,14 @@ function App() {
       }
     };
 
-    // Handle initial URL (when app is launched from deep link)
-    Linking.getInitialURL().then(url => {
-      if (url) {
-        handleDeepLink(url);
-      }
-    });
+    // Delay initial URL check to not block startup
+    setTimeout(() => {
+      Linking.getInitialURL().then(url => {
+        if (url) {
+          handleDeepLink(url);
+        }
+      });
+    }, 500);
 
     // Handle URLs when app is already running
     const linkingSubscription = Linking.addEventListener('url', ({ url }) => {

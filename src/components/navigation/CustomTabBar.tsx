@@ -7,6 +7,7 @@ import LinearGradient from 'react-native-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { SPACING } from '@/theme/styles/spacing';
+import { useTheme } from '@/theme';
 
 import { IconByVariant } from '@/components/atoms';
 import { Text } from '@/components/ui/Text';
@@ -21,6 +22,7 @@ const TAB_ICONS: Record<string, IconName> = {
 
 function CustomTabBar({ descriptors, navigation, state }: BottomTabBarProps) {
   const insets = useSafeAreaInsets();
+  const { colors, isDark } = useTheme();
 
   // Filter out routes that have tabBarButton: () => null (hidden tabs) or are named "Add"
   const visibleRoutes = state.routes.filter((route) => {
@@ -29,7 +31,14 @@ function CustomTabBar({ descriptors, navigation, state }: BottomTabBarProps) {
   });
 
   return (
-    <View style={[styles.container, { paddingBottom: insets.bottom }]}>
+    <View style={[
+      styles.container, 
+      { 
+        paddingBottom: insets.bottom,
+        backgroundColor: colors.background.primary,
+        borderTopColor: colors.border.primary
+      }
+    ]}>
       {visibleRoutes.map((route, index) => {
         const { options } = descriptors[route.key];
         const label = typeof options.tabBarLabel === 'string' 
@@ -62,7 +71,7 @@ function CustomTabBar({ descriptors, navigation, state }: BottomTabBarProps) {
           >
             {isFocused && !isSearchTab ? (
               <LinearGradient
-                colors={['#000000', '#374151']}
+                colors={isDark ? ['#ffffff', '#a1a1aa'] : ['#000000', '#374151']}
                 end={{ x: 1, y: 0 }}
                 start={{ x: 0, y: 0 }}
                 style={styles.activeIndicator}
@@ -70,16 +79,21 @@ function CustomTabBar({ descriptors, navigation, state }: BottomTabBarProps) {
             ) : null}
             
             {isSearchTab ? (
-              <View style={styles.searchButton}>
+              <LinearGradient
+                colors={isDark ? ['#4a4a4a', '#2a2a2a'] : [colors.accent.primary, colors.accent.primary + 'AA']}
+                end={{ x: 1, y: 1 }}
+                start={{ x: 0, y: 0 }}
+                style={styles.searchButton}
+              >
                 <IconByVariant
-                  color="#FFFFFF"
+                  color={isDark ? '#ffffff' : colors.text.inverse}
                   name={TAB_ICONS[route.name] || 'message-circle'}
                   size={24}
                 />
-              </View>
+              </LinearGradient>
             ) : (
               <IconByVariant
-                color={isFocused ? '#000000' : '#8E8E93'}
+                color={isFocused ? colors.text.primary : colors.text.tertiary}
                 name={TAB_ICONS[route.name] || 'link'}
                 size={isFocused ? 24 : 22}
               />
@@ -89,7 +103,10 @@ function CustomTabBar({ descriptors, navigation, state }: BottomTabBarProps) {
               <Text
                 style={[
                   styles.label,
-                  isFocused ? styles.labelActive : styles.labelInactive,
+                  {
+                    color: isFocused ? colors.text.primary : colors.text.tertiary,
+                    fontWeight: isFocused ? '600' : '500'
+                  }
                 ]}
               >
                 {label}
@@ -112,8 +129,6 @@ const styles = StyleSheet.create({
     top: -1,
   },
   container: {
-    backgroundColor: '#FFFFFF',
-    borderTopColor: '#E5E5EA',
     borderTopWidth: 1,
     flexDirection: 'row',
     height: 84,
@@ -123,30 +138,21 @@ const styles = StyleSheet.create({
     fontSize: 12,
     marginTop: 4,
   },
-  labelActive: {
-    color: '#000000',
-    fontWeight: '600',
-  },
-  labelInactive: {
-    color: '#8E8E93',
-    fontWeight: '500',
-  },
   searchButton: {
     alignItems: 'center',
-    backgroundColor: '#000000',
-    borderRadius: 24,
-    elevation: 8,
-    height: 48,
+    borderRadius: 26,
+    elevation: 12,
+    height: 52,
     justifyContent: 'center',
-    marginTop: -24,
+    marginTop: -26,
     shadowColor: '#000000',
     shadowOffset: {
-      height: 4,
+      height: 6,
       width: 0,
     },
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
-    width: 48,
+    shadowOpacity: 0.25,
+    shadowRadius: 12,
+    width: 52,
   },
   tab: {
     alignItems: 'center',
