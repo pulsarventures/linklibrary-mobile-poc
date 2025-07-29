@@ -4,8 +4,8 @@
     <item android:drawable="@color/splashscreen_bg"/>
 
     <item
-        android:width="80dp"
-        android:height="80dp"
+        android:width="160dp"
+        android:height="160dp"
         android:gravity="center">
         <bitmap
             android:gravity="fill"
@@ -13,4 +13,4 @@
         />
     </item>
 
-</layer-list>
+</layer-list> 

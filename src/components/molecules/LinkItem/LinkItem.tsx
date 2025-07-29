@@ -330,21 +330,21 @@ export function LinkItem({ link, onAction, onPress }: LinkItemProps) {
         <View style={[styles.actionsRow, { borderTopColor: colors.border.primary }]}>
           <TouchableOpacity
             onPress={handleToggleFavorite}
-            style={[styles.actionButton, { backgroundColor: `${colors.background.primary}95` }]}
-            activeOpacity={0.8}
+            style={[styles.actionButton, { backgroundColor: 'transparent' }]}
+            activeOpacity={0.7}
           >
             <IconByVariant
               name={link.is_favorite ? "star" : "star-outline"}
               size={18}
-              color={link.is_favorite ? "#FFD700" : colors.text.secondary}
+              color={link.is_favorite ? "#FFD700" : colors.text.tertiary}
             />
           </TouchableOpacity>
 
           <View style={styles.copyButtonContainer}>
             <TouchableOpacity
               onPress={handleCopyLink}
-              style={[styles.actionButton, { backgroundColor: `${colors.background.primary}95` }]}
-              activeOpacity={0.8}
+              style={[styles.actionButton, { backgroundColor: 'transparent' }]}
+              activeOpacity={0.7}
             >
               {showCopied ? (
                 <Animated.View
@@ -360,10 +360,10 @@ export function LinkItem({ link, onAction, onPress }: LinkItemProps) {
                     opacity: copyAnimationRef.current,
                   }}
                 >
-                  <Check size={18} color="#000000" />
+                  <Check size={18} color="#10B981" />
                 </Animated.View>
               ) : (
-                <Copy size={18} color={colors.text.secondary} />
+                <Copy size={18} color={colors.text.tertiary} />
               )}
             </TouchableOpacity>
             {showCopied && (
@@ -382,17 +382,17 @@ export function LinkItem({ link, onAction, onPress }: LinkItemProps) {
           
           <TouchableOpacity
             onPress={handleEdit}
-            style={[styles.actionButton, { backgroundColor: `${colors.background.primary}95` }]}
-            activeOpacity={0.8}
+            style={[styles.actionButton, { backgroundColor: 'transparent' }]}
+            activeOpacity={0.7}
           >
-            <IconByVariant name="edit" size={18} color={colors.text.secondary} />
+            <IconByVariant name="edit" size={18} color={colors.text.tertiary} />
           </TouchableOpacity>
           
           <TouchableOpacity
             onPress={handleDelete}
-            style={[styles.actionButton, { backgroundColor: `${colors.background.primary}95` }]}
+            style={[styles.actionButton, { backgroundColor: 'transparent' }]}
             disabled={isDeleting}
-            activeOpacity={0.8}
+            activeOpacity={0.7}
           >
             <IconByVariant 
               name="trash" 
@@ -410,19 +410,19 @@ const styles = StyleSheet.create({
   container: {
     marginHorizontal: SPACING.md,
     marginVertical: 6,
-    borderRadius: 16,
-    borderWidth: 0.75,
+    borderRadius: 12,
+    borderWidth: 0.5,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.12,
-    shadowRadius: 10,
-    elevation: 5,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.08,
+    shadowRadius: 6,
+    elevation: 3,
     overflow: 'hidden',
     position: 'relative',
   },
   gradientBackground: {
     ...StyleSheet.absoluteFillObject,
-    borderRadius: 16,
+    borderRadius: 12,
   },
   mainContent: {
     flex: 1,
@@ -500,23 +500,18 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-around',
     alignItems: 'center',
-    paddingHorizontal: SPACING.md,
+    paddingHorizontal: SPACING.sm,
     paddingVertical: SPACING.xs,
     borderTopWidth: 0.5,
-    marginTop: 2,
+    marginTop: 4,
   },
   actionButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 10,
+    width: 36,
+    height: 36,
+    borderRadius: 8,
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 0,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
   },
   copyButtonContainer: {
     position: 'relative',
