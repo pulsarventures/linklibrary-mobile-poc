@@ -1,16 +1,17 @@
-import { GOOGLE_CLIENT_ID, IOS_CLIENT_ID } from '@env';
+import { GOOGLE_CLIENT_ID, IOS_CLIENT_ID, ANDROID_CLIENT_ID } from '@env';
 import { GoogleSignin, statusCodes, type User } from '@react-native-google-signin/google-signin';
 
 import { safeErrorLog } from '@/utils/errorHandler';
 
 // Initialize Google Sign-In
-if (!GOOGLE_CLIENT_ID || !IOS_CLIENT_ID) {
+if (!GOOGLE_CLIENT_ID || !IOS_CLIENT_ID || !ANDROID_CLIENT_ID) {
   throw new Error('Google Sign-In client IDs are not configured in environment variables');
 }
 
 GoogleSignin.configure({
   webClientId: GOOGLE_CLIENT_ID,
   iosClientId: IOS_CLIENT_ID,
+  androidClientId: ANDROID_CLIENT_ID,
   offlineAccess: true,
   scopes: ['profile', 'email'],
   forceCodeForRefreshToken: true,
@@ -55,6 +56,34 @@ export async function signInWithGoogle(): Promise<GoogleSignInResult> {
     // Check if Google Play Services is available
     await GoogleSignin.hasPlayServices();
     
+    // Add a small delay to ensure Activity is ready (Android-specific fix)
+    await new Promise(resolve => setTimeout(resolve, 100));
+    
+    // Check if already signed in to avoid unnecessary prompts
+    const isSignedIn = await GoogleSignin.isSignedIn();
+    if (isSignedIn) {
+      // If already signed in, get current user instead of signing in again
+      const userInfo = await GoogleSignin.signInSilently();
+      const tokens = await GoogleSignin.getTokens();
+      
+      if (!tokens.accessToken) {
+        throw new Error('Failed to get access token from Google');
+      }
+
+      const email = userInfo.user.email;
+      const name = userInfo.user.name || userInfo.user.givenName || '';
+
+      if (!email) {
+        throw new Error('Failed to get user email from Google');
+      }
+      
+      return {
+        email,
+        name,
+        token: tokens.accessToken,
+      };
+    }
+    
     // Sign in and get user data
     const userInfo = await GoogleSignin.signIn();
     
@@ -94,8 +123,17 @@ export async function signInWithGoogle(): Promise<GoogleSignInResult> {
         case statusCodes.SIGN_IN_REQUIRED:
           throw new Error('User needs to sign in to Google first');
         default:
+          // Check for Android activity null error
+          if (error.message?.includes('activity is null')) {
+            throw new Error('Android Activity not ready. Please try again in a moment.');
+          }
           throw new Error(`Google Sign-In failed with code: ${code} - ${error.message}`);
       }
+    }
+    
+    // Handle Android-specific "activity is null" error
+    if (error instanceof Error && error.message?.includes('activity is null')) {
+      throw new Error('Android Activity not ready. Please try again in a moment.');
     }
     
     throw new Error(error instanceof Error ? error.message : 'Google Sign-In failed with unknown error');

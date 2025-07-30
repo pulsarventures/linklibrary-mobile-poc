@@ -16,11 +16,12 @@ import { initializeI18n } from '@/translations';
 import { ErrorBoundary } from '@/components/organisms';
 
 import { setupErrorHandling } from '@/utils/errorHandler';
-// import ShareReceiver from '@/share/ShareReceiver'; // Using iOS share extension instead
+import ShareReceiver from '@/share/ShareReceiver'; // Android share handling
 import { AppState, Linking, NativeModules } from 'react-native';
 
 import { useAuthStore } from '@/hooks/domain/user/useAuthStore';
 import { navigationRef } from '@/navigation/paths';
+import { useBackgroundDataLoader } from '@/hooks/useBackgroundDataLoader';
 
 const { AppGroupsModule } = NativeModules;
 // Remove expensive native module logging on every startup
@@ -38,7 +39,7 @@ setupErrorHandling();
 enableScreens();
 
 // Create query client with optimized config for faster startup
-const queryClient = new QueryClient({
+export const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       retry: 1, // Reduce retries for faster failure handling
@@ -52,6 +53,19 @@ const queryClient = new QueryClient({
     },
   },
 });
+
+// Component that uses QueryClient hooks - must be inside QueryClientProvider
+function AppContent() {
+  // Initialize background data loading for better UX
+  useBackgroundDataLoader();
+
+  return (
+    <>
+      <ApplicationNavigator />
+      <Toast />
+    </>
+  );
+}
 
 function App() {
   const [isI18nInitialized, setIsI18nInitialized] = useState(false);
@@ -68,6 +82,7 @@ function App() {
     });
   }, []);
 
+  // Share handling functions - these don't need QueryClient
   const handleSharedUrl = (url: string) => {
     // Validate URL first
     if (!url?.startsWith('http')) {
@@ -158,9 +173,6 @@ function App() {
           navigateToAddScreen(pendingSharedUrl.current);
           pendingSharedUrl.current = null;
         }
-        
-        // The links will be prefetched automatically when the Links screen mounts
-        // due to the optimized query configuration
       }
     });
 
@@ -225,11 +237,10 @@ function App() {
     <I18nextProvider i18n={i18n}>
       <ErrorBoundary>
         <GestureHandlerRootView style={{ flex: 1 }}>
+          <ShareReceiver onUrl={handleSharedUrl} />
           <QueryClientProvider client={queryClient}>
             <ThemeProvider>
-              {/* <ShareReceiver onUrl={handleSharedUrl} /> */}
-              <ApplicationNavigator />
-              <Toast />
+              <AppContent />
             </ThemeProvider>
           </QueryClientProvider>
         </GestureHandlerRootView>

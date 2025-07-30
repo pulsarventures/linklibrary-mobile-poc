@@ -12,6 +12,7 @@ import { useDeleteLink, useInfiniteLinks, useToggleFavorite } from '@/hooks/api/
 import { useCollectionsStore } from '@/hooks/domain/collections/useCollectionsStore';
 import { useTagsStore } from '@/hooks/domain/tags/useTagsStore';
 import { useAuthStore } from '@/hooks/domain/user/useAuthStore';
+import { useBackgroundDataLoader } from '@/hooks/useBackgroundDataLoader';
 import { useTheme } from '@/theme';
 import { SPACING } from '@/theme/styles/spacing';
 
@@ -28,12 +29,15 @@ export default function Links() {
   const { colors, isDark } = useTheme();
   const navigation = useNavigation();
   const route = useRoute<RouteProp<RootTabParamList, 'Links'>>();
-  const { collections, fetchCollections, loading: isLoadingCollections } = useCollectionsStore();
-  const { isLoading: isLoadingTags, tags } = useTagsStore();
+  const { collections } = useCollectionsStore();
+  const { tags, isLoading: isLoadingTags } = useTagsStore();
   const { isAuthenticated } = useAuthStore();
   const [refreshing, setRefreshing] = React.useState(false);
   const [editingLink, setEditingLink] = useState<Link | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  
+  // Initialize background data loading for collections and tags
+  const { isLoadingCollections, hasCollections, hasTags } = useBackgroundDataLoader();
   
   // Get collection and tag filter from route params
   const { collectionId, collectionName, tagId, tagName } = route.params || {};
@@ -71,21 +75,8 @@ export default function Links() {
   
   // Links data loaded
 
-  const loadInitialData = useCallback(async () => {
-    try {
-      // Load collections and links in parallel for faster startup
-      await Promise.all([
-        fetchCollections(),
-        refetchLinks()
-      ]);
-    } catch (error) {
-      console.error('Failed to load initial data:', error);
-      Toast.show({
-        text1: 'Failed to load data',
-        type: 'error',
-      });
-    }
-  }, [fetchCollections, refetchLinks]);
+  // Remove blocking initial data load - background loader handles this
+  // Links will load via TanStack Query, collections/tags load in background
 
   // Force refetch when filter parameters change
   useEffect(() => {

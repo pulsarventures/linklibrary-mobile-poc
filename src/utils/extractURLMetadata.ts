@@ -14,7 +14,6 @@ class MetadataExtractor {
   // React Native doesn't have CORS issues, so we can fetch directly
   private static async fetchDirectly(url: string): Promise<Response | null> {
     try {
-      console.log(`Trying direct fetch for ${url}`);
       const controller = new AbortController();
       const timeoutId = setTimeout(() => { controller.abort(); }, 8000);
       
@@ -32,7 +31,6 @@ class MetadataExtractor {
         return response;
       }
     } catch (error) {
-      console.log('Direct fetch failed:', error);
     }
 
     return null;
@@ -57,7 +55,6 @@ class MetadataExtractor {
             if (url.includes('youtube.com')) {
               const hasMetaDesc = html.includes('<meta name="description"');
               const hasOgTitle = html.includes('og:title');
-              console.log(`YouTube debug - Meta desc: ${hasMetaDesc}, OG title: ${hasOgTitle}`);
             }
             const metadata = await this.extractFromHTML(html, url);
             if (metadata.title) {
@@ -125,7 +122,6 @@ class MetadataExtractor {
       // For YouTube specifically, try to extract video description from JSON data
       if (url.includes('youtube.com')) {
         if (!description || description === 'Enjoy the videos and music you love, upload original content, and share it all with friends, family, and the world on YouTube.') {
-          console.log('Extracting YouTube video description from page data...');
           
           // Try multiple patterns to extract video description
           const descriptionPatterns = [
@@ -152,7 +148,6 @@ class MetadataExtractor {
                 description = description.substring(0, 197) + '...';
               }
               
-              console.log('Found YouTube description:', description.substring(0, 100) + '...');
               break;
             }
           }
@@ -239,7 +234,6 @@ class MetadataExtractor {
         favicon,
       };
 
-      console.log(`Extracted metadata for ${url}:`, result);
       return result;
     } catch (error) {
       console.warn('HTML parsing failed:', error);
