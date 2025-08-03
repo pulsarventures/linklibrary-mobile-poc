@@ -9,6 +9,7 @@ import Toast from 'react-native-toast-message';
 import { useCreateLink } from '@/hooks/api/useLinks';
 import { useCollectionsStore } from '@/hooks/domain/collections/useCollectionsStore';
 import { useTagsStore } from '@/hooks/domain/tags/useTagsStore';
+import { useBackgroundDataLoader } from '@/hooks/useBackgroundDataLoader';
 import { SafeScreen } from '@/components/templates';
 import { LinkForm } from '@/components/molecules/LinkForm';
 
@@ -18,8 +19,11 @@ export default function AddLinkScreen() {
   const route = useRoute<AddLinkScreenRouteProperty>();
   const navigation = useNavigation();
   const createLinkMutation = useCreateLink();
-  const { collections, fetchCollections, loading: isLoadingCollections } = useCollectionsStore();
-  const { tags, isLoading: isLoadingTags } = useTagsStore();
+  const { collections } = useCollectionsStore();
+  const { tags } = useTagsStore();
+  
+  // Use background data loader to ensure data is loading but don't block UI
+  useBackgroundDataLoader();
   
   // Track the current shared URL to detect changes
   const [currentSharedUrl, setCurrentSharedUrl] = React.useState<string | undefined>(route.params?.sharedUrl);
@@ -53,16 +57,8 @@ export default function AddLinkScreen() {
     navigation.goBack();
   };
 
-  // Show loading state while collections and tags are loading
-  if (isLoadingCollections || isLoadingTags) {
-    return (
-      <SafeScreen>
-        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-          <ActivityIndicator size="large" color="#007AFF" />
-        </View>
-      </SafeScreen>
-    );
-  }
+  // Don't block UI while collections and tags are loading in background
+  // Form will show loading states for individual sections
 
   return (
     <SafeScreen>

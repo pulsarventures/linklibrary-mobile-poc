@@ -468,7 +468,8 @@ const styles = StyleSheet.create({
   modalContainer: {
     borderTopLeftRadius: 16,
     borderTopRightRadius: 16,
-    maxHeight: '80%',
+    maxHeight: '90%',
+    minHeight: '70%',
   },
   placeholder: {
     width: 32,

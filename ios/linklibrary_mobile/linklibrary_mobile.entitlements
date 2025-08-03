@@ -2,10 +2,14 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<!-- App Groups temporarily disabled for development with free Apple Developer account -->
+	<!-- Uncomment when using paid Apple Developer account -->
+	<!--
 	<key>com.apple.security.application-groups</key>
 	<array>
 		<string>group.com.linklibrary.share</string>
 		<string>group.com.pulsarventures.linklibraryai</string>
 	</array>
+	-->
 </dict>
 </plist>

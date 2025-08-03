@@ -7,6 +7,7 @@ import { Copy, Check } from 'lucide-react-native';
 
 import { useCollectionsStore } from '@/hooks/domain/collections/useCollectionsStore';
 import { useTagsStore } from '@/hooks/domain/tags/useTagsStore';
+import { useBackgroundDataLoader } from '@/hooks/useBackgroundDataLoader';
 import { useTheme } from '@/theme';
 import { SPACING } from '@/theme/styles/spacing';
 
@@ -31,6 +32,7 @@ export function LinkItem({ link, onAction, onPress }: LinkItemProps) {
   const { colors } = useTheme();
   const { collections } = useCollectionsStore();
   const { tags } = useTagsStore();
+  const { isLoadingCollections, hasCollections, hasTags } = useBackgroundDataLoader();
   const [isDeleting, setIsDeleting] = useState(false);
   const [showCopied, setShowCopied] = useState(false);
   const copyAnimationRef = React.useRef(new Animated.Value(0));
@@ -41,6 +43,10 @@ export function LinkItem({ link, onAction, onPress }: LinkItemProps) {
   const linkTags = tags.filter(tag => 
     link.tag_ids.includes(String(tag.id)) || link.tag_ids.includes(tag.id)
   );
+  
+  // Determine if we should show placeholders
+  const shouldShowCollectionPlaceholder = link.collection_id && !collection && (!hasCollections || isLoadingCollections);
+  const shouldShowTagPlaceholders = link.tag_ids.length > 0 && linkTags.length === 0 && !hasTags;
 
 
 
@@ -280,7 +286,7 @@ export function LinkItem({ link, onAction, onPress }: LinkItemProps) {
             )}
 
             {/* Collection and Tags Row */}
-            {(collection || linkTags.length > 0) && (
+            {(collection || linkTags.length > 0 || shouldShowCollectionPlaceholder || shouldShowTagPlaceholders) && (
               <View style={styles.badgesRow}>
                 {/* Collection */}
                 {collection && (
@@ -292,6 +298,20 @@ export function LinkItem({ link, onAction, onPress }: LinkItemProps) {
                     />
                     <Text style={[styles.collectionText, { color: '#3B82F6' }]}>
                       {collection.name}
+                    </Text>
+                  </View>
+                )}
+                
+                {/* Collection Placeholder */}
+                {shouldShowCollectionPlaceholder && (
+                  <View style={[styles.collectionBadge, { backgroundColor: colors.background.subtle }]}>
+                    <IconByVariant
+                      name="collection"
+                      size={10}
+                      color={colors.text.tertiary}
+                    />
+                    <Text style={[styles.collectionText, { color: colors.text.tertiary }]}>
+                      Loading...
                     </Text>
                   </View>
                 )}
@@ -314,10 +334,36 @@ export function LinkItem({ link, onAction, onPress }: LinkItemProps) {
                   );
                 })}
                 
+                {/* Tag Placeholders */}
+                {shouldShowTagPlaceholders && (
+                  link.tag_ids.slice(0, 3).map((_, index) => (
+                    <View
+                      key={`placeholder-${index}`}
+                      style={[styles.tagBadge, { backgroundColor: colors.background.subtle }]}
+                    >
+                      <Text style={[styles.tagHash, { color: colors.text.tertiary }]}>
+                        #
+                      </Text>
+                      <Text style={[styles.tagText, { color: colors.text.tertiary }]}>
+                        ...
+                      </Text>
+                    </View>
+                  ))
+                )}
+                
                 {linkTags.length > 3 && (
                   <View style={[styles.moreTagsBadge, { backgroundColor: colors.background.subtle }]}>
                     <Text style={[styles.moreTagsText, { color: colors.text.tertiary }]}>
                       +{linkTags.length - 3}
+                    </Text>
+                  </View>
+                )}
+                
+                {/* Show placeholder for additional tags if we have more tag_ids than visible tags */}
+                {shouldShowTagPlaceholders && link.tag_ids.length > 3 && (
+                  <View style={[styles.moreTagsBadge, { backgroundColor: colors.background.subtle }]}>
+                    <Text style={[styles.moreTagsText, { color: colors.text.tertiary }]}>
+                      +{link.tag_ids.length - 3}
                     </Text>
                   </View>
                 )}

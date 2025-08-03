@@ -4,9 +4,11 @@ import * as Keychain from 'react-native-keychain';
 export type TokenData = {
   access_token: string;
   access_token_expires_in: number;
+  access_token_expires_at?: number; // New epoch timestamp from API
   is_revoked: boolean;
   refresh_token: string;
   refresh_token_expires_in: number;
+  refresh_token_expires_at?: number; // New epoch timestamp from API
   token_type: string;
 }
 
@@ -234,8 +236,15 @@ class SecureStorageService {
       });
       
       const now = Date.now();
-      const accessTokenExpiry = now + (tokenData.access_token_expires_in * 1000); // Convert seconds to milliseconds
-      const refreshTokenExpiry = now + (tokenData.refresh_token_expires_in * 1000); // Convert seconds to milliseconds
+      
+      // Use provided epoch timestamps if available, otherwise calculate from expires_in
+      const accessTokenExpiry = tokenData.access_token_expires_at 
+        ? tokenData.access_token_expires_at * 1000 // Convert epoch seconds to milliseconds
+        : now + (tokenData.access_token_expires_in * 1000);
+        
+      const refreshTokenExpiry = tokenData.refresh_token_expires_at 
+        ? tokenData.refresh_token_expires_at * 1000 // Convert epoch seconds to milliseconds
+        : now + (tokenData.refresh_token_expires_in * 1000);
       
       console.log('🔐 SECURE STORAGE: Calculated expiry times:', {
         accessTokenExpiry,

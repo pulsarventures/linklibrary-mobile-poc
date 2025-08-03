@@ -2,7 +2,7 @@ import type { Link } from '@/types/link.types';
 import type { Collection } from '@/types/collection.types';
 import type { Tag } from '@/types/tag.types';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import {
   ActivityIndicator as RNActivityIndicator,
   Alert as RNAlert,
@@ -23,6 +23,7 @@ import { TagFormModal } from '@/components/molecules';
 import { CollectionFormModal } from '@/components/molecules/CollectionFormModal';
 import { useTagsStore } from '@/hooks/domain/tags/useTagsStore';
 import { useCollectionsStore } from '@/hooks/domain/collections/useCollectionsStore';
+import { useBackgroundDataLoader } from '@/hooks/useBackgroundDataLoader';
 import { extractURLMetadata } from '@/utils/extractURLMetadata';
 
 interface LinkFormProps {
@@ -43,6 +44,7 @@ export function LinkForm({
   submitLabel = 'Save',
 }: LinkFormProps) {
   const { colors, isDark } = useTheme();
+  const { isLoadingCollections, hasCollections, hasTags } = useBackgroundDataLoader();
   const [url, setUrl] = useState(initialData?.url || '');
   const [title, setTitle] = useState(initialData?.title || '');
   const [summary, setSummary] = useState(initialData?.summary || '');
@@ -50,6 +52,8 @@ export function LinkForm({
   const [isFavorite, setIsFavorite] = useState(initialData?.is_favorite || false);
   
   const isEditing = !!initialData?.id;
+  
+  const scrollViewRef = useRef<RNScrollView>(null);
   const [selectedCollection, setSelectedCollection] = useState<null | number>(
     initialData?.collection_id ? Number(initialData.collection_id) : null
   );
@@ -340,9 +344,9 @@ export function LinkForm({
   };
 
   return (
-    <RNScrollView contentContainerStyle={styles.container}>
-      {/* Header Buttons */}
-      <RNView style={styles.headerContainer}>
+    <RNView style={{ flex: 1 }}>
+      {/* Fixed Header Buttons */}
+      <RNView style={[styles.fixedHeader, { backgroundColor: colors.background.primary, borderBottomColor: colors.border.primary }]}>
         {/* Cancel Button - Left Side */}
         <RNTouchableOpacity
           activeOpacity={0.7}
@@ -386,6 +390,12 @@ export function LinkForm({
           </RNTouchableOpacity>
         </RNView>
       </RNView>
+
+      <RNScrollView 
+        ref={scrollViewRef}
+        contentContainerStyle={styles.container}
+        showsVerticalScrollIndicator={true}
+      >
 
       {/* Rest of the form content */}
       <RNView>
@@ -475,12 +485,24 @@ export function LinkForm({
           borderColor: '#333',
         }]}
         onPress={() => setCollectionModalVisible(true)}
+        disabled={isLoadingCollections && !hasCollections}
       >
         <RNText style={{ color: selectedCollection ? colors.text.primary : colors.text.tertiary }}>
-          {selectedCollection
-            ? collections.find((c: Collection) => c.id === selectedCollection)?.name
-            : 'Select collection'}
+          {isLoadingCollections && !hasCollections ? (
+            'Loading collections...'
+          ) : selectedCollection ? (
+            collections.find((c: Collection) => c.id === selectedCollection)?.name
+          ) : (
+            'Select collection'
+          )}
         </RNText>
+        {isLoadingCollections && !hasCollections && (
+          <RNActivityIndicator
+            color={colors.text.tertiary}
+            size="small"
+            style={{ marginLeft: 8 }}
+          />
+        )}
       </RNTouchableOpacity>
 
       {/* Tag Selector */}
@@ -506,33 +528,44 @@ export function LinkForm({
         </RNTouchableOpacity>
       </RNView>
       <RNView style={styles.tagsWrap}>
-        {(tags || []).map((tag) => {
-          const isSelected = selectedTags.includes(tag.id);
-          return (
-            <RNTouchableOpacity
-              key={tag.id}
-              onPress={() =>
-                { setSelectedTags(isSelected
-                  ? selectedTags.filter(t => t !== tag.id)
-                  : [...selectedTags, tag.id]); }
-              }
-              style={[
-                styles.chip,
-                isDark && { backgroundColor: '#23242a', borderColor: '#333' },
-                isSelected && {
-                  backgroundColor: isDark ? '#6b7280' : '#000000',
-                  borderColor: isDark ? '#6b7280' : '#000000',
-                  elevation: 2,
-                  shadowColor: colors.accent.primary,
-                  shadowOpacity: 0.18,
-                  shadowRadius: 4,
-                },
-              ]}
-            >
-              <RNText style={{ color: isSelected ? '#fff' : colors.text.primary, fontWeight: isSelected ? 'bold' : 'normal' }}>#{tag.name}</RNText>
-            </RNTouchableOpacity>
-          );
-        })}
+        {!hasTags && tags.length === 0 ? (
+          <RNView style={[styles.chip, { backgroundColor: colors.background.subtle, borderColor: colors.border.primary }]}>
+            <RNActivityIndicator
+              color={colors.text.tertiary}
+              size="small"
+              style={{ marginRight: 8 }}
+            />
+            <RNText style={{ color: colors.text.tertiary }}>Loading tags...</RNText>
+          </RNView>
+        ) : (
+          (tags || []).map((tag) => {
+            const isSelected = selectedTags.includes(tag.id);
+            return (
+              <RNTouchableOpacity
+                key={tag.id}
+                onPress={() =>
+                  { setSelectedTags(isSelected
+                    ? selectedTags.filter(t => t !== tag.id)
+                    : [...selectedTags, tag.id]); }
+                }
+                style={[
+                  styles.chip,
+                  isDark && { backgroundColor: '#23242a', borderColor: '#333' },
+                  isSelected && {
+                    backgroundColor: isDark ? '#6b7280' : '#000000',
+                    borderColor: isDark ? '#6b7280' : '#000000',
+                    elevation: 2,
+                    shadowColor: colors.accent.primary,
+                    shadowOpacity: 0.18,
+                    shadowRadius: 4,
+                  },
+                ]}
+              >
+                <RNText style={{ color: isSelected ? '#fff' : colors.text.primary, fontWeight: isSelected ? 'bold' : 'normal' }}>#{tag.name}</RNText>
+              </RNTouchableOpacity>
+            );
+          })
+        )}
       </RNView>
 
       {/* Collection Modal */}
@@ -612,6 +645,7 @@ export function LinkForm({
         visible={tagModalVisible}
       />
     </RNScrollView>
+  </RNView>
   );
 }
 
@@ -639,6 +673,19 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   container: { gap: 12, padding: 24 },
+  fixedHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 3,
+    elevation: 3,
+  },
   createIconButton: {
     backgroundColor: '#007AFF', // fallback if accent.primary missing
   },
@@ -715,12 +762,6 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   urlContainer: { position: 'relative' },
-  headerContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
   headerButtons: {
     flexDirection: 'row',
     justifyContent: 'flex-end',

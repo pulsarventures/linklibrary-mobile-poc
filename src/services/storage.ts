@@ -3,9 +3,11 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 export type TokenData = {
   access_token: string;
   access_token_expires_in: number;
+  access_token_expires_at?: number; // New epoch timestamp from API
   is_revoked: boolean;
   refresh_token: string;
   refresh_token_expires_in: number;
+  refresh_token_expires_at?: number; // New epoch timestamp from API
   token_type: string;
 }
 
@@ -51,7 +53,7 @@ class StorageService {
 
     const expiry = Number.parseInt(expiryString, 10);
     const now = Date.now();
-    const bufferTime = 30 * 1000; // 30 seconds buffer - much more reasonable
+    const bufferTime = 60 * 1000; // 60 seconds buffer for better UX - only refresh when truly needed
     return now + bufferTime < expiry;
   }
 
@@ -68,10 +70,20 @@ class StorageService {
 
   async storeTokens(tokenData: TokenData): Promise<void> {
     const now = Date.now();
-    const accessTokenExpiry = now + tokenData.access_token_expires_in * 1000; // Convert to milliseconds
-    const refreshTokenExpiry = now + tokenData.refresh_token_expires_in * 1000;
+    
+    // Use provided epoch timestamps if available, otherwise calculate from expires_in
+    const accessTokenExpiry = tokenData.access_token_expires_at 
+      ? tokenData.access_token_expires_at * 1000 // Convert epoch seconds to milliseconds
+      : now + tokenData.access_token_expires_in * 1000;
+      
+    const refreshTokenExpiry = tokenData.refresh_token_expires_at 
+      ? tokenData.refresh_token_expires_at * 1000 // Convert epoch seconds to milliseconds  
+      : now + tokenData.refresh_token_expires_in * 1000;
 
-    console.log('🔑 Storage: Storing tokens');
+    console.log('🔑 Storage: Storing tokens with expiry times:', {
+      access_expires_at: new Date(accessTokenExpiry).toISOString(),
+      refresh_expires_at: new Date(refreshTokenExpiry).toISOString()
+    });
 
     // Store only essential data to reduce storage operations
     await Promise.all([

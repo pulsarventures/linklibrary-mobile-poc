@@ -149,9 +149,11 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       await storageService.storeTokens({
         access_token: response.access_token,
         access_token_expires_in: response.access_token_expires_in,
+        access_token_expires_at: response.access_token_expires_at, // New epoch timestamp
         is_revoked: response.is_revoked,
         refresh_token: response.refresh_token,
         refresh_token_expires_in: response.refresh_token_expires_in,
+        refresh_token_expires_at: response.refresh_token_expires_at, // New epoch timestamp
         token_type: response.token_type,
       });
       
@@ -236,9 +238,11 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       await storageService.storeTokens({
         access_token: response.access_token,
         access_token_expires_in: response.access_token_expires_in,
+        access_token_expires_at: response.access_token_expires_at, // New epoch timestamp
         is_revoked: response.is_revoked,
         refresh_token: response.refresh_token,
         refresh_token_expires_in: response.refresh_token_expires_in,
+        refresh_token_expires_at: response.refresh_token_expires_at, // New epoch timestamp
         token_type: response.token_type,
       });
       

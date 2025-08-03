@@ -9,8 +9,8 @@ import { ActivityIndicator, Alert, ScrollView, StyleSheet, TouchableOpacity, Vie
 import { useAuthStore } from '@/hooks/domain/user/useAuthStore';
 import { useTheme } from '@/theme';
 
-import { AssetByVariant } from '@/components/atoms';
 import { IconByVariant } from '@/components/atoms';
+import { Image } from 'react-native';
 import { SafeScreen } from '@/components/templates';
 import { Container, Input, Text } from '@/components/ui';
 
@@ -89,9 +89,11 @@ export function SignUp() {
       await storageService.storeTokens({
         access_token: authResult.access_token,
         access_token_expires_in: authResult.access_token_expires_in,
+        access_token_expires_at: authResult.access_token_expires_at, // New epoch timestamp
         is_revoked: authResult.is_revoked,
         refresh_token: authResult.refresh_token,
         refresh_token_expires_in: authResult.refresh_token_expires_in,
+        refresh_token_expires_at: authResult.refresh_token_expires_at, // New epoch timestamp
         token_type: authResult.token_type,
       });
       console.log('🔵 Tokens stored successfully');
@@ -161,9 +163,11 @@ export function SignUp() {
         <View style={styles.content}>
           {/* Logo */}
           <View style={styles.logoContainer}>
-            <View style={[styles.logoWrapper, { backgroundColor: colors.accent.primary }]}>
-              <AssetByVariant path="tom" resizeMode="contain" style={styles.logo} />
-            </View>
+                          <Image 
+                source={require('@/theme/assets/images/app.png')} 
+                resizeMode="cover" 
+                style={[styles.logo, { overflow: 'hidden', borderRadius: 8 }]} 
+              />
           </View>
 
           {/* Title */}
