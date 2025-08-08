@@ -114,6 +114,30 @@ export const ApiDebugUtils = {
     }
   },
 
+  async testSharedUrlStore(): Promise<void> {
+    try {
+      console.log('🔍 Testing shared URL store...');
+      
+      // Import the store dynamically to avoid circular dependencies
+      const { useSharedUrlStore } = await import('@/hooks/domain/user/useSharedUrlStore');
+      
+      // Set a test URL
+      useSharedUrlStore.getState().setSharedUrl('https://test-share-url.com');
+      
+      console.log('🔍 Test URL set in store');
+      
+      Alert.alert(
+        'Share Store Test',
+        'Test URL set in shared URL store. Check if notification banner appears on Links screen.',
+        [{ text: 'OK' }]
+      );
+      
+    } catch (error) {
+      console.error('🔍 Error in share store test:', error);
+      Alert.alert('Error', `Failed to test share store: ${error}`);
+    }
+  },
+
   async testShareExtensionSave(): Promise<void> {
     Alert.alert('Simplified Sharing', 'Extension approach removed. Use URL scheme instead: linklibrary://share?url=https://example.com');
   },

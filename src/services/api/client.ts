@@ -84,7 +84,7 @@ class ApiClient {
     
     try {
       const response = await fetch(url, {
-        body: data ? JSON.stringify(data) : undefined,
+        body: data !== undefined && data !== null ? JSON.stringify(data) : undefined,
         headers,
         method: 'POST',
         signal: controller.signal,

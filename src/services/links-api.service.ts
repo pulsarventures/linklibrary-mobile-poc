@@ -2,10 +2,19 @@ import type { Link } from '@/types/link.types';
 import { apiClient } from './api/client';
 import { secureStorageService } from './secureStorage';
 
+interface MetadataResponse {
+  link: string;
+  desc: string;
+  summary: string;
+  thumbnail_url: string;
+  favicon_url: string;
+}
+
 export class LinksApiService {
   private static async makeRequest<T>(
     endpoint: string,
-    method: 'GET' | 'POST' | 'PUT' | 'DELETE'
+    method: 'GET' | 'POST' | 'PUT' | 'DELETE',
+    data?: any
   ): Promise<T> {
     try {
       switch (method) {
@@ -15,9 +24,14 @@ export class LinksApiService {
         case 'GET':
           return await apiClient.get<T>(endpoint);
         case 'POST':
-          return await apiClient.post<T>(endpoint);
+          // Only pass data if it's explicitly provided
+          if (data !== undefined) {
+            return await apiClient.post<T>(endpoint, data);
+          } else {
+            return await apiClient.post<T>(endpoint);
+          }
         case 'PUT':
-          return await apiClient.put<T>(endpoint, {});
+          return await apiClient.put<T>(endpoint, data || {});
         default:
           throw new Error(`Unsupported method: ${method}`);
       }
@@ -52,6 +66,22 @@ export class LinksApiService {
       tag_ids: data.tag_ids || [],
       is_favorite: data.is_favorite,
     });
+  }
+
+  // Extract metadata from URL using backend API
+  static async extractMetadata(url: string): Promise<MetadataResponse> {
+    try {
+      const response = await this.makeRequest<MetadataResponse>(
+        `/links/metadata`,
+        'POST',
+        { url }  // Send URL in the request body as JSON
+      );
+      console.log('🔐 Metadata extraction response:', response);
+      return response;
+    } catch (error: any) {
+      console.error('🔐 Metadata extraction error:', error);
+      throw error;
+    }
   }
 }
 

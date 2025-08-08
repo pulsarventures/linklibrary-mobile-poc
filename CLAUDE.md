@@ -3,13 +3,14 @@
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
 ## Project Overview
-A React Native mobile application for managing links and collections, built with TypeScript and modern state management.
+React Native mobile application for managing links and collections with modern state management, authentication, and iOS Share Extension for saving URLs from other apps.
 
 ## Development Commands
 ```bash
 # Development
 npm start                 # Start Metro bundler
-npm run ios              # Run on iOS simulator
+npm run ios              # Run on iOS simulator (includes build service cleanup)
+npm run ios:clean        # Run iOS with cache reset
 npm run android          # Run on Android emulator
 
 # Code Quality
@@ -25,99 +26,174 @@ npm run test:report      # Run tests with coverage report
 
 # iOS Specific
 npm run pod-install      # Install iOS CocoaPods dependencies
+npm run clean:build      # Clean Xcode build service (fixes PIF transfer errors)
+
+# Troubleshooting iOS Builds
+./scripts/clean-build-service.sh  # Clean Xcode build service manually
 ```
 
 ## Architecture Overview
 
-### Core Structure
-- **React Native 0.80.1** with TypeScript and React 19.1.0
-- **React Navigation** for routing (Stack + Tab navigators)
-- **Zustand** for state management
-- **TanStack Query** for server state and API caching
+### Core Stack
+- **React Native 0.78.2** with TypeScript and React 19.0.0
+- **React Navigation 7.x** (Stack + Tab navigators)
+- **Zustand 5.x** for state management with persistence
+- **TanStack Query 5.x** for server state and API caching
 - **React Hook Form** with Zod validation
 - **Keychain/MMKV** for secure storage
+- **iOS Share Extension** for receiving URLs from other apps
 
-### Key Directories
-- `src/screens/` - Main app screens (Login, Links, Collections, Tags, Add)
-- `src/navigation/` - Navigation configuration and types
-- `src/hooks/domain/` - Business logic hooks organized by domain
-- `src/services/` - API clients and external service integrations
-- `src/components/` - Reusable UI components (atoms/molecules/organisms)
-- `src/theme/` - Theming system and design tokens
-- `src/share/` - iOS Share Extension integration
+### Project Structure
+```
+src/
+├── screens/          # Main app screens (Login, Links, Collections, Tags, Add)
+├── navigation/       # Navigation configuration with TypeScript types
+├── hooks/domain/     # Business logic hooks organized by domain
+│   ├── user/        # Auth store, auth interceptor, user management
+│   ├── links/       # Links CRUD operations store
+│   ├── collections/ # Collections management store
+│   └── tags/        # Tags management store
+├── services/        # API clients and external services
+│   ├── api/client.ts        # Singleton API client with interceptors
+│   ├── auth-api.service.ts  # Auth endpoints
+│   ├── links-api.service.ts # Links CRUD endpoints
+│   └── storage.ts           # Secure storage abstraction
+├── components/      # Atomic design components
+│   ├── atoms/      # Basic UI elements
+│   ├── molecules/  # Compound components
+│   └── organisms/  # Complex components
+└── theme/          # Theming system and design tokens
+```
 
-### State Management Pattern
-The app uses domain-specific Zustand stores:
-- `useAuthStore` - Authentication state and user management
-- `useLinksStore` - Links CRUD operations and state
-- `useCollectionsStore` - Collections management
-- `useTagsStore` - Tags management
+### State Management Architecture
+Domain-specific Zustand stores with consistent patterns:
+- **useAuthStore** - Authentication state, user management, token handling
+- **useLinksStore** - Links CRUD with optimistic updates
+- **useCollectionsStore** - Collections with persistence
+- **useTagsStore** - Tags management
 
-All stores follow the same pattern with actions like `fetch*`, `create*`, `update*`, `delete*` and maintain loading/error states.
+Store pattern:
+```typescript
+{
+  // State
+  items: Item[]
+  isLoading: boolean
+  error: string | null
+  
+  // Actions
+  fetchItems: () => Promise<void>
+  createItem: (data) => Promise<Item>
+  updateItem: (id, data) => Promise<Item>
+  deleteItem: (id) => Promise<void>
+  
+  // Utilities
+  clearError: () => void
+  resetStore: () => void
+}
+```
 
-### Authentication Flow
-1. App initializes with `useAuth` hook checking stored credentials
-2. Uses React Navigation conditional rendering based on auth state
-3. Supports Google OAuth and traditional email/password
-4. Implements automatic token refresh with interceptors
-5. Secure storage via Keychain (iOS) and encrypted preferences
+### Authentication & Security
+- Google OAuth + email/password authentication
+- Automatic token refresh with request queue management
+- Secure token storage via Keychain (iOS) and encrypted preferences (Android)
+- Auth interceptor pattern in `src/services/api/client.ts`
+- Session persistence across app restarts
 
 ### API Integration
-- Base API client in `src/services/api/client.ts` using axios
-- Domain-specific API services (auth, links, collections, tags)
-- TanStack Query for caching, background sync, and optimistic updates
-- Automatic retry logic and error handling
+- Singleton API client with automatic retry and error handling
+- Domain-specific service classes (AuthApiService, LinksApiService, etc.)
+- TanStack Query for caching, background refetch, and optimistic updates
+- Request/response interceptors for token management
+- Consistent error handling patterns
 
 ### iOS Share Extension
-- Native iOS Share Extension for receiving shared URLs
-- Bridge between native Swift code and React Native
-- Handles sharing intent when app is closed/backgrounded
-- Queues shared URLs until navigation is ready
+Critical feature for receiving shared URLs from other apps:
+- **App Groups**: `group.com.pulsarventures.linklibraryai`
+- **Native Module**: `AppGroupsModule` bridges Swift and React Native
+- **Share flow**: Other app → Share Extension → App Groups storage → Main app
+- **Navigation**: Automatically routes to Add screen with shared URL
 
-## Development Guidelines
+### Navigation Structure
+```
+RootStackParamList
+├── Landing
+├── Login/SignUp
+└── Main (TabNavigator)
+    ├── Links
+    ├── Collections
+    ├── Tags
+    ├── Settings
+    └── Add (hidden from tabs, used for sharing)
+```
 
-### File Organization
-- Use absolute imports with `@/` prefix (configured in babel.config.js)
-- Follow atomic design pattern for components
-- Group related files in domain folders under `hooks/domain/`
-- Keep API types separate from component types
+## Critical Files - DO NOT MODIFY
+These files are essential for app functionality:
+- `ios/ShareExtension/ShareViewController.swift` - Share Extension logic
+- `ios/AppGroupsModule.swift` & `.m` - Native module for App Groups
+- `ios/linklibrary_mobile/linklibrary_mobile.entitlements` - App Groups capability
+- `src/App.tsx` - Share handling and navigation logic
+- React Native version in `package.json` (0.78.2)
+
+## Development Best Practices
+
+### TypeScript
+- Strict mode enabled
+- Use interfaces for object shapes, types for unions
+- Proper typing for all function parameters and returns
+- Generic types for reusable API functions
+
+### Component Development
+- Functional components with hooks only
+- Atomic design pattern (atoms → molecules → organisms)
+- StyleSheet.create for performance
+- React.memo for expensive components
+- Proper loading and error states
 
 ### State Management
-- Use Zustand stores for domain state, never local component state for business logic  
-- TanStack Query for all server state - don't duplicate in Zustand
-- Follow existing store patterns for consistency
-- Use TypeScript interfaces for all store state and actions
+- Zustand for client state only
+- TanStack Query for all server state
+- Never duplicate server state in Zustand
+- Use persist middleware for data that should survive restarts
 
-### Navigation
-- Use typed navigation with proper TypeScript definitions
-- Screen params defined in `navigation/types.ts`
-- Use `navigationRef` for programmatic navigation from outside components
+### Error Handling
+- Try/catch blocks for all async operations
+- Meaningful error messages for users
+- Context logging for debugging
+- Network failure retry logic
 
-### Testing
-- Jest configuration with React Native Testing Library
-- Test utilities in `tests/` directory
-- Mock implementations for native modules
-- Run `npm run test:report` for coverage analysis
+### Performance Optimization
+- FlatList optimization for large lists
+- TanStack Query caching strategies
+- Background data loading with `useBackgroundDataLoader`
+- Avoid unnecessary re-renders
 
-### Code Quality
-- ESLint with React Native and TypeScript rules
-- Prettier for consistent formatting
-- TypeScript strict mode enabled
-- Run all quality checks before committing: `npm run lint`
+## Troubleshooting
 
-## 🚨 CRITICAL: iOS Share Extension - DO NOT TOUCH
-The iOS Share Extension is THE HEART OF THE APP and is fully functional. 
+### iOS Build Issues
+If you encounter "RCTAppDependencyProvider.h not found" or PIF transfer errors:
+```bash
+# Clean everything
+rm -rf node_modules package-lock.json
+npm install --legacy-peer-deps
+cd ios && pod deintegrate && pod install
+npm run clean:build
+```
 
-**📖 REQUIRED READING:**
-- `SHARE_EXTENSION_DO_NOT_TOUCH.md` - Critical share extension documentation
-- `IOS_ANDROID_SETUP_PROTECTION.md` - Complete setup protection guide
-- `TROUBLESHOOTING.md` - Issue resolution steps
+### Share Extension Not Working
+1. Verify App Groups entitlement is enabled in main app
+2. Check App Groups ID matches: `group.com.pulsarventures.linklibraryai`
+3. Test with `AppGroupsModule.testSaveSharedContent()`
+4. Verify navigation to Add screen with shared URL
 
-**NEVER modify these files/features:**
-- `ios/ShareExtension/ShareViewController.swift`
-- `ios/AppGroupsModule.swift` and `ios/AppGroupsModule.m`
-- App Groups capability: `group.com.pulsarventures.linklibraryai`
-- Share handling logic in `src/App.tsx`
-- Navigation logic for shared URLs
-- React Native version (0.78.2)
-- iOS/Android target versions
+### Authentication Issues
+- Check token storage in Keychain (iOS)
+- Verify API_BASE_URL in config
+- Test token refresh logic
+- Check network interceptors
+
+## Important Notes
+- Always use `--legacy-peer-deps` with npm install (TypeScript ESLint peer dependency conflicts)
+- Run `npm run lint` before committing
+- Test on both iOS and Android before pushing
+- Share Extension is iOS-only feature
+- Keep React Native at 0.78.2 (newer versions may break Share Extension)

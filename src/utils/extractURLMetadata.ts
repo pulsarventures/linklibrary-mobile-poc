@@ -77,7 +77,10 @@ class MetadataExtractor {
 
   private static async getFavicon(url: string): Promise<string> {
     try {
-      const domain = new URL(url).hostname;
+      // React Native's URL doesn't have hostname property, extract it manually
+      const urlMatch = url.match(/^https?:\/\/([^\/]+)/);
+      const domain = urlMatch ? urlMatch[1] : 'unknown';
+      
       // Use Google's favicon service - it always returns a default icon if none found
       const googleFaviconUrl = `https://www.google.com/s2/favicons?domain=${domain}&sz=32`;
       return googleFaviconUrl;
@@ -184,10 +187,13 @@ class MetadataExtractor {
         undefined;
 
       // Extract site name
+      const urlMatch = url.match(/^https?:\/\/([^\/]+)/);
+      const hostname = urlMatch ? urlMatch[1] : 'unknown';
+      
       const siteName =
         getMetaContent(/<meta\s+property=["']og:site_name["']\s+content=["']([^"']+)["']/i) ||
         getMetaContent(/<meta\s+content=["']([^"']+)["']\s+property=["']og:site_name["']/i) ||
-        new URL(url).hostname.replace("www.", "") ||
+        hostname.replace("www.", "") ||
         undefined;
 
       // Clean up title and description
@@ -244,8 +250,10 @@ class MetadataExtractor {
   // Generate fallback only when extraction completely fails
   private static generateFallback(url: string): URLMetadata {
     try {
-      const urlObj = new URL(url);
-      const domain = urlObj.hostname.replace('www.', '');
+      // React Native's URL doesn't have hostname property, extract it manually
+      const urlMatch = url.match(/^https?:\/\/([^\/]+)/);
+      const hostname = urlMatch ? urlMatch[1] : 'unknown';
+      const domain = hostname.replace('www.', '');
 
       // Smart fallbacks for known domains
       const domainDescriptions: Record<string, string> = {

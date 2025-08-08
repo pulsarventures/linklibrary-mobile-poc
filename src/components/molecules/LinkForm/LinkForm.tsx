@@ -24,7 +24,7 @@ import { CollectionFormModal } from '@/components/molecules/CollectionFormModal'
 import { useTagsStore } from '@/hooks/domain/tags/useTagsStore';
 import { useCollectionsStore } from '@/hooks/domain/collections/useCollectionsStore';
 import { useBackgroundDataLoader } from '@/hooks/useBackgroundDataLoader';
-import { extractURLMetadata } from '@/utils/extractURLMetadata';
+import { LinksApiService } from '@/services/links-api.service';
 
 interface LinkFormProps {
   initialData?: Partial<Link>;
@@ -188,12 +188,14 @@ export function LinkForm({
 
     setIsExtractingMetadata(true);
     try {
-      const metadata = await extractURLMetadata(processedUrl);
-      console.log('Extracted metadata:', metadata);
+      // Use API metadata extraction
+      const metadata = await LinksApiService.extractMetadata(processedUrl);
+      console.log('Extracted metadata from API:', metadata);
 
-      // Update title and summary if they're empty, but preserve the URL
-      setTitle(previous => previous.trim() || metadata.title || "");
-      setSummary(previous => previous.trim() || metadata.description || "");
+      // Update title and summary if they're empty
+      // API returns 'desc' for title and 'summary' for description
+      setTitle(previous => previous.trim() || metadata.desc || "");
+      setSummary(previous => previous.trim() || metadata.summary || "");
 
       // Ensure URL is preserved after metadata extraction
       if (url !== processedUrl) {
@@ -201,12 +203,27 @@ export function LinkForm({
       }
 
       // Show alert if metadata extraction failed
-      if (!metadata.title && !metadata.description) {
+      if (!metadata.desc && !metadata.summary) {
         RNAlert.alert("Metadata Extraction", "Could not extract metadata from the website");
       }
     } catch (error) {
-      console.error("Failed to extract metadata:", error);
-      RNAlert.alert("Metadata Extraction", "Failed to extract metadata");
+      console.error("Failed to extract metadata from API:", error);
+      // Fall back to local extraction if API fails
+      try {
+        const { extractURLMetadata } = await import('@/utils/extractURLMetadata');
+        const localMetadata = await extractURLMetadata(processedUrl);
+        console.log('Falling back to local metadata extraction:', localMetadata);
+        
+        setTitle(previous => previous.trim() || localMetadata.title || "");
+        setSummary(previous => previous.trim() || localMetadata.description || "");
+        
+        if (!localMetadata.title && !localMetadata.description) {
+          RNAlert.alert("Metadata Extraction", "Could not extract metadata from the website");
+        }
+      } catch (fallbackError) {
+        console.error("Local metadata extraction also failed:", fallbackError);
+        RNAlert.alert("Metadata Extraction", "Failed to extract metadata");
+      }
     } finally {
       setIsExtractingMetadata(false);
     }

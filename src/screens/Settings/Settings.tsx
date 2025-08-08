@@ -4,6 +4,7 @@ import { Alert, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useAuthStore } from '@/hooks/domain/user/useAuthStore';
 import { useTheme } from '@/theme';
 import { IconByVariant } from '@/components/atoms';
+import { ApiDebugUtils } from '@/utils/apiDebug';
 
 import { SafeScreen } from '@/components/templates';
 
@@ -65,6 +66,16 @@ export default function Settings() {
             ]} />
           </TouchableOpacity>
         </View>
+
+        {/* Debug Test Button */}
+        <TouchableOpacity
+          onPress={() => ApiDebugUtils.testSharedUrlStore()}
+          style={[styles.button, { backgroundColor: colors.accent.primary }]}
+        >
+          <Text style={[styles.buttonText, { color: '#ffffff' }]}>
+            Test Share Functionality
+          </Text>
+        </TouchableOpacity>
 
         <TouchableOpacity
           onPress={handleLogout}

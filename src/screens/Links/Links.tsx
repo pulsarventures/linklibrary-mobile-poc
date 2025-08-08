@@ -4,7 +4,7 @@ import type { RouteProp } from '@react-navigation/native';
 
 import { useNavigation, useRoute, useFocusEffect } from '@react-navigation/native';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { ActivityIndicator, Alert, FlatList, Linking, RefreshControl, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Alert, FlatList, RefreshControl, StyleSheet, TouchableOpacity, View } from 'react-native';
 import Modal from 'react-native-modal';
 import Toast from 'react-native-toast-message';
 
@@ -12,6 +12,7 @@ import { useDeleteLink, useInfiniteLinks, useToggleFavorite } from '@/hooks/api/
 import { useCollectionsStore } from '@/hooks/domain/collections/useCollectionsStore';
 import { useTagsStore } from '@/hooks/domain/tags/useTagsStore';
 import { useAuthStore } from '@/hooks/domain/user/useAuthStore';
+import { useSharedUrlStore } from '@/hooks/domain/user/useSharedUrlStore';
 import { useBackgroundDataLoader } from '@/hooks/useBackgroundDataLoader';
 import { useTheme } from '@/theme';
 import { SPACING } from '@/theme/styles/spacing';
@@ -24,6 +25,7 @@ import { SafeScreen } from '@/components/templates';
 import { Button, Text } from '@/components/ui';
 
 import { LinksApiService } from '@/services/links-api.service';
+import { openLink } from '@/utils/linkOpener';
 
 export default function Links() {
   const { colors, isDark } = useTheme();
@@ -32,6 +34,7 @@ export default function Links() {
   const { collections } = useCollectionsStore();
   const { tags, isLoading: isLoadingTags } = useTagsStore();
   const { isAuthenticated } = useAuthStore();
+  const { sharedUrl } = useSharedUrlStore();
   const [refreshing, setRefreshing] = React.useState(false);
   const [editingLink, setEditingLink] = useState<Link | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
@@ -115,31 +118,7 @@ export default function Links() {
   };
 
   const handleLinkPress = async (link: Link) => {
-    try {
-      const url = link.url;
-      
-      // Check if the URL can be opened
-      const canOpen = await Linking.canOpenURL(url);
-      
-      if (canOpen) {
-        // Try to open the URL in the native app first, then fallback to browser
-        await Linking.openURL(url);
-      } else {
-        // If URL can't be opened, show an error
-        Alert.alert(
-          'Unable to open link',
-          'This link cannot be opened on your device.',
-          [{ text: 'OK' }]
-        );
-      }
-    } catch (error) {
-      console.error('Error opening link:', error);
-      Alert.alert(
-        'Error',
-        'An error occurred while trying to open the link.',
-        [{ text: 'OK' }]
-      );
-    }
+    await openLink(link.url);
   };
 
   const handleCreateLink = () => {
@@ -295,6 +274,28 @@ export default function Links() {
   return (
     <SafeScreen>
       <View style={styles.container}>
+        {/* Shared URL Notification */}
+        {sharedUrl && (
+          <TouchableOpacity
+            onPress={handleCreateLink}
+            style={[styles.sharedUrlBanner, { backgroundColor: colors.accent.primary }]}
+          >
+            <IconByVariant
+              color="#ffffff"
+              name="link"
+              size={16}
+            />
+            <Text style={[styles.sharedUrlText, { color: '#ffffff' }]}>
+              Tap to add shared link
+            </Text>
+            <IconByVariant
+              color="#ffffff"
+              name="external"
+              size={16}
+            />
+          </TouchableOpacity>
+        )}
+        
         {/* Filter Header - show when filtered by collection or tag */}
         {(collectionId && collectionName) || (tagId && tagName) ? (
           <View style={[styles.filterHeader, { backgroundColor: colors.background.secondary, borderBottomColor: colors.border.primary }]}>
@@ -494,6 +495,23 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
     width: 52,
+  },
+  sharedUrlBanner: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginHorizontal: SPACING.lg,
+    marginTop: SPACING.md,
+    paddingHorizontal: SPACING.lg,
+    paddingVertical: SPACING.md,
+    borderRadius: 8,
+  },
+  sharedUrlText: {
+    flex: 1,
+    fontSize: 14,
+    fontWeight: '600',
+    marginHorizontal: SPACING.sm,
+    textAlign: 'center',
   },
   title: {
     marginBottom: SPACING.md,

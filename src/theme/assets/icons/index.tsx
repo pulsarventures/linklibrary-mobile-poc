@@ -7,6 +7,7 @@ import { Circle, Path, Polyline, Rect, Svg } from 'react-native-svg';
 export type IconName =
   | 'add'
   | 'apple'
+  | 'bell'
   | 'check'
   | 'close'
   | 'collection'
@@ -64,6 +65,35 @@ export const icons: Record<IconName, React.FC<SvgProps>> = {
       d="M17.05 12.3c-.03-2.05 1.63-3.1 1.7-3.15-.93-1.4-2.38-1.59-2.9-1.6-1.23-.13-2.4.74-3.03.74-.62 0-1.58-.72-2.6-.7-1.34.02-2.57.8-3.26 2.03-1.4 2.49-.36 6.19 1 8.21.67.98 1.47 2.1 2.5 2.05 1.01-.04 1.4-.66 2.62-.66 1.22 0 1.57.66 2.63.64 1.09-.02 1.77-.99 2.44-1.98.77-1.13 1.08-2.23 1.1-2.29-.02-.01-2.11-.83-2.13-3.28zM15.22 6.17c.56-.7.93-1.66.83-2.62-.8.04-1.77.55-2.34 1.23-.51.61-.96 1.58-.84 2.51.89.07 1.8-.45 2.35-1.12z"
       fill={color}
     />
+  )),
+
+  bell: createIcon((color) => (
+    <>
+      <Path
+        d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"
+        fill="none"
+        stroke={color}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+      />
+      <Path
+        d="M10.29 3.86A1.5 1.5 0 0 1 12 2c.83 0 1.5.67 1.5 1.5 0 1.5-.5 2-1.5 2s-1.5-.5-1.5-1.64z"
+        fill="none"
+        stroke={color}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+      />
+      <Path
+        d="M15 17a3 3 0 1 1-6 0"
+        fill="none"
+        stroke={color}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+      />
+    </>
   )),
 
   check: createIcon((color) => (

@@ -16,11 +16,15 @@ import { LinkForm } from '@/components/molecules/LinkForm';
 type AddLinkScreenRouteProperty = RouteProp<RootTabParamList, 'Add'>;
 
 export default function AddLinkScreen() {
+  console.log('🔴🔴🔴 AddLinkScreen RENDERED');
   const route = useRoute<AddLinkScreenRouteProperty>();
   const navigation = useNavigation();
   const createLinkMutation = useCreateLink();
   const { collections } = useCollectionsStore();
   const { tags } = useTagsStore();
+  
+  console.log('🔴🔴🔴 AddLinkScreen route params:', route.params);
+  console.log('🔴🔴🔴 Shared URL from params:', route.params?.sharedUrl);
   
   // Use background data loader to ensure data is loading but don't block UI
   useBackgroundDataLoader();
@@ -35,8 +39,6 @@ export default function AddLinkScreen() {
       
       // Check if this is a new shared URL (different from current one)
       const isNewShare = route.params.sharedUrl !== currentSharedUrl;
-      
-      // Remove toast messages for shared content
       
       // Update current shared URL
       setCurrentSharedUrl(route.params.sharedUrl);

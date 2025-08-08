@@ -84,38 +84,49 @@ function App() {
 
   // Share handling functions - these don't need QueryClient
   const handleSharedUrl = (url: string) => {
+    console.log('🔴🔴🔴 handleSharedUrl called with:', url);
+    
     // Validate URL first
     if (!url?.startsWith('http')) {
+      console.log('🔴🔴🔴 Invalid URL, not http/https');
       return;
     }
     
     // Check if user is authenticated
     const { initialized, isAuthenticated } = useAuthStore.getState();
+    console.log('🔴🔴🔴 Auth state:', { initialized, isAuthenticated });
     
     if (!initialized) {
       // Store the URL to process later when auth is initialized
+      console.log('🔴🔴🔴 Auth not initialized, storing URL for later');
       pendingSharedUrl.current = url;
       return;
     }
     
     if (!isAuthenticated) {
       // Store the URL to process after user logs in
+      console.log('🔴🔴🔴 User not authenticated, storing URL for later');
       pendingSharedUrl.current = url;
       return;
     }
     
     // Navigate to Add screen with shared URL
+    console.log('🔴🔴🔴 All checks passed, navigating to Add screen');
     navigateToAddScreen(url);
   };
 
   // Check for shared content from iOS share extension
   const checkForSharedContent = async () => {
+    console.log('🔴🔴🔴 checkForSharedContent called');
     try {
       if (!AppGroupsModule) {
+        console.log('🔴🔴🔴 NO AppGroupsModule - iOS share extension not available');
         return;
       }
 
+      console.log('🔴🔴🔴 Calling AppGroupsModule.getSharedContent()');
       const sharedData = await AppGroupsModule.getSharedContent();
+      console.log('🔴🔴🔴 Shared data received:', JSON.stringify(sharedData));
       
       if (sharedData) {
         let url = '';
@@ -130,25 +141,46 @@ function App() {
         }
         
         if (url) {
+          console.log('🔴🔴🔴 Found URL to share:', url);
           handleSharedUrl(url);
+          // Clear the shared data after processing
+          AppGroupsModule.clearSharedContent?.().catch((err: any) => 
+            console.log('🔴🔴🔴 Error clearing shared content:', err)
+          );
+        } else {
+          console.log('🔴🔴🔴 No URL found in shared data');
         }
+      } else {
+        console.log('🔴🔴🔴 No shared data available');
       }
     } catch (error) {
-      console.error('📤 Error checking for shared content:', error);
+      console.error('🔴🔴🔴 Error checking for shared content:', error);
     }
   };
 
   const navigateToAddScreen = (url: string) => {
+    console.log('🔴🔴🔴 navigateToAddScreen called with URL:', url);
+    console.log('🔴🔴🔴 Navigation ready?', navigationRef.isReady());
+    
     if (navigationRef.isReady()) {
       try {
+        console.log('🔴🔴🔴 Executing navigation to Main > Add');
         navigationRef.navigate('Main', {
           screen: 'Add',
           params: { sharedUrl: url }
         });
+        console.log('🔴🔴🔴 Navigation command completed');
       } catch (error) {
-        console.error('📤 Error navigating to Add screen:', error);
+        console.error('🔴🔴🔴 Error navigating to Add screen:', error);
+        // Fallback: try direct navigation to Add
+        try {
+          (navigationRef as any).navigate('Add', { sharedUrl: url });
+        } catch (fallbackError) {
+          console.error('🔴🔴🔴 Fallback navigation also failed:', fallbackError);
+        }
       }
     } else {
+      console.log('🔴🔴🔴 Navigation not ready, setting up listener');
       // If navigation isn't ready, wait for it
       const unsubscribe = navigationRef.addListener('state', () => {
         try {
@@ -159,6 +191,12 @@ function App() {
           unsubscribe();
         } catch (error) {
           console.error('📤 Error in delayed navigation:', error);
+          // Fallback
+          try {
+            (navigationRef as any).navigate('Add', { sharedUrl: url });
+          } catch (fallbackError) {
+            console.error('📤 Fallback navigation also failed:', fallbackError);
+          }
         }
       });
     }
@@ -183,15 +221,32 @@ function App() {
   useEffect(() => {
     const handleAppStateChange = (nextAppState: string) => {
       if (nextAppState === 'active') {
+        console.log('🔴🔴🔴 App became active, checking for shared content');
         // Check for shared content when app becomes active
-        setTimeout(() => {
-          checkForSharedContent();
-        }, 300);
+        // Try multiple times in case share extension is still saving
+        setTimeout(() => checkForSharedContent(), 100);
+        setTimeout(() => checkForSharedContent(), 500);
+        setTimeout(() => checkForSharedContent(), 1000);
       }
     };
 
-    // Delay shared content check to not block initial render
-    setTimeout(checkForSharedContent, 1000);
+    // Check for shared content on mount with multiple attempts
+    console.log('🔴🔴🔴 App mounted, starting share content checks');
+    setTimeout(() => checkForSharedContent(), 500);
+    setTimeout(() => checkForSharedContent(), 1000);
+    setTimeout(() => checkForSharedContent(), 2000);
+    
+    // TEST: Save test data and then read it
+    setTimeout(async () => {
+      console.log('🔴🔴🔴 TEST: Saving test data to App Group');
+      try {
+        await AppGroupsModule.testSaveSharedContent();
+        console.log('🔴🔴🔴 TEST: Test data saved, now reading it');
+        setTimeout(() => checkForSharedContent(), 100);
+      } catch (error) {
+        console.error('🔴🔴🔴 TEST: Failed to save test data:', error);
+      }
+    }, 3000);
 
     const appStateSubscription = AppState.addEventListener('change', handleAppStateChange);
     return () => appStateSubscription?.remove();

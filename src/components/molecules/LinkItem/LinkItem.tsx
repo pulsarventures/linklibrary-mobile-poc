@@ -1,7 +1,7 @@
 import type { Link } from '../../../types/link.types';
 
 import React, { useState } from 'react';
-import { Alert, Linking, StyleSheet, View, TouchableOpacity, Animated, Clipboard } from 'react-native';
+import { Alert, StyleSheet, View, TouchableOpacity, Animated, Clipboard } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import { Copy, Check } from 'lucide-react-native';
 
@@ -14,6 +14,7 @@ import { SPACING } from '@/theme/styles/spacing';
 import { IconByVariant } from '@/components/atoms';
 import { LinkThumbnail } from '@/components/molecules';
 import { Text } from '@/components/ui';
+import { openLink } from '@/utils/linkOpener';
 
 type LinkItemProps = {
   readonly link: Link;
@@ -105,31 +106,7 @@ export function LinkItem({ link, onAction, onPress }: LinkItemProps) {
   };
 
   const handleOpenLink = async () => {
-    try {
-      const url = link.url;
-      
-      // Check if the URL can be opened
-      const canOpen = await Linking.canOpenURL(url);
-      
-      if (canOpen) {
-        // Try to open the URL in the native app first, then fallback to browser
-        await Linking.openURL(url);
-      } else {
-        // If URL can't be opened, show an error
-        Alert.alert(
-          'Unable to open link',
-          'This link cannot be opened on your device.',
-          [{ text: 'OK' }]
-        );
-      }
-    } catch (error) {
-      console.error('Error opening link:', error);
-      Alert.alert(
-        'Error',
-        'An error occurred while trying to open the link.',
-        [{ text: 'OK' }]
-      );
-    }
+    await openLink(link.url);
   };
 
   const handleDelete = async () => {
