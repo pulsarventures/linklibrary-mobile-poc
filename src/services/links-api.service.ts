@@ -1,39 +1,40 @@
 import type { Link } from '@/types/link.types';
-import { apiClient } from './api/client';
-import { secureStorageService } from './secureStorage';
 
-interface MetadataResponse {
+import { apiClient } from './api/client';
+
+type MetadataResponse = {
+  title: string;
+  favicon_url: string;
   link: string;
-  desc: string;
   summary: string;
   thumbnail_url: string;
-  favicon_url: string;
 }
 
 export class LinksApiService {
   private static async makeRequest<T>(
     endpoint: string,
-    method: 'GET' | 'POST' | 'PUT' | 'DELETE',
+    method: 'DELETE' | 'GET' | 'POST' | 'PUT',
     data?: any
   ): Promise<T> {
     try {
       switch (method) {
-        case 'DELETE':
+        case 'DELETE': {
           await apiClient.delete(endpoint);
           return {} as T;
-        case 'GET':
+        }
+        case 'GET': {
           return await apiClient.get<T>(endpoint);
-        case 'POST':
+        }
+        case 'POST': {
           // Only pass data if it's explicitly provided
-          if (data !== undefined) {
-            return await apiClient.post<T>(endpoint, data);
-          } else {
-            return await apiClient.post<T>(endpoint);
-          }
-        case 'PUT':
+          return await (data === undefined ? apiClient.post<T>(endpoint) : apiClient.post<T>(endpoint, data));
+        }
+        case 'PUT': {
           return await apiClient.put<T>(endpoint, data || {});
-        default:
+        }
+        default: {
           throw new Error(`Unsupported method: ${method}`);
+        }
       }
     } catch (error) {
       const printable = error instanceof Error ? error.message : JSON.stringify(error, null, 2);
@@ -56,15 +57,17 @@ export class LinksApiService {
 
   // Update a link
   static async updateLink(id: string, data: Partial<Link>): Promise<Link> {
-    console.log(`🔐 Updating link ${id} with data:`, data);
+    if (__DEV__) {
+      console.log(`🔐 Updating link ${id} with data:`, data);
+    }
     return apiClient.put<Link>(`/links/${id}`, {
-      url: data.url,
-      title: data.title,
-      summary: data.summary,
-      notes: data.notes,
       collection_id: data.collection_id,
-      tag_ids: data.tag_ids || [],
       is_favorite: data.is_favorite,
+      notes: data.notes,
+      summary: data.summary,
+      tag_ids: data.tag_ids || [],
+      title: data.title,
+      url: data.url,
     });
   }
 

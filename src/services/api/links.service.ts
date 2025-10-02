@@ -22,7 +22,7 @@ export const LinksApiService = {
     // Payload ready
     
     try {
-      const response = await apiClient.post<Link>('/links/', payload);
+      const response = await apiClient.post<Link>('/links', payload);
       // Link created successfully
       return response;
     } catch (error: any) {
@@ -62,7 +62,7 @@ export const LinksApiService = {
       limit: number;
       skip: number;
       total: number;
-    }>('/links/', parameters);
+    }>('/links', parameters);
     
     // Links retrieved
     
@@ -71,7 +71,9 @@ export const LinksApiService = {
 
   // Update an existing link
   async updateLink(id: string, data: Partial<Link>): Promise<Link> {
-    console.log(`🔐 LinksApiService: Updating link ${id} with data:`, data);
+    if (__DEV__) {
+      console.log(`🔐 LinksApiService: Updating link ${id} with data:`, data);
+    }
 
     const payload = {
       collection_id: data.collection_id,
@@ -83,14 +85,18 @@ export const LinksApiService = {
       url: data.url,
     };
 
-    console.log(`🔐 LinksApiService: Sending payload:`, payload);
+    if (__DEV__) {
+      console.log(`🔐 LinksApiService: Sending payload:`, payload);
+    }
 
     return apiClient.put<Link>(`/links/${id}`, payload);
   },
 
   // Delete a link
   async deleteLink(id: string): Promise<void> {
-    console.log(`🔐 Deleting link ${id}`);
+    if (__DEV__) {
+      console.log(`🔐 Deleting link ${id}`);
+    }
     return apiClient.delete(`/links/${id}`);
   },
 
@@ -114,19 +120,19 @@ export const LinksApiService = {
 
   // Get tags
   async getTags(): Promise<Tag[]> {
-    const response = await apiClient.get<{ items: Tag[] }>('/tags/');
+    const response = await apiClient.get<{ items: Tag[] }>('/tags');
     return response.items || [];
   },
 
   // Create a new tag
   async createTag(data: { color?: string; name: string; }): Promise<Tag> {
     console.log('🔐 Creating tag');
-    return apiClient.post<Tag>('/tags/', data);
+    return apiClient.post<Tag>('/tags', data);
   },
 
   // Get collections
   async getCollections(): Promise<Collection[]> {
-    const response = await apiClient.get<{ items: Collection[] }>('/collections/');
+    const response = await apiClient.get<{ items: Collection[] }>('/collections');
     return response.items || [];
   },
 
@@ -138,7 +144,7 @@ export const LinksApiService = {
     name: string;
   }): Promise<Collection> {
     console.log('🔐 Creating collection');
-    return apiClient.post<Collection>('/collections/', data);
+    return apiClient.post<Collection>('/collections', data);
   },
 
   // Advanced search for links

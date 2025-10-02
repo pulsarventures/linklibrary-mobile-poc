@@ -1,10 +1,10 @@
 import type { User } from '@/hooks/domain/user/schema';
 import type { ApiError, LoginRequest, RegisterRequest, SocialAuthRequest } from '@/services/api/types';
 
-import { useCallback, useEffect, useState } from 'react';
-
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { authApiService } from '@/services/auth-api.service';
 import { storageService } from '@/services/storage';
+import { useCallback, useEffect, useState } from 'react';
 
 import { useAuthStore } from './domain/user/useAuthStore';
 
@@ -46,15 +46,19 @@ export function useAuth() {
       setLoading(true);
       setError(null);
       
+      // CRITICAL: Clear logout flag before login - must happen BEFORE any API calls
+      await AsyncStorage.removeItem('@has_logged_out');
+      console.log('🔓 Cleared logout flag before login');
+      
       const response = await authApiService.login(data);
       await storageService.storeTokens({
         access_token: response.access_token,
-        access_token_expires_in: response.access_token_expires_in,
         access_token_expires_at: response.access_token_expires_at, // New epoch timestamp
+        access_token_expires_in: response.access_token_expires_in,
         is_revoked: response.is_revoked || false,
         refresh_token: response.refresh_token || '',
-        refresh_token_expires_in: response.refresh_token_expires_in,
         refresh_token_expires_at: response.refresh_token_expires_at, // New epoch timestamp
+        refresh_token_expires_in: response.refresh_token_expires_in,
         token_type: response.token_type,
       });
       
@@ -83,12 +87,12 @@ export function useAuth() {
       const response = await authApiService.register(data);
       await storageService.storeTokens({
         access_token: response.access_token,
-        access_token_expires_in: response.access_token_expires_in,
         access_token_expires_at: response.access_token_expires_at, // New epoch timestamp
+        access_token_expires_in: response.access_token_expires_in,
         is_revoked: response.is_revoked || false,
         refresh_token: response.refresh_token || '',
-        refresh_token_expires_in: response.refresh_token_expires_in,
         refresh_token_expires_at: response.refresh_token_expires_at, // New epoch timestamp
+        refresh_token_expires_in: response.refresh_token_expires_in,
         token_type: response.token_type,
       });
       
@@ -134,12 +138,12 @@ export function useAuth() {
       const response = await authApiService.googleSignIn(data.token);
       await storageService.storeTokens({
         access_token: response.access_token,
-        access_token_expires_in: response.access_token_expires_in,
         access_token_expires_at: response.access_token_expires_at, // New epoch timestamp
+        access_token_expires_in: response.access_token_expires_in,
         is_revoked: response.is_revoked || false,
         refresh_token: response.refresh_token || '',
-        refresh_token_expires_in: response.refresh_token_expires_in,
         refresh_token_expires_at: response.refresh_token_expires_at, // New epoch timestamp
+        refresh_token_expires_in: response.refresh_token_expires_in,
         token_type: response.token_type,
       });
       

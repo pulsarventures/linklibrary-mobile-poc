@@ -1,7 +1,6 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
-
 import { secureStorageService } from '@/services/secureStorage';
 import { storageService } from '@/services/storage';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export const AuthDebugUtils = {
   
@@ -40,26 +39,26 @@ export const AuthDebugUtils = {
       const tokens = await storageService.getTokens();
       console.log('🔍 AUTH DEBUG: Current storage service tokens:', {
         accessTokenExpiry: tokens?.access_token_expires_in,
-        accessTokenLength: tokens?.access_token?.length,
+        accessTokenLength: tokens?.access_token.length,
         hasAccessToken: !!tokens?.access_token,
         hasRefreshToken: !!tokens?.refresh_token,
         hasTokens: !!tokens,
         isRevoked: tokens?.is_revoked,
         refreshTokenExpiry: tokens?.refresh_token_expires_in,
-        refreshTokenLength: tokens?.refresh_token?.length
+        refreshTokenLength: tokens?.refresh_token.length
       });
       
       // Check secure storage
       const secureTokens = await secureStorageService.getTokens();
       console.log('🔍 AUTH DEBUG: Secure storage tokens:', {
         accessTokenExpiry: secureTokens?.access_token_expires_in,
-        accessTokenLength: secureTokens?.access_token?.length,
+        accessTokenLength: secureTokens?.access_token.length,
         hasAccessToken: !!secureTokens?.access_token,
         hasRefreshToken: !!secureTokens?.refresh_token,
         hasTokens: !!secureTokens,
         isRevoked: secureTokens?.is_revoked,
         refreshTokenExpiry: secureTokens?.refresh_token_expires_in,
-        refreshTokenLength: secureTokens?.refresh_token?.length
+        refreshTokenLength: secureTokens?.refresh_token.length
       });
       
       // Check AsyncStorage directly
@@ -119,7 +118,7 @@ export const AuthDebugUtils = {
         hasAccessToken: !!retrievedTokens?.access_token,
         hasRefreshToken: !!retrievedTokens?.refresh_token,
         match: retrievedTokens?.access_token === testTokenData.access_token &&
-               retrievedTokens?.refresh_token === testTokenData.refresh_token
+               retrievedTokens.refresh_token === testTokenData.refresh_token
       });
       
       // Clean up test tokens

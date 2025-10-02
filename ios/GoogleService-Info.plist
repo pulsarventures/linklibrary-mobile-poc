@@ -3,11 +3,11 @@
 <plist version="1.0">
 <dict>
 	<key>CLIENT_ID</key>
-	<string>991185990145-21ebjs10ct5gckdj5pshsd84i3pvpdpc.apps.googleusercontent.com</string>
+	<string>991185990145-70rnjqp744bkosp0e03nh97j4camu8mj.apps.googleusercontent.com</string>
 	<key>REVERSED_CLIENT_ID</key>
-	<string>com.googleusercontent.apps.991185990145-21ebjs10ct5gckdj5pshsd84i3pvpdpc</string>
+	<string>com.googleusercontent.apps.991185990145-70rnjqp744bkosp0e03nh97j4camu8mj</string>
 	<key>ANDROID_CLIENT_ID</key>
-	<string>991185990145-48kk7d473fu1fh1mmj8dl7d2v4s08f8i.apps.googleusercontent.com</string>
+	<string>991185990145-25qf5t6fq3bohit1tiv7fq2jon1egvso.apps.googleusercontent.com</string>
 	<key>API_KEY</key>
 	<string>AIzaSyC9n1_IX2jKK705z1mzbXoCld7xGitnr4U</string>
 	<key>GCM_SENDER_ID</key>
@@ -15,7 +15,7 @@
 	<key>PLIST_VERSION</key>
 	<string>1</string>
 	<key>BUNDLE_ID</key>
-	<string>com.pulsarventures.linklibraryai</string>
+	<string>com.pulsarventures.linklibrary.ai</string>
 	<key>PROJECT_ID</key>
 	<string>sample-firebase-ai-app-c245e</string>
 	<key>STORAGE_BUCKET</key>
@@ -31,6 +31,6 @@
 	<key>IS_SIGNIN_ENABLED</key>
 	<true/>
 	<key>GOOGLE_APP_ID</key>
-	<string>1:991185990145:ios:51afdf50c37eb1ffaa8600</string>
+	<string>1:991185990145:ios:2c80b58ecf058463aa8600</string>
 </dict>
-</plist> 
+</plist>

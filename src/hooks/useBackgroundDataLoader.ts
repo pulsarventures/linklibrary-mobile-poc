@@ -1,8 +1,8 @@
-import { useEffect } from 'react';
+import { TagsApiService } from '@/services/tags-api.service';
 import { useQueryClient } from '@tanstack/react-query';
+import { useEffect } from 'react';
 
 import { useCollectionsStore } from '@/hooks/domain/collections/useCollectionsStore';
-import { TagsApiService } from '@/services/tags-api.service';
 import { useAuthStore } from '@/hooks/domain/user/useAuthStore';
 
 /**
@@ -15,7 +15,7 @@ import { useAuthStore } from '@/hooks/domain/user/useAuthStore';
 export function useBackgroundDataLoader() {
   const queryClient = useQueryClient();
   const { fetchCollections } = useCollectionsStore();
-  const { isAuthenticated, initialized } = useAuthStore();
+  const { initialized, isAuthenticated } = useAuthStore();
 
   useEffect(() => {
     if (!isAuthenticated || !initialized) {
@@ -27,30 +27,39 @@ export function useBackgroundDataLoader() {
       preloadData();
     }, 500); // 500ms delay for smooth startup
 
-    return () => clearTimeout(timeoutId);
+    return () => { clearTimeout(timeoutId); };
   }, [isAuthenticated, initialized]);
 
   const preloadData = async () => {
     try {
-      
+      if (__DEV__) {
+        console.log('📦 BACKGROUND LOADER: Starting data preload...');
+        console.log('📦 BACKGROUND LOADER: Auth state:', { initialized, isAuthenticated });
+      }
+
       // Load collections and tags in parallel for fastest loading
       const loadPromises = [
         // Load collections using the existing store (with its caching)
-        fetchCollections().catch(error => {
+        fetchCollections().then(() => {
+          if (__DEV__) console.log('📦 BACKGROUND LOADER: Collections loaded successfully');
+        }).catch(error => {
           console.warn('⚠️ Background: Collections preload failed:', error.message);
         }),
-        
+
         // Prefetch tags using TanStack Query
         queryClient.prefetchQuery({
-          queryKey: ['tags'],
           queryFn: () => TagsApiService.getTags({ sort_by: 'name', sort_desc: false }),
+          queryKey: ['tags'],
           staleTime: 5 * 60 * 1000, // 5 minutes - same as tags store
+        }).then(() => {
+          if (__DEV__) console.log('📦 BACKGROUND LOADER: Tags loaded successfully');
         }).catch(error => {
           console.warn('⚠️ Background: Tags preload failed:', error.message);
         })
       ];
 
       await Promise.allSettled(loadPromises);
+      if (__DEV__) console.log('📦 BACKGROUND LOADER: Data preload completed');
 
     } catch (error) {
       // Don't throw errors from background loading - it's optional
@@ -62,8 +71,8 @@ export function useBackgroundDataLoader() {
   const collectionsStore = useCollectionsStore();
   
   return {
-    isLoadingCollections: collectionsStore.loading,
     hasCollections: collectionsStore.collections.length > 0,
     hasTags: queryClient.getQueryData(['tags']) !== undefined,
+    isLoadingCollections: collectionsStore.loading,
   };
 }

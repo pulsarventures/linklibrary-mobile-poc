@@ -36,16 +36,21 @@ export default function Collections() {
   const [formLoading, setFormLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
 
+  const { isAuthenticated } = useAuthStore();
+
   useEffect(() => {
-    if (user) {
+    console.log('📚 COLLECTIONS SCREEN: useEffect triggered', { hasUser: !!user, isAuthenticated });
+    // Fetch collections if authenticated, regardless of user object
+    if (isAuthenticated) {
+      console.log('📚 COLLECTIONS SCREEN: Fetching collections...');
       fetchCollections();
     }
-  }, [user]);
+  }, [isAuthenticated, fetchCollections]);
 
   const onRefresh = async () => {
     setRefreshing(true);
     try {
-      await fetchCollections();
+      await fetchCollections({}, true); // Pass force=true to bypass cache
     } catch (error) {
       console.error('Failed to refresh collections:', error);
       Toast.show({
@@ -61,10 +66,6 @@ export default function Collections() {
     setFormLoading(true);
     try {
       await createCollection(data);
-      Toast.show({
-        text1: 'Collection created successfully',
-        type: 'success',
-      });
       setShowFormModal(false);
     } catch (error) {
       console.error('Failed to create collection:', error);
@@ -84,10 +85,6 @@ export default function Collections() {
     setFormLoading(true);
     try {
       await updateCollection(editingCollection.id, data);
-      Toast.show({
-        text1: 'Collection updated successfully',
-        type: 'success',
-      });
       setShowFormModal(false);
       setEditingCollection(null);
     } catch (error) {
@@ -105,10 +102,6 @@ export default function Collections() {
   const handleDeleteCollection = async (id: number) => {
     try {
       await deleteCollection(id);
-      Toast.show({
-        text1: 'Collection deleted successfully',
-        type: 'success',
-      });
     } catch (error) {
       console.error('Failed to delete collection:', error);
       Toast.show({
@@ -237,7 +230,7 @@ export default function Collections() {
     );
   }
 
-  if (!collections?.length) {
+  if (collections.length === 0) {
     return (
       <SafeScreen>
         <View style={[styles.container, styles.centered]}>
@@ -273,7 +266,7 @@ export default function Collections() {
   }
 
   // Handle empty search results
-  if (searchQuery.trim() && !filteredCollections?.length) {
+  if (searchQuery.trim() && filteredCollections.length === 0) {
     return (
       <SafeScreen>
         <View style={styles.outerContainer}>
@@ -331,7 +324,7 @@ export default function Collections() {
       <TouchableOpacity
         activeOpacity={0.8}
         onPress={() => { setShowFormModal(true); }}
-        style={[styles.floatingButton, { backgroundColor: isDark ? '#6b7280' : '#000000' }]}
+        style={[styles.floatingButton, { backgroundColor: isDark ? '#FF6B35' : '#F25D15' }]}
       >
         <IconByVariant
           color="#ffffff"
@@ -361,18 +354,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: SPACING.lg,
     paddingTop: SPACING.md,
   },
-  outerContainer: {
-    backgroundColor: 'transparent',
-    flex: 1,
-  },
   createButton: {
     height: 40,
     minWidth: 100,
   },
-
   emptyIcon: {
     marginBottom: 16,
   },
+
   emptyText: {
     fontSize: 16,
     marginBottom: 24,
@@ -409,6 +398,10 @@ const styles = StyleSheet.create({
   list: {
     flexGrow: 1,
     paddingBottom: SPACING.xl,
+  },
+  outerContainer: {
+    backgroundColor: 'transparent',
+    flex: 1,
   },
   retryButton: {
     borderRadius: 8,

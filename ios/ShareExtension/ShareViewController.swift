@@ -75,7 +75,7 @@ class ShareViewController: UIViewController {
     
     func saveSharedData(_ data: [String: Any]) {
         print("ShareViewController: Saving shared data: \(data)")
-        let userDefaults = UserDefaults(suiteName: "group.com.pulsarventures.linklibraryai")
+        let userDefaults = UserDefaults(suiteName: "group.com.pulsarventures.linklibrary.ai")
         userDefaults?.set(data, forKey: "SharedData")
         userDefaults?.synchronize()
         print("ShareViewController: Data saved successfully")

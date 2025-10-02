@@ -1,15 +1,18 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { View, StyleSheet, Image } from 'react-native';
-import { IconByVariant } from '../IconByVariant/IconByVariant';
-import { Text } from '@/components/ui';
+import React, { useEffect, useRef, useState } from 'react';
+import { Image, StyleSheet, View } from 'react-native';
+
 import { useTheme } from '@/theme';
 
-interface LinkThumbnailProps {
-  url: string;
-  faviconUrl?: string;
-  title?: string;
-  size?: 'sm' | 'md' | 'lg';
-  className?: string;
+import { Text } from '@/components/ui';
+
+import { IconByVariant } from '../IconByVariant/IconByVariant';
+
+type LinkThumbnailProps = {
+  readonly className?: string;
+  readonly faviconUrl?: string;
+  readonly size?: 'lg' | 'md' | 'sm';
+  readonly title?: string;
+  readonly url: string;
 }
 
 // Utility functions for domain handling  
@@ -28,7 +31,7 @@ const getDomainInitials = (url: string, title?: string): string => {
     if (parts.length >= 2) {
       const domainName = parts[0];
       if (domainName.length >= 2) {
-        const initials = domainName.substring(0, 2).toUpperCase();
+        const initials = domainName.slice(0, 2).toUpperCase();
         return initials;
       } else if (domainName.length === 1 && parts[1]) {
         const initials = (domainName + parts[1].charAt(0)).toUpperCase();
@@ -36,9 +39,9 @@ const getDomainInitials = (url: string, title?: string): string => {
       }
     }
 
-    const initials = domain.substring(0, 2).toUpperCase();
+    const initials = domain.slice(0, 2).toUpperCase();
     return initials;
-  } catch (error) {
+  } catch {
     return getTitleInitials(title);
   }
 };
@@ -53,7 +56,7 @@ const getTitleInitials = (title?: string): string => {
     const initials = (words[0][0] + words[1][0]).toUpperCase();
     return initials;
   } else if (words.length === 1 && words[0].length >= 2) {
-    const initials = words[0].substring(0, 2).toUpperCase();
+    const initials = words[0].slice(0, 2).toUpperCase();
     return initials;
   }
   
@@ -64,8 +67,8 @@ const getDomainColor = (url: string): string => {
   try {
     const domain = new URL(url).hostname.replace('www.', '');
     let hash = 0;
-    for (let i = 0; i < domain.length; i++) {
-      hash = domain.charCodeAt(i) + ((hash << 5) - hash);
+    for (let index = 0; index < domain.length; index++) {
+      hash = domain.charCodeAt(index) + ((hash << 5) - hash);
     }
 
     const colors = [
@@ -109,17 +112,17 @@ const isVideoUrl = (url: string): boolean => {
 };
 
 export function LinkThumbnail({ 
-  url, 
   faviconUrl, 
+  size = 'md', 
   title, 
-  size = 'md' 
+  url 
 }: LinkThumbnailProps) {
   const { colors } = useTheme();
   const [showFavicon, setShowFavicon] = useState(false);
   const [faviconError, setFaviconError] = useState(false);
-  const [currentFaviconUrl, setCurrentFaviconUrl] = useState<string | null>(null);
-  const timeoutRef = useRef<NodeJS.Timeout>();
-  const fallbackSourcesRef = useRef<string[]>([]);
+  const [currentFaviconUrl, setCurrentFaviconUrl] = useState<null | string>(null);
+  const timeoutReference = useRef<NodeJS.Timeout>();
+  const fallbackSourcesReference = useRef<string[]>([]);
 
   const isYouTube = isYouTubeUrl(url);
   const isVideo = isVideoUrl(url);
@@ -127,9 +130,9 @@ export function LinkThumbnail({
   const domainColor = getDomainColor(url);
 
   const sizes = {
-    sm: { container: 32, icon: 16, text: 10 },
-    md: { container: 48, icon: 24, text: 12 },
     lg: { container: 64, icon: 32, text: 14 },
+    md: { container: 48, icon: 24, text: 12 },
+    sm: { container: 32, icon: 16, text: 10 },
   };
 
   const currentSize = sizes[size];
@@ -137,37 +140,37 @@ export function LinkThumbnail({
   // Clean up on unmount
   useEffect(() => {
     return () => {
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
+      if (timeoutReference.current) {
+        clearTimeout(timeoutReference.current);
       }
     };
   }, []);
 
   // Create a stable reference for tryFavicon function
-  const tryFaviconRef = useRef<(src: string, fallbackSources: string[]) => void>();
+  const tryFaviconReference = useRef<(source: string, fallbackSources: string[]) => void>();
   
-  tryFaviconRef.current = (src: string, fallbackSources: string[] = []) => {
+  tryFaviconReference.current = (source: string, fallbackSources: string[] = []) => {
     
     // Clear previous timeout
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
+    if (timeoutReference.current) {
+      clearTimeout(timeoutReference.current);
     }
 
     // Store fallback sources for error handling
-    fallbackSourcesRef.current = fallbackSources;
+    fallbackSourcesReference.current = fallbackSources;
 
     // Set the current source to try (but don't show it yet - wait for onLoad)
-    setCurrentFaviconUrl(src);
+    setCurrentFaviconUrl(source);
     setShowFavicon(false); // Don't show until loaded
     setFaviconError(false);
 
     // Set timeout to try next source or fallback to initials
-    timeoutRef.current = setTimeout(() => {
+    timeoutReference.current = setTimeout(() => {
       if (fallbackSources.length > 0) {
         // Try next favicon source
-        const nextSrc = fallbackSources[0];
+        const nextSource = fallbackSources[0];
         const remainingSources = fallbackSources.slice(1);
-        tryFaviconRef.current?.(nextSrc, remainingSources);
+        tryFaviconReference.current(nextSource, remainingSources);
       } else {
         // All sources failed, use initials
         setFaviconError(true);
@@ -189,9 +192,9 @@ export function LinkThumbnail({
     const faviconSources: string[] = [];
     
     try {
-      const urlObj = new URL(url);
-      const domain = urlObj.origin;
-      const hostname = urlObj.hostname;
+      const urlObject = new URL(url);
+      const domain = urlObject.origin;
+      const hostname = urlObject.hostname;
       
       // 1. First priority: provided faviconUrl
       if (faviconUrl) {
@@ -199,23 +202,17 @@ export function LinkThumbnail({
       }
       
       // 2. Google favicon service (most reliable) - prioritize this
-      faviconSources.push(`https://www.google.com/s2/favicons?domain=${hostname}&sz=32`);
+      faviconSources.push(`https://www.google.com/s2/favicons?domain=${hostname}&sz=32`, `${domain}/favicon.ico`, `https://icons.duckduckgo.com/ip3/${hostname}.ico`);
       
-      // 3. Standard favicon.ico
-      faviconSources.push(`${domain}/favicon.ico`);
-      
-      // 4. Alternative favicon service
-      faviconSources.push(`https://icons.duckduckgo.com/ip3/${hostname}.ico`);
-      
-    } catch (error) {
+    } catch {
       // Still try Google service with raw URL (might work in some cases)
       faviconSources.push(`https://www.google.com/s2/favicons?domain=${url}&sz=32`);
     }
 
 
     if (faviconSources.length > 0) {
-      const [firstSrc, ...remainingSources] = faviconSources;
-      tryFaviconRef.current?.(firstSrc, remainingSources);
+      const [firstSource, ...remainingSources] = faviconSources;
+      tryFaviconReference.current(firstSource, remainingSources);
     } else {
       // No sources, use initials
       setFaviconError(true);
@@ -224,27 +221,27 @@ export function LinkThumbnail({
   }, [url, faviconUrl, isVideo]);
 
   const handleFaviconLoad = () => {
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
+    if (timeoutReference.current) {
+      clearTimeout(timeoutReference.current);
     }
     setShowFavicon(true);
     setFaviconError(false);
   };
 
   const handleFaviconError = () => {
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
+    if (timeoutReference.current) {
+      clearTimeout(timeoutReference.current);
     }
 
     // Try next fallback source if available
-    const fallbackSources = fallbackSourcesRef.current;
+    const fallbackSources = fallbackSourcesReference.current;
     if (fallbackSources.length > 0) {
-      const nextSrc = fallbackSources[0];
+      const nextSource = fallbackSources[0];
       const remainingSources = fallbackSources.slice(1);
       
       // Use setTimeout to avoid synchronous state updates
       setTimeout(() => {
-        tryFaviconRef.current?.(nextSrc, remainingSources);
+        tryFaviconReference.current(nextSource, remainingSources);
       }, 100);
     } else {
       // No more fallback sources, use initials
@@ -257,10 +254,10 @@ export function LinkThumbnail({
   const containerStyle = [
     styles.container,
     {
-      width: currentSize.container,
-      height: currentSize.container,
       backgroundColor: colors.background.subtle,
       borderColor: colors.border.primary,
+      height: currentSize.container,
+      width: currentSize.container,
     }
   ];
 
@@ -269,9 +266,9 @@ export function LinkThumbnail({
     return (
       <View style={[containerStyle, { backgroundColor: '#FF0000' }]}>
         <IconByVariant
+          color="#FFFFFF"
           name="fire"
           size={currentSize.icon * 0.6}
-          color="#FFFFFF"
         />
       </View>
     );
@@ -281,9 +278,9 @@ export function LinkThumbnail({
     return (
       <View style={[containerStyle, { backgroundColor: '#8B5CF6' }]}>
         <IconByVariant
+          color="#FFFFFF"
           name="fire"
           size={currentSize.icon * 0.6}
-          color="#FFFFFF"
         />
       </View>
     );
@@ -294,17 +291,17 @@ export function LinkThumbnail({
     return (
       <View style={containerStyle}>
         <Image
+          onError={handleFaviconError}
+          onLoad={handleFaviconLoad}
+          resizeMode="contain"
           source={{ uri: currentFaviconUrl }}
           style={[
             styles.favicon,
             {
-              width: currentSize.container * 0.7,
               height: currentSize.container * 0.7,
+              width: currentSize.container * 0.7,
             }
           ]}
-          onLoad={handleFaviconLoad}
-          onError={handleFaviconError}
-          resizeMode="contain"
         />
       </View>
     );
@@ -317,8 +314,8 @@ export function LinkThumbnail({
         style={[
           styles.initialsText,
           {
-            fontSize: currentSize.text,
             color: '#FFFFFF',
+            fontSize: currentSize.text,
           }
         ]}
       >
@@ -330,10 +327,10 @@ export function LinkThumbnail({
 
 const styles = StyleSheet.create({
   container: {
+    alignItems: 'center',
     borderRadius: 8,
     borderWidth: 1,
     justifyContent: 'center',
-    alignItems: 'center',
     overflow: 'hidden',
   },
   favicon: {
@@ -341,7 +338,7 @@ const styles = StyleSheet.create({
   },
   initialsText: {
     fontWeight: '700',
-    textAlign: 'center',
     letterSpacing: 0.5,
+    textAlign: 'center',
   },
 });

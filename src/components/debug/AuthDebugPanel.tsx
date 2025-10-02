@@ -1,9 +1,9 @@
-import React from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-
 import { secureStorageService } from '@/services/secureStorage';
 import { ApiDebugUtils } from '@/utils/apiDebug';
 import { AuthDebugUtils } from '@/utils/authDebug';
+import { clearLogoutFlag, checkLogoutFlag } from '@/utils/clearAuthData';
+import React from 'react';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 export function AuthDebugPanel() {
   const [debugInfo, setDebugInfo] = React.useState<string>('Ready to debug...');
@@ -79,6 +79,26 @@ export function AuthDebugPanel() {
     }
   };
 
+  const handleCheckLogoutFlag = async () => {
+    try {
+      setDebugInfo('Checking logout flag...');
+      const hasLoggedOut = await checkLogoutFlag();
+      setDebugInfo(`Logout flag: ${hasLoggedOut ? 'SET' : 'NOT SET'}`);
+    } catch (error) {
+      setDebugInfo(`Error checking logout flag: ${error}`);
+    }
+  };
+
+  const handleClearLogoutFlag = async () => {
+    try {
+      setDebugInfo('Clearing logout flag...');
+      await clearLogoutFlag();
+      setDebugInfo('Logout flag cleared successfully!');
+    } catch (error) {
+      setDebugInfo(`Error clearing logout flag: ${error}`);
+    }
+  };
+
   if (!__DEV__) {
     return null; // Only show in development
   }
@@ -114,6 +134,14 @@ export function AuthDebugPanel() {
       
       <TouchableOpacity onPress={handleTestAuthEndpoints} style={styles.button}>
         <Text style={styles.buttonText}>Test Auth Endpoints</Text>
+      </TouchableOpacity>
+      
+      <TouchableOpacity onPress={handleCheckLogoutFlag} style={styles.button}>
+        <Text style={styles.buttonText}>Check Logout Flag</Text>
+      </TouchableOpacity>
+      
+      <TouchableOpacity onPress={handleClearLogoutFlag} style={styles.button}>
+        <Text style={styles.buttonText}>Clear Logout Flag</Text>
       </TouchableOpacity>
     </View>
   );

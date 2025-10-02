@@ -1,8 +1,7 @@
+import { storageService } from '@/services/storage';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import { useAuthStore } from '@/hooks/domain/user/useAuthStore';
-
-import { storageService } from '@/services/storage';
 
 export const resetApp = async () => {
   try {

@@ -13,7 +13,7 @@ class ShareDataModule: NSObject {
   func getSharedData(_ resolve: @escaping RCTPromiseResolveBlock, rejecter reject: @escaping RCTPromiseRejectBlock) {
     print("📤 ShareDataModule: getSharedData called")
     
-    guard let userDefaults = UserDefaults(suiteName: "group.com.pulsarventures.linklibraryai") else {
+    guard let userDefaults = UserDefaults(suiteName: "group.com.pulsarventures.linklibrary.ai") else {
       print("📤 ShareDataModule: Failed to access App Group UserDefaults")
       resolve(nil)
       return

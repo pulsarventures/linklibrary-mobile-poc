@@ -1,9 +1,8 @@
 import type { Tag } from '@/types/tag.types';
 
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-
 import { API_ENDPOINTS } from '@/config/api';
 import { apiClient } from '@/services/api/client';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 // Query keys
 export const tagKeys = {
@@ -49,11 +48,11 @@ const deleteTag = async (id: string): Promise<void> => {
 export const useTags = () => {
   return useQuery({
     gcTime: 60 * 60 * 1000, // 1 hour - tags don't change often
+    placeholderData: [],
     queryFn: fetchTags,
     queryKey: tagKeys.lists(),
-    staleTime: 15 * 60 * 1000, // 15 minutes - longer stale time for better UX
-    placeholderData: [],
     select: (data) => data || [],
+    staleTime: 15 * 60 * 1000, // 15 minutes - longer stale time for better UX
   });
 };
 

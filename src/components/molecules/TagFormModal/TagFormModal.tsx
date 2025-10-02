@@ -113,14 +113,14 @@ export function TagFormModal({
   };
 
   const colorOptions = [
-    { label: 'Gray', value: 'gray', color: '#6B7280' },
-    { label: 'Blue', value: 'blue', color: '#3B82F6' },
-    { label: 'Green', value: 'green', color: '#10B981' },
-    { label: 'Red', value: 'red', color: '#EF4444' },
-    { label: 'Yellow', value: 'yellow', color: '#F59E0B' },
-    { label: 'Purple', value: 'purple', color: '#8B5CF6' },
-    { label: 'Pink', value: 'pink', color: '#EC4899' },
-    { label: 'Orange', value: 'orange', color: '#F97316' },
+    { color: '#6B7280', label: 'Gray', value: 'gray' },
+    { color: '#3B82F6', label: 'Blue', value: 'blue' },
+    { color: '#10B981', label: 'Green', value: 'green' },
+    { color: '#EF4444', label: 'Red', value: 'red' },
+    { color: '#F59E0B', label: 'Yellow', value: 'yellow' },
+    { color: '#8B5CF6', label: 'Purple', value: 'purple' },
+    { color: '#EC4899', label: 'Pink', value: 'pink' },
+    { color: '#F97316', label: 'Orange', value: 'orange' },
   ];
 
   return (
@@ -157,7 +157,7 @@ export function TagFormModal({
               style={[
                 styles.headerButton,
                 styles.addButton,
-                { backgroundColor: isDark ? '#6b7280' : '#000000' },
+                { backgroundColor: '#F25D15' },
                 (loading || !name.trim()) && { opacity: 0.7 }
               ]}
             >
@@ -230,7 +230,7 @@ export function TagFormModal({
 
 const styles = StyleSheet.create({
   addButton: {
-    backgroundColor: '#007AFF',
+    backgroundColor: '#F25D15',
   },
   buttonText: {
     fontSize: 13,

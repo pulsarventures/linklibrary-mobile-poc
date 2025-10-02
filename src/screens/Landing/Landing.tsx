@@ -12,7 +12,7 @@ import {
 
 import { useTheme } from '@/theme/ThemeProvider/ThemeProvider';
 
-import { Container } from '@/components/ui';
+import { Button, Container } from '@/components/ui';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Landing'>;
 
@@ -59,12 +59,13 @@ export function Landing({ navigation }: Props) {
 
           {/* Action Button */}
           <View style={styles.buttonContainer}>            
-            <TouchableOpacity 
+            <Button 
               onPress={() => { navigation.navigate('Login'); }}
-              style={[styles.loginButton, { backgroundColor: colors.accent.primary }]}
+              variant="primary"
+              style={styles.loginButton}
             >
-              <Text style={[styles.loginButtonText, { color: colors.text.inverse }]}>Sign In</Text>
-            </TouchableOpacity>
+              Sign In
+            </Button>
           </View>
         </View>
       </View>

@@ -1,6 +1,8 @@
 import React from 'react';
-import { View, StyleSheet, Text, ScrollView } from 'react-native';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
+
 import { useTheme } from '@/theme';
+
 import { LinkThumbnail } from '@/components/molecules';
 
 export function ThumbnailTest() {
@@ -45,8 +47,8 @@ export function ThumbnailTest() {
           </Text>
           <View style={styles.thumbnailContainer}>
             <LinkThumbnail
-              url={url}
               size="lg"
+              url={url}
             />
           </View>
         </View>
@@ -62,8 +64,8 @@ export function ThumbnailTest() {
           </Text>
           <View style={styles.thumbnailContainer}>
             <LinkThumbnail
-              url={`https://${url}`}
               size="lg"
+              url={`https://${url}`}
             />
           </View>
         </View>
@@ -77,28 +79,28 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 20,
   },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 10,
+    marginTop: 20,
+  },
+  testItem: {
+    backgroundColor: 'rgba(0,0,0,0.05)',
+    borderRadius: 12,
+    marginBottom: 20,
+    padding: 15,
+  },
+  thumbnailContainer: {
+    alignItems: 'center',
+  },
   title: {
     fontSize: 24,
     fontWeight: 'bold',
     marginBottom: 20,
   },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginTop: 20,
-    marginBottom: 10,
-  },
-  testItem: {
-    marginBottom: 20,
-    padding: 15,
-    borderRadius: 12,
-    backgroundColor: 'rgba(0,0,0,0.05)',
-  },
   url: {
     fontSize: 12,
     marginBottom: 10,
-  },
-  thumbnailContainer: {
-    alignItems: 'center',
   },
 }); 

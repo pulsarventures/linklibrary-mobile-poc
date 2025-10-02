@@ -1,10 +1,9 @@
 import type { ThemeColors } from '../types/theme';
 
+import { storageService } from '@/services/storage';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { ActivityIndicator, useColorScheme, View } from 'react-native';
-
-import { storageService } from '@/services/storage';
 
 import layout from '../layout';
 import { DARK_COLORS, LIGHT_COLORS } from '../styles/colors';

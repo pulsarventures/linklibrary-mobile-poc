@@ -26,7 +26,7 @@ const ShareReceiver: React.FC<ShareReceiverProps> = ({ onUrl }) => {
         // Also set up linking as backup
         setupLinkingFallback();
         
-      } catch (error) {
+      } catch {
         // Try alternative approach using Linking
         setupLinkingFallback();
       }
@@ -86,13 +86,13 @@ const ShareReceiver: React.FC<ShareReceiverProps> = ({ onUrl }) => {
             }
           }
           
-          Alert.alert('Share Debug', 'No URL found in shared content');
+          // No URL found - silently ignore
         } else {
-          Alert.alert('Share Debug', 'No files received');
+          // No files received - silently ignore
         }
       } catch (error) {
         console.error('📤 Error processing shared files:', error);
-        Alert.alert('Share Error', `Error: ${error}`);
+        console.error('Share Error:', error);
       }
     };
 
@@ -119,7 +119,7 @@ const ShareReceiver: React.FC<ShareReceiverProps> = ({ onUrl }) => {
               }
             }
           );
-        } catch (error) {
+        } catch {
         }
       };
 
@@ -135,7 +135,7 @@ const ShareReceiver: React.FC<ShareReceiverProps> = ({ onUrl }) => {
             }
           }
         );
-      } catch (error) {
+      } catch {
       }
 
       // Check for initial share immediately
@@ -175,7 +175,7 @@ const ShareReceiver: React.FC<ShareReceiverProps> = ({ onUrl }) => {
       });
 
       return () => {
-        linkingListener?.remove();
+        linkingListener.remove();
       };
     };
 
@@ -210,10 +210,10 @@ const ShareReceiver: React.FC<ShareReceiverProps> = ({ onUrl }) => {
 
     // Cleanup function
     return () => {
-      appStateSubscription?.remove();
+      appStateSubscription.remove();
       try {
         ReceiveSharingIntent?.clearReceivedFiles?.();
-      } catch (error) {
+      } catch {
       }
     };
   }, [onUrl]);

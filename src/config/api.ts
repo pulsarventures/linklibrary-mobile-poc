@@ -13,14 +13,16 @@ export const API_URL = isDevelopment
 
 export const API_ENDPOINTS = {
   auth: {
-    forgotPassword: `/auth/forgot-password`,
+    forgotPassword: `/auth/request-password-reset`,
     googleAuth: `/auth/google/chrome-extension`,
     login: `/auth/login`,
     logout: `/auth/logout`,
     refreshToken: `/auth/refresh`,
     register: `/auth/register`,
     resetPassword: `/auth/reset-password`,
-    social: `/auth/social`,
+    googleMobile: `/auth/google/mobile`, // Use the mobile endpoint for mobile Google Sign-In
+    appleLogin: `/auth/apple/login`,
+    appleMobile: `/auth/apple/mobile`,
   },
   links: {
     create: `/links`,

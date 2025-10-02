@@ -58,22 +58,6 @@ export default function ChatScreen() {
       flex: 1,
       fontSize: 15,
     },
-    iconContainer: {
-      alignItems: 'center',
-      backgroundColor: colors.accent.primary + '22',
-      borderRadius: 40,
-      height: 80,
-      justifyContent: 'center',
-      marginBottom: 24,
-      width: 80,
-    },
-    title: {
-      color: colors.text.primary,
-      fontSize: 24,
-      fontWeight: 'bold',
-      marginBottom: 12,
-      textAlign: 'center',
-    },
     floatingButton: {
       alignItems: 'center',
       borderRadius: 28,
@@ -91,6 +75,22 @@ export default function ChatScreen() {
       shadowOpacity: 0.25,
       shadowRadius: 3.84,
       width: 56,
+    },
+    iconContainer: {
+      alignItems: 'center',
+      backgroundColor: colors.accent.primary + '22',
+      borderRadius: 40,
+      height: 80,
+      justifyContent: 'center',
+      marginBottom: 24,
+      width: 80,
+    },
+    title: {
+      color: colors.text.primary,
+      fontSize: 24,
+      fontWeight: 'bold',
+      marginBottom: 12,
+      textAlign: 'center',
     },
   });
 
@@ -155,7 +155,7 @@ export default function ChatScreen() {
       <TouchableOpacity
         activeOpacity={0.8}
         onPress={handleJoinWaitlist}
-        style={[styles.floatingButton, { backgroundColor: isDark ? '#6b7280' : '#000000' }]}
+        style={[styles.floatingButton, { backgroundColor: isDark ? '#FF6B35' : '#F25D15' }]}
       >
         <IconByVariant
           color="#ffffff"

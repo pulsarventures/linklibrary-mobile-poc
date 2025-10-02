@@ -4,7 +4,7 @@ import { apiClient } from './api/client';
 
 export const CollectionsApiService = {
   async createCollection(data: { color?: string; description?: string; icon?: string; name: string; }): Promise<Collection> {
-    return apiClient.post('/collections/', {
+    return apiClient.post('/collections', {
       color: data.color || 'gray',
       description: data.description?.trim(),
       icon: data.icon,
@@ -27,7 +27,7 @@ export const CollectionsApiService = {
     skip: number;
     total: number;
   }> {
-    return apiClient.get('/collections/', parameters);
+    return apiClient.get('/collections', parameters);
   },
 
   async updateCollection(id: number, data: { color?: string; description?: string; icon?: string; name: string; }): Promise<Collection> {

@@ -1,46 +1,46 @@
-import { Linking, Platform, Alert } from 'react-native';
+import { Alert, Linking, Platform } from 'react-native';
 
 // App URL schemes for various popular apps
 const APP_SCHEMES = {
-  youtube: {
-    patterns: [
-      /(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]+)/,
-      /youtube\.com\/shorts\/([a-zA-Z0-9_-]+)/
-    ],
-    getAppUrl: (videoId: string) => `vnd.youtube://${videoId}`,
-  },
-  twitter: {
-    patterns: [
-      /twitter\.com\/([^/]+)\/status\/(\d+)/,
-      /x\.com\/([^/]+)\/status\/(\d+)/
-    ],
-    getAppUrl: (username: string, tweetId: string) => `twitter://status?id=${tweetId}`,
-  },
   instagram: {
-    patterns: [
-      /instagram\.com\/p\/([a-zA-Z0-9_-]+)/,
-      /instagram\.com\/reel\/([a-zA-Z0-9_-]+)/
-    ],
     getAppUrl: (postId: string) => `instagram://media?id=${postId}`,
+    patterns: [
+      /instagram\.com\/p\/([\w-]+)/,
+      /instagram\.com\/reel\/([\w-]+)/
+    ],
   },
   linkedin: {
+    getAppUrl: (path: string) => `linkedin://profile/${path}`,
     patterns: [
       /linkedin\.com\/in\/([^/]+)/,
       /linkedin\.com\/posts\/([^/]+)/
     ],
-    getAppUrl: (path: string) => `linkedin://profile/${path}`,
   },
   reddit: {
+    getAppUrl: (subreddit: string, postId: string) => `reddit://reddit.com/r/${subreddit}/comments/${postId}`,
     patterns: [
       /reddit\.com\/r\/([^/]+)\/comments\/([^/]+)/
     ],
-    getAppUrl: (subreddit: string, postId: string) => `reddit://reddit.com/r/${subreddit}/comments/${postId}`,
   },
   spotify: {
-    patterns: [
-      /open\.spotify\.com\/(track|album|playlist|artist)\/([a-zA-Z0-9]+)/
-    ],
     getAppUrl: (type: string, id: string) => `spotify://${type}/${id}`,
+    patterns: [
+      /open\.spotify\.com\/(track|album|playlist|artist)\/([\dA-Za-z]+)/
+    ],
+  },
+  twitter: {
+    getAppUrl: (username: string, tweetId: string) => `twitter://status?id=${tweetId}`,
+    patterns: [
+      /twitter\.com\/([^/]+)\/status\/(\d+)/,
+      /x\.com\/([^/]+)\/status\/(\d+)/
+    ],
+  },
+  youtube: {
+    getAppUrl: (videoId: string) => `vnd.youtube://${videoId}`,
+    patterns: [
+      /(?:youtube\.com\/watch\?v=|youtu\.be\/)([\w-]+)/,
+      /youtube\.com\/shorts\/([\w-]+)/
+    ],
   }
 };
 
@@ -67,7 +67,7 @@ export async function openLink(url: string): Promise<void> {
               // Don't check canOpenURL for Android deep links - just try to open
               await Linking.openURL(appUrl);
               return;
-            } catch (e) {
+            } catch {
               // If app URL fails, continue with regular URL
               console.log(`${appName} app not available, will try browser`);
             }

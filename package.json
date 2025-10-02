@@ -6,7 +6,10 @@
     "android": "react-native run-android",
     "ios": "./scripts/clean-build-service.sh && react-native run-ios",
     "ios:clean": "./scripts/clean-build-service.sh && react-native run-ios --reset-cache",
+    "ios:release": "./scripts/clean-build-service.sh && react-native run-ios --mode Release",
+    "ios:release:clean": "./scripts/clean-build-service.sh && react-native run-ios --mode Release --reset-cache",
     "start": "react-native start",
+    "start:release": "react-native start --reset-cache",
     "test": "jest",
     "lint:rules": "eslint . --cache",
     "lint:code-format": "prettier --check \"{src,__mocks__}/**/*.{js,json,md,ts,tsx,yml,yaml}\"",
@@ -15,9 +18,13 @@
     "lint:fix": "yarn lint:rules --fix && yarn lint:code-format --write && yarn lint:type-check",
     "test:report": "jest --collectCoverage --coverageDirectory=\"./coverage\" --ci --reporters=default --reporters=jest-junit --coverage",
     "pod-install": "npx pod-install",
-    "clean:build": "./scripts/clean-build-service.sh"
+    "clean:build": "./scripts/clean-build-service.sh",
+    "version:bump": "node scripts/increment-android-version.js",
+    "android:release": "yarn version:bump && cd android && ./gradlew bundleRelease",
+    "android:release:no-bump": "cd android && ./gradlew bundleRelease"
   },
   "dependencies": {
+    "@invertase/react-native-apple-authentication": "^2.4.1",
     "@react-native-async-storage/async-storage": "1.21.0",
     "@react-native-clipboard/clipboard": "^1.16.3",
     "@react-native-google-signin/google-signin": "^8.0.0",
@@ -40,7 +47,6 @@
     "react-native-gesture-handler": "^2.25.0",
     "react-native-keychain": "^10.0.0",
     "react-native-linear-gradient": "2.8.3",
-    "react-native-mmkv": "^3.2.0",
     "react-native-modal": "^14.0.0-rc.1",
     "react-native-reanimated": "^3.18.0",
     "react-native-receive-sharing-intent": "^2.0.0",

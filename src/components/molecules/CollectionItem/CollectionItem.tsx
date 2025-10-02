@@ -14,6 +14,7 @@ import Animated, {
 import { useTheme } from '@/theme';
 
 import { IconByVariant } from '@/components/atoms';
+import { SwipeableCard } from '@/components/molecules/SwipeableCard';
 import { Text } from '@/components/ui/Text';
 
 type CollectionItemProps = {
@@ -45,11 +46,16 @@ export function CollectionItem({ collection, onAction }: CollectionItemProps) {
   });
 
   const handlePress = (actionType: string) => {
+    // Don't trigger animation here - let the parent handle the confirmation
     onAction(actionType, collection.id);
   };
 
   return (
-    <AnimatedPressable
+    <SwipeableCard
+      onEdit={() => handlePress('EDIT')}
+      onDelete={() => handlePress('DELETE')}
+    >
+        <AnimatedPressable
       onPress={() => { handlePress('VIEW'); }}
       style={[
         styles.container,
@@ -94,6 +100,7 @@ export function CollectionItem({ collection, onAction }: CollectionItemProps) {
         </View>
       </View>
     </AnimatedPressable>
+    </SwipeableCard>
   );
 }
 

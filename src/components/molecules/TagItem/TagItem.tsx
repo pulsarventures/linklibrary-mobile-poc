@@ -8,6 +8,7 @@ import { SPACING } from '@/theme/styles/spacing';
 import { useTheme } from '@/theme/ThemeProvider/ThemeProvider';
 
 import { IconByVariant } from '@/components/atoms';
+import { SwipeableCard } from '@/components/molecules/SwipeableCard';
 import { Text } from '@/components/ui/Text';
 
 type TagItemProps = {
@@ -23,45 +24,50 @@ export function TagItem({ onDelete, onEdit, onPress, tag }: TagItemProps) {
   const { colors } = useTheme();
 
   return (
-    <AnimatedPressable
-      onPress={onPress}
-      style={[
-        styles.container,
-        { backgroundColor: colors.background.primary, borderColor: colors.border.primary },
-      ]}
+    <SwipeableCard
+      onEdit={onEdit}
+      onDelete={onDelete}
     >
-      <View style={styles.content}>
-        <IconByVariant
-          color={colors.text.secondary}
-          name="hash"
-          size={24}
-          style={styles.icon}
-        />
-        <View style={styles.info}>
-          <Text style={[styles.title, { color: colors.text.primary }]} variant="body" weight="medium">
-            {tag.name}
-          </Text>
-          <Text style={[styles.meta, { color: colors.text.secondary }]} variant="small">
-            {tag.link_count} links
-          </Text>
+      <AnimatedPressable
+        onPress={onPress}
+        style={[
+          styles.container,
+          { backgroundColor: colors.background.primary, borderColor: colors.border.primary },
+        ]}
+      >
+        <View style={styles.content}>
+          <IconByVariant
+            color={colors.text.secondary}
+            name="hash"
+            size={24}
+            style={styles.icon}
+          />
+          <View style={styles.info}>
+            <Text style={[styles.title, { color: colors.text.primary }]} variant="body" weight="medium">
+              {tag.name}
+            </Text>
+            <Text style={[styles.meta, { color: colors.text.secondary }]} variant="small">
+              {tag.link_count} links
+            </Text>
+          </View>
         </View>
-      </View>
 
-      <View style={styles.actions}>
-        {onEdit ? <TouchableOpacity
-            onPress={onEdit}
-            style={[styles.actionButton, { backgroundColor: 'transparent' }]}
-          >
-            <IconByVariant color={colors.text.secondary} name="edit" size={16} />
-          </TouchableOpacity> : null}
-        {onDelete ? <TouchableOpacity
-            onPress={onDelete}
-            style={[styles.actionButton, { backgroundColor: 'transparent' }]}
-          >
-            <IconByVariant color={colors.error} name="trash" size={16} />
-          </TouchableOpacity> : null}
-      </View>
-    </AnimatedPressable>
+        <View style={styles.actions}>
+          {onEdit ? <TouchableOpacity
+              onPress={onEdit}
+              style={[styles.actionButton, { backgroundColor: 'transparent' }]}
+            >
+              <IconByVariant color={colors.text.secondary} name="edit" size={16} />
+            </TouchableOpacity> : null}
+          {onDelete ? <TouchableOpacity
+              onPress={onDelete}
+              style={[styles.actionButton, { backgroundColor: 'transparent' }]}
+            >
+              <IconByVariant color={colors.error} name="trash" size={16} />
+            </TouchableOpacity> : null}
+        </View>
+      </AnimatedPressable>
+    </SwipeableCard>
   );
 }
 

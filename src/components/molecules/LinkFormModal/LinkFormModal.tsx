@@ -1,35 +1,36 @@
-import type { Link } from '@/types/link.types';
 import type { Collection } from '@/types/collection.types';
+import type { Link } from '@/types/link.types';
 import type { Tag } from '@/types/tag.types';
 
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, View, ScrollView } from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
 import Modal from 'react-native-modal';
 
 import { useTheme } from '@/theme';
 import { SPACING } from '@/theme/styles/spacing';
+
 import { Button, Input, Text } from '@/components/ui';
 
-interface LinkFormModalProps {
-  isVisible: boolean;
-  onClose: () => void;
-  onSubmit: (data: Partial<Link>) => Promise<void>;
-  link?: Link;
-  collections: Collection[];
-  tags: Tag[];
+type LinkFormModalProps = {
+  readonly collections: Collection[];
+  readonly isVisible: boolean;
+  readonly link?: Link;
+  readonly onClose: () => void;
+  readonly onSubmit: (data: Partial<Link>) => Promise<void>;
+  readonly tags: Tag[];
 }
 
 export function LinkFormModal({ 
+  collections, 
   isVisible, 
-  onClose, 
-  onSubmit,
   link,
-  collections,
+  onClose,
+  onSubmit,
   tags,
 }: LinkFormModalProps) {
   const { colors } = useTheme();
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<null | string>(null);
 
   // Form state
   const [url, setUrl] = useState(link?.url || '');
@@ -71,19 +72,19 @@ export function LinkFormModal({
       }
 
       await onSubmit({
-        url: url.trim(),
-        title: title.trim(),
-        summary: summary.trim(),
-        notes: notes.trim(),
         collection_id: collectionId,
-        tag_ids: tagIds,
         is_favorite: link?.is_favorite,
+        notes: notes.trim(),
+        summary: summary.trim(),
+        tag_ids: tagIds,
+        title: title.trim(),
+        url: url.trim(),
       });
 
       onClose();
-    } catch (err) {
-      console.error('Failed to submit link:', err);
-      setError(err instanceof Error ? err.message : 'Failed to save link');
+    } catch (error_) {
+      console.error('Failed to submit link:', error_);
+      setError(error_ instanceof Error ? error_.message : 'Failed to save link');
     } finally {
       setIsLoading(false);
     }
@@ -91,12 +92,12 @@ export function LinkFormModal({
 
   return (
     <Modal
-      isVisible={isVisible}
-      onBackdropPress={onClose}
-      onBackButtonPress={onClose}
-      useNativeDriver
       hideModalContentWhileAnimating
+      isVisible={isVisible}
+      onBackButtonPress={onClose}
+      onBackdropPress={onClose}
       style={styles.modal}
+      useNativeDriver
     >
       <View style={[styles.container, { backgroundColor: colors.background.primary }]}>
         <Text style={[styles.title, { color: colors.text.primary }]}>
@@ -105,62 +106,60 @@ export function LinkFormModal({
 
         <ScrollView style={styles.form}>
           <Input
-            label="URL"
-            value={url}
-            onChangeText={setUrl}
-            placeholder="https://example.com"
             autoCapitalize="none"
             autoCorrect={false}
             keyboardType="url"
+            label="URL"
+            onChangeText={setUrl}
+            placeholder="https://example.com"
+            value={url}
           />
 
           <Input
             label="Title"
-            value={title}
             onChangeText={setTitle}
             placeholder="Link title"
+            value={title}
           />
 
           <Input
             label="Summary"
-            value={summary}
-            onChangeText={setSummary}
-            placeholder="Brief summary"
             multiline
             numberOfLines={2}
+            onChangeText={setSummary}
+            placeholder="Brief summary"
+            value={summary}
           />
 
           <Input
             label="Notes"
-            value={notes}
-            onChangeText={setNotes}
-            placeholder="Your notes"
             multiline
             numberOfLines={3}
+            onChangeText={setNotes}
+            placeholder="Your notes"
+            value={notes}
           />
 
           {/* TODO: Add collection and tag selectors */}
 
-          {error && (
-            <Text style={[styles.error, { color: colors.text.error }]}>
+          {error ? <Text style={[styles.error, { color: colors.text.error }]}>
               {error}
-            </Text>
-          )}
+            </Text> : null}
         </ScrollView>
 
         <View style={styles.buttons}>
           <Button
             onPress={onClose}
-            variant="secondary"
             style={styles.button}
+            variant="secondary"
           >
             Cancel
           </Button>
           <Button
-            onPress={handleSubmit}
-            variant="primary"
-            style={styles.button}
             loading={isLoading}
+            onPress={handleSubmit}
+            style={styles.button}
+            variant="primary"
           >
             Save
           </Button>
@@ -171,34 +170,34 @@ export function LinkFormModal({
 }
 
 const styles = StyleSheet.create({
-  modal: {
-    margin: 0,
+  button: {
+    minWidth: 100,
+  },
+  buttons: {
+    flexDirection: 'row',
+    gap: SPACING.sm,
     justifyContent: 'flex-end',
   },
   container: {
     borderTopLeftRadius: 16,
     borderTopRightRadius: 16,
-    padding: SPACING.lg,
     maxHeight: '80%',
+    padding: SPACING.lg,
+  },
+  error: {
+    fontSize: 14,
+    marginTop: SPACING.sm,
+  },
+  form: {
+    marginBottom: SPACING.lg,
+  },
+  modal: {
+    justifyContent: 'flex-end',
+    margin: 0,
   },
   title: {
     fontSize: 20,
     fontWeight: '600',
     marginBottom: SPACING.lg,
-  },
-  form: {
-    marginBottom: SPACING.lg,
-  },
-  error: {
-    marginTop: SPACING.sm,
-    fontSize: 14,
-  },
-  buttons: {
-    flexDirection: 'row',
-    justifyContent: 'flex-end',
-    gap: SPACING.sm,
-  },
-  button: {
-    minWidth: 100,
   },
 }); 

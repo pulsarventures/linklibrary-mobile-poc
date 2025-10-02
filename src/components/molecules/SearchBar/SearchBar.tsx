@@ -1,46 +1,48 @@
 import React from 'react';
-import { StyleSheet, TextInput, View, TouchableOpacity } from 'react-native';
+import { StyleSheet, TextInput, TouchableOpacity, View } from 'react-native';
+
 import { useTheme } from '@/theme';
+
 import { IconByVariant } from '@/components/atoms';
 
-interface SearchBarProps {
-  value: string;
-  onChangeText: (text: string) => void;
-  onSubmit?: () => void;
-  placeholder?: string;
+type SearchBarProps = {
+  readonly onChangeText: (text: string) => void;
+  readonly onSubmit?: () => void;
+  readonly placeholder?: string;
+  readonly value: string;
 }
 
-export function SearchBar({ value, onChangeText, onSubmit, placeholder = 'Search...' }: SearchBarProps) {
+export function SearchBar({ onChangeText, onSubmit, placeholder = 'Search...', value }: SearchBarProps) {
   const { colors, isDark } = useTheme();
 
   const styles = StyleSheet.create({
+    clearButton: {
+      marginLeft: 4,
+      padding: 4,
+    },
     container: {
       marginHorizontal: 16,
       marginVertical: 16,
     },
-    searchContainer: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      backgroundColor: isDark ? '#23242a' : colors.background.secondary,
-      borderRadius: 12,
-      borderWidth: 1,
-      borderColor: colors.border.primary,
-      paddingHorizontal: 12,
-      height: 44,
-    },
     input: {
+      color: colors.text.primary,
       flex: 1,
       fontSize: 16,
-      color: colors.text.primary,
-      paddingVertical: 8,
       paddingLeft: 8,
+      paddingVertical: 8,
+    },
+    searchContainer: {
+      alignItems: 'center',
+      backgroundColor: isDark ? '#23242a' : colors.background.secondary,
+      borderColor: colors.border.primary,
+      borderRadius: 12,
+      borderWidth: 1,
+      flexDirection: 'row',
+      height: 44,
+      paddingHorizontal: 12,
     },
     searchIcon: {
       opacity: 0.6,
-    },
-    clearButton: {
-      padding: 4,
-      marginLeft: 4,
     },
   });
 
@@ -48,31 +50,31 @@ export function SearchBar({ value, onChangeText, onSubmit, placeholder = 'Search
     <View style={styles.container}>
       <View style={styles.searchContainer}>
         <IconByVariant
+          color={colors.text.secondary}
           name="search"
           size={20}
-          color={colors.text.secondary}
           style={styles.searchIcon}
         />
         <TextInput
-          value={value}
+          autoCapitalize="none"
+          autoCorrect={false}
           onChangeText={onChangeText}
           onSubmitEditing={onSubmit}
           placeholder={placeholder}
           placeholderTextColor={colors.text.tertiary}
-          style={styles.input}
           returnKeyType="search"
-          autoCapitalize="none"
-          autoCorrect={false}
+          style={styles.input}
+          value={value}
         />
         {value ? (
           <TouchableOpacity
-            onPress={() => onChangeText('')}
+            onPress={() => { onChangeText(''); }}
             style={styles.clearButton}
           >
             <IconByVariant
+              color={colors.text.secondary}
               name="trash"
               size={16}
-              color={colors.text.secondary}
             />
           </TouchableOpacity>
         ) : null}

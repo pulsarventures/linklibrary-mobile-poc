@@ -1,9 +1,8 @@
 import type { Collection } from '@/types/collection.types';
 
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-
 import { API_ENDPOINTS } from '@/config/api';
 import { apiClient } from '@/services/api/client';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 // Query keys
 export const collectionKeys = {
@@ -49,11 +48,11 @@ const deleteCollection = async (id: string): Promise<void> => {
 export const useCollections = () => {
   return useQuery({
     gcTime: 60 * 60 * 1000, // 1 hour - collections don't change often
+    placeholderData: [],
     queryFn: fetchCollections,
     queryKey: collectionKeys.lists(),
-    staleTime: 15 * 60 * 1000, // 15 minutes - longer stale time for better UX
-    placeholderData: [],
     select: (data) => data || [],
+    staleTime: 15 * 60 * 1000, // 15 minutes - longer stale time for better UX
   });
 };
 

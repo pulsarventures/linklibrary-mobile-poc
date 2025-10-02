@@ -1,11 +1,68 @@
-import React from 'react';
-import { ActivityIndicator, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import React, { useEffect, useRef } from 'react';
+import { Animated, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 
-import { PRIMARY_COLORS } from '@/theme/styles/colors';
 import { createGradientStyle } from '@/theme/styles/gradients';
 import { SPACING } from '@/theme/styles/spacing';
 import { useTheme } from '@/theme/ThemeProvider/ThemeProvider';
+
+// Animated dots component with proper cleanup
+const AnimatedDots = ({ color }: { color: string }) => {
+  const dot1 = useRef(new Animated.Value(0.3)).current;
+  const dot2 = useRef(new Animated.Value(0.3)).current;
+  const dot3 = useRef(new Animated.Value(0.3)).current;
+  const animationRef = useRef<Animated.CompositeAnimation | null>(null);
+
+  useEffect(() => {
+    // Reset values to initial state
+    dot1.setValue(0.3);
+    dot2.setValue(0.3);
+    dot3.setValue(0.3);
+
+    const createAnimation = (dot: Animated.Value, delay: number) => {
+      return Animated.loop(
+        Animated.sequence([
+          Animated.timing(dot, {
+            toValue: 1,
+            duration: 600,
+            delay,
+            useNativeDriver: true,
+          }),
+          Animated.timing(dot, {
+            toValue: 0.3,
+            duration: 600,
+            useNativeDriver: true,
+          }),
+        ])
+      );
+    };
+
+    animationRef.current = Animated.parallel([
+      createAnimation(dot1, 0),
+      createAnimation(dot2, 200),
+      createAnimation(dot3, 400),
+    ]);
+
+    animationRef.current.start();
+
+    // Cleanup function to stop animations when component unmounts
+    return () => {
+      if (animationRef.current) {
+        animationRef.current.stop();
+        animationRef.current = null;
+      }
+    };
+  }, []); // Empty dependency array - only run once
+
+  return (
+    <View style={styles.dotsContainer}>
+      <Animated.Text style={[styles.dots, { color, opacity: dot1 }]}>●</Animated.Text>
+      <Animated.Text style={[styles.dots, { color, opacity: dot2 }]}>●</Animated.Text>
+      <Animated.Text style={[styles.dots, { color, opacity: dot3 }]}>●</Animated.Text>
+    </View>
+  );
+};
+
 
 type ButtonProps = {
   readonly children: React.ReactNode;
@@ -40,25 +97,25 @@ export function Button({
   };
 
   const renderContent = () => (
-    <View style={styles.contentContainer}>
-      {loading ? (
-        <ActivityIndicator color={getTextColor()} size="small" />
-      ) : (
-        <>
-          {icon ? <View style={styles.iconContainer}>{icon}</View> : null}
-          <Text 
-            numberOfLines={1}
-            style={[
-              styles.text,
-              { color: getTextColor() },
-              variant === 'social' && styles.socialText
-            ]}
-          >
-            {children}
-          </Text>
-        </>
-      )}
-    </View>
+      <View style={styles.contentContainer}>
+        {loading ? (
+          <AnimatedDots color={getTextColor()} />
+        ) : (
+          <>
+            {icon ? <View style={styles.iconContainer}>{icon}</View> : null}
+            <Text 
+              numberOfLines={1}
+              style={[
+                styles.text,
+                { color: getTextColor() },
+                variant === 'social' && styles.socialText
+              ]}
+            >
+              {children}
+            </Text>
+          </>
+        )}
+      </View>
   );
 
   // Gradient button
@@ -107,7 +164,7 @@ export function Button({
 
   // Primary button with gradient
   if (variant === 'primary') {
-    const gradientConfig = createGradientStyle(disabled ? 'disabled' : 'primary', isDark);
+    const gradientConfig = createGradientStyle('primary', isDark);
     
     return (
       <TouchableOpacity
@@ -223,6 +280,15 @@ const styles = StyleSheet.create({
   },
   iconContainer: {
     marginRight: SPACING.sm,
+  },
+  dotsContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  dots: {
+    fontSize: 10,
+    marginHorizontal: 3,
   },
   socialButton: {
     borderWidth: 1,

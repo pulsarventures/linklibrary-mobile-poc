@@ -2,24 +2,26 @@ import type { User } from '@/hooks/domain/user/schema';
 import type { RootStackParamList } from '@/navigation/types';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { authApiService } from '@/services/auth-api.service';
+import { signInWithGoogle } from '@/services/auth/googleAuth';
+import { signInWithApple } from '@/services/auth/appleAuth';
+import { storageService } from '@/services/storage';
+import { safeErrorLog } from '@/utils/errorHandler';
+import { handleLoginError, type LoginError } from '@/utils/loginErrorHandler';
 import { useNavigation } from '@react-navigation/native';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, Alert, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { Image } from 'react-native';
 
 import { useAuthStore } from '@/hooks/domain/user/useAuthStore';
 import { useAuth } from '@/hooks/useAuth';
 import { useTheme } from '@/theme';
 
 import { IconByVariant } from '@/components/atoms';
-import { Image } from 'react-native';
 import { SafeScreen } from '@/components/templates';
 import { Button, Container, Input, Text } from '@/components/ui';
-
-import { authApiService } from '@/services/auth-api.service';
-import { signInWithGoogle } from '@/services/auth/googleAuth';
-import { storageService } from '@/services/storage';
-import { safeErrorLog } from '@/utils/errorHandler';
 
 type LoginScreenNavigationProperty = NativeStackNavigationProp<RootStackParamList>;
 
@@ -27,27 +29,50 @@ export function Login() {
   const { t } = useTranslation();
   const navigation = useNavigation<LoginScreenNavigationProperty>();
   const { login } = useAuth();
+  const { socialAuth } = useAuthStore();
   const { colors, layout } = useTheme();
   const [email, setEmail] = React.useState('');
   const [password, setPassword] = React.useState('');
   const [isLoading, setIsLoading] = React.useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = React.useState(false);
+  const [isAppleLoading, setIsAppleLoading] = React.useState(false);
   const [rememberMe, setRememberMe] = React.useState(false);
   const [showPassword, setShowPassword] = React.useState(false);
   const [authTransition, setAuthTransition] = React.useState(false);
+  const [loginError, setLoginError] = React.useState<LoginError | null>(null);
+  const [googleError, setGoogleError] = React.useState<LoginError | null>(null);
+  const [appleError, setAppleError] = React.useState<LoginError | null>(null);
 
   const handleLogin = async () => {
     if (!email || !password) {
-      Alert.alert('Error', 'Please fill in all fields');
+      const validationError: LoginError = {
+        message: 'Please fill in all fields',
+        type: 'validation',
+      };
+      setLoginError(validationError);
       return;
     }
 
+    // Clear any previous errors when user tries again
+    setLoginError(null);
+    setGoogleError(null);
+    setAppleError(null);
+
     try {
       setIsLoading(true);
+      
+      // CRITICAL: Clear logout flag BEFORE login to ensure tokens can be stored
+      await AsyncStorage.removeItem('@has_logged_out');
+      // Cleared logout flag before login attempt
+      
+      // Attempting login
       await login({ password, username: email });
-    } catch (error) {
+      // Login successful - no toast needed
+    } catch (error: any) {
       safeErrorLog('Login failed', error);
-      Alert.alert('Login Failed', 'Please check your credentials and try again');
+      console.error('Login error:', error instanceof Error ? error.message : 'Unknown error');
+      const parsedError = handleLoginError(error);
+      setLoginError(parsedError);
     } finally {
       setIsLoading(false);
     }
@@ -55,67 +80,133 @@ export function Login() {
 
   const handleGoogleSignIn = async () => {
     try {
-      console.log('🔵 Starting Google Sign-In process...');
+      // Starting Google Sign-In process
       setIsGoogleLoading(true);
+      setGoogleError(null);
       setAuthTransition(true);
+      
+      // CRITICAL: Clear logout flag BEFORE Google sign-in
+      await AsyncStorage.removeItem('@has_logged_out');
+      // Cleared logout flag before Google sign-in
       
       // Add a small delay to ensure the loading state is visible
       await new Promise(resolve => setTimeout(resolve, 300));
       
-      console.log('🔵 Calling signInWithGoogle...');
+      // Calling signInWithGoogle
       const googleResult = await signInWithGoogle();
-      console.log('🔵 Google Sign-In successful, result:', { 
-        email: googleResult.email, 
-        hasToken: !!googleResult.token 
-      });
+      // Google Sign-In successful
       
-      console.log('🔵 Calling backend Google Sign-In API...');
-      const authResult = await authApiService.googleSignIn(googleResult.token);
-      console.log('🔵 Backend API successful, storing tokens...');
-
-      await storageService.storeTokens({
-        access_token: authResult.access_token,
-        access_token_expires_in: authResult.access_token_expires_in,
-        access_token_expires_at: authResult.access_token_expires_at, // New epoch timestamp
-        is_revoked: authResult.is_revoked,
-        refresh_token: authResult.refresh_token,
-        refresh_token_expires_in: authResult.refresh_token_expires_in,
-        refresh_token_expires_at: authResult.refresh_token_expires_at, // New epoch timestamp
-        token_type: authResult.token_type,
+      // Calling auth store socialAuth
+      await socialAuth({
+        email: googleResult.email,
+        name: googleResult.name,
+        provider: 'google',
+        token: googleResult.token,
       });
-      console.log('🔵 Tokens stored successfully');
-
-      const user: User = {
-        avatar: authResult.user.avatar || null,
-        created_at: authResult.user.created_at,
-        email: authResult.user.email,
-        full_name: authResult.user.full_name,
-        id: Number.parseInt(authResult.user.id.toString()),
-        is_active: authResult.user.is_active,
-        is_verified: authResult.user.is_verified,
-      };
-
-      // Update auth store
-      useAuthStore.setState({
-        error: null,
-        initialized: true,
-        isAuthenticated: true,
-        isLoading: false,
-        user,
-      });
-      console.log('🔵 Auth store updated successfully');
+      // Auth store socialAuth completed successfully
 
       // Keep the loading state for a smooth transition
       await new Promise(resolve => setTimeout(resolve, 500));
-      console.log('🔵 Google Sign-In process completed successfully');
-      
+      // Google Sign-In process completed successfully
+
     } catch (error) {
-      safeErrorLog('🔴 Google Sign-In failed at step', error);
+      console.error('Google Sign-In failed:', error instanceof Error ? error.message : 'Unknown error');
       
-      Alert.alert('Google Sign-In Failed', `Please try again. Error: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      const parsedError = handleLoginError(error);
+      setGoogleError(parsedError);
       setAuthTransition(false);
     } finally {
       setIsGoogleLoading(false);
+    }
+  };
+
+  const handleAppleSignIn = async () => {
+    try {
+      // Starting Apple Sign-In process
+      setIsAppleLoading(true);
+      setAppleError(null);
+      setAuthTransition(true);
+      
+      // CRITICAL: Clear logout flag BEFORE Apple sign-in
+      await AsyncStorage.removeItem('@has_logged_out');
+      // Cleared logout flag before Apple sign-in
+      
+      // Add a small delay to ensure the loading state is visible
+      await new Promise(resolve => setTimeout(resolve, 300));
+      
+      // Calling signInWithApple
+      const appleResult = await signInWithApple();
+      // Apple Sign-In successful
+      
+      // Calling backend Apple Sign-In API directly
+      
+      // Parse the full name into firstName and lastName
+      let nameObject = null;
+      if (appleResult.fullName) {
+        const nameParts = appleResult.fullName.trim().split(' ');
+        nameObject = {
+          firstName: nameParts[0] || '',
+          lastName: nameParts.slice(1).join(' ') || '',
+        };
+      }
+      
+      const authResult = await authApiService.appleSignIn(
+        appleResult.identityToken,
+        appleResult.authorizationCode,
+        appleResult.email,
+        nameObject
+      );
+      // Backend API successful, storing tokens
+
+      // Calculate expires_at from expires_in if not provided  
+      const now = Math.floor(Date.now() / 1000); // Current time in seconds
+      await storageService.storeTokens({
+        access_token: authResult.access_token,
+        access_token_expires_at: authResult.access_token_expires_at || (now + authResult.access_token_expires_in),
+        access_token_expires_in: authResult.access_token_expires_in,
+        is_revoked: authResult.is_revoked,
+        refresh_token: authResult.refresh_token,
+        refresh_token_expires_at: authResult.refresh_token_expires_at || (now + authResult.refresh_token_expires_in),
+        refresh_token_expires_in: authResult.refresh_token_expires_in,
+        token_type: authResult.token_type,
+      });
+      
+      if (authResult.user) {
+        const user: User = {
+          avatar: authResult.user.avatar || null,
+          created_at: authResult.user.created_at,
+          email: authResult.user.email,
+          full_name: authResult.user.full_name,
+          id: Number.parseInt(authResult.user.id.toString()),
+          is_active: authResult.user.is_active,
+          is_verified: authResult.user.is_verified,
+        };
+
+        // Update auth store directly
+        useAuthStore.setState({
+          error: null,
+          initialized: true,
+          isAuthenticated: true,
+          isLoading: false,
+          user,
+        });
+      } else {
+        throw new Error('Apple authentication failed: No user data received');
+      }
+      // Auth store socialAuth completed successfully
+
+      // Keep the loading state for a smooth transition
+      await new Promise(resolve => setTimeout(resolve, 500));
+      // Apple Sign-In process completed successfully
+
+    } catch (error) {
+      console.error('Apple Sign-In failed:', error instanceof Error ? error.message : 'Unknown error');
+      
+      const parsedError = handleLoginError(error);
+      setAppleError(parsedError);
+      setAuthTransition(false);
+    } finally {
+      setIsAppleLoading(false);
     }
   };
 
@@ -151,9 +242,9 @@ export function Login() {
           {/* Logo */}
           <View style={styles.logoContainer}>
                           <Image 
-                source={require('@/theme/assets/images/app.png')} 
                 resizeMode="cover" 
-                style={[styles.logo, { overflow: 'hidden', borderRadius: 8 }]} 
+                source={require('@/theme/assets/images/app.png')} 
+                style={[styles.logo, { borderRadius: 8, overflow: 'hidden' }]} 
               />
           </View>
 
@@ -165,14 +256,6 @@ export function Login() {
             Sign in to continue
           </Text>
 
-          {/* Connection Status */}
-          <View style={[styles.statusBar, { backgroundColor: colors.success + '15' }]}>
-            <View style={[styles.statusDot, { backgroundColor: colors.success }]} />
-            <Text style={[styles.statusText, { color: colors.success }]}>
-              Connected to https://api.linklibrary.ai/api/v1
-            </Text>
-          </View>
-
           {/* Form */}
           <View style={styles.form}>
             {/* Email */}
@@ -183,12 +266,18 @@ export function Login() {
                 <Input
                   autoCapitalize="none"
                   keyboardType="email-address"
-                  onChangeText={setEmail}
+                  onChangeText={(text) => {
+                    setEmail(text);
+                    // Clear error when user starts typing
+                    if (loginError?.type === 'validation') {
+                      setLoginError(null);
+                    }
+                  }}
                   placeholder="Enter your e-mail"
                   placeholderTextColor={colors.text.tertiary}
                   style={[styles.textInput, { 
                     backgroundColor: colors.background.secondary,
-                    borderColor: colors.border.primary,
+                    borderColor: loginError?.type === 'validation' && !email ? colors.error : colors.border.primary,
                     color: colors.text.primary
                   }]}
                   value={email}
@@ -202,13 +291,21 @@ export function Login() {
               <View style={styles.inputContainer}>
                 <IconByVariant color={colors.text.tertiary} name="lock" size={20} style={styles.inputIcon} />
                 <Input
-                  onChangeText={setPassword}
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                  onChangeText={(text) => {
+                    setPassword(text);
+                    // Clear error when user starts typing
+                    if (loginError?.type === 'validation') {
+                      setLoginError(null);
+                    }
+                  }}
                   placeholder="Enter your password"
                   placeholderTextColor={colors.text.tertiary}
                   secureTextEntry={!showPassword}
-                  style={[styles.textInput, { 
+                  style={[styles.textInput, {
                     backgroundColor: colors.background.secondary,
-                    borderColor: colors.border.primary,
+                    borderColor: loginError?.type === 'validation' && !password ? colors.error : colors.border.primary,
                     color: colors.text.primary
                   }]}
                   value={password}
@@ -247,24 +344,33 @@ export function Login() {
               </TouchableOpacity>
             </View>
 
+            {/* Login Error Message - Subtle feedback */}
+            {loginError && (
+              <View style={styles.errorContainer}>
+                <Text style={[styles.errorText, { color: colors.error }]}>
+                  {loginError.message}
+                </Text>
+                <TouchableOpacity 
+                  onPress={() => setLoginError(null)}
+                  style={styles.dismissButton}
+                >
+                  <Text style={[styles.dismissText, { color: colors.text.secondary }]}>
+                    ✕
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            )}
+
             {/* Sign In Button */}
-            <TouchableOpacity
+            <Button
               disabled={isLoading}
               onPress={handleLogin}
-              style={[
-                styles.signInButton,
-                { backgroundColor: colors.accent.primary },
-                isLoading && { opacity: 0.7 }
-              ]}
+              variant="primary"
+              loading={isLoading}
+              style={styles.signInButton}
             >
-              {isLoading ? (
-                <ActivityIndicator color={colors.text.inverse} size="small" />
-              ) : (
-                <Text style={[styles.signInButtonText, { color: colors.text.inverse }]}>
-                  Sign in
-                </Text>
-              )}
-            </TouchableOpacity>
+              Sign in
+            </Button>
 
             {/* Divider */}
             <View style={styles.divider}>
@@ -274,39 +380,50 @@ export function Login() {
             </View>
 
             {/* Social Buttons */}
-            <View style={styles.socialButtons}>
-              <TouchableOpacity
-                disabled={isGoogleLoading}
-                onPress={handleGoogleSignIn}
-                style={[styles.socialButton, { 
-                  backgroundColor: colors.background.secondary,
-                  borderColor: colors.border.primary
-                }]}
-              >
-                {isGoogleLoading ? (
-                  <ActivityIndicator color="#4285F4" size="small" />
-                ) : (
-                  <>
-                    <IconByVariant name="google" size={20} />
-                    <Text style={[styles.socialButtonText, { color: colors.text.primary }]}>
-                      Sign in
-                    </Text>
-                  </>
-                )}
-              </TouchableOpacity>
+            <TouchableOpacity
+              disabled={isGoogleLoading}
+              onPress={handleGoogleSignIn}
+              style={[styles.socialButton, { 
+                backgroundColor: colors.background.secondary,
+                borderColor: colors.border.primary,
+                marginBottom: 12
+              }]}
+            >
+              {isGoogleLoading ? (
+                <ActivityIndicator color="#4285F4" size="small" />
+              ) : (
+                <>
+                  <IconByVariant name="google" size={20} />
+                  <Text style={[styles.socialButtonText, { color: colors.text.primary }]}>
+                    Sign in with Google
+                  </Text>
+                </>
+              )}
+            </TouchableOpacity>
 
-              <TouchableOpacity
-                style={[styles.socialButton, { 
-                  backgroundColor: colors.background.secondary,
-                  borderColor: colors.border.primary
-                }]}
-              >
-                <IconByVariant color={colors.text.primary} name="apple" size={20} />
-                <Text style={[styles.socialButtonText, { color: colors.text.primary }]}>
-                  Sign in
-                </Text>
-              </TouchableOpacity>
-            </View>
+            {/* Google Error Message - Removed for clean UI */}
+
+            <TouchableOpacity
+              disabled={isAppleLoading}
+              onPress={handleAppleSignIn}
+              style={[styles.socialButton, { 
+                backgroundColor: '#000000',
+                borderColor: colors.border.primary
+              }]}
+            >
+              {isAppleLoading ? (
+                <ActivityIndicator color="#FFFFFF" size="small" />
+              ) : (
+                <>
+                  <IconByVariant name="apple" size={20} color="#FFFFFF" />
+                  <Text style={[styles.socialButtonText, { color: '#FFFFFF' }]}>
+                    Sign in with Apple
+                  </Text>
+                </>
+              )}
+            </TouchableOpacity>
+
+            {/* Apple Error Message - Removed for clean UI */}
 
             {/* Sign Up Link */}
             <View style={styles.signUpRow}>
@@ -355,7 +472,7 @@ const styles = StyleSheet.create({
   divider: {
     alignItems: 'center',
     flexDirection: 'row',
-    marginBottom: 20,
+    marginBottom: 10,
   },
   dividerLine: {
     flex: 1,
@@ -373,7 +490,7 @@ const styles = StyleSheet.create({
     zIndex: 1,
   },
   fieldContainer: {
-    marginBottom: 16,
+    marginBottom: 6,
   },
   forgotLink: {
     fontSize: 14,
@@ -414,8 +531,8 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   logo: {
-    height: 32,
-    width: 32,
+    height: 80,
+    width: 80,
   },
   logoContainer: {
     alignItems: 'center',
@@ -432,7 +549,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 20,
+    marginBottom: 10,
   },
   scrollContent: {
     flexGrow: 1,
@@ -445,7 +562,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     height: 48,
     justifyContent: 'center',
-    marginBottom: 20,
+    marginBottom: 10,
   },
   signInButtonText: {
     fontSize: 16,
@@ -468,17 +585,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderRadius: 12,
     borderWidth: 1,
-    flex: 1,
     flexDirection: 'row',
     gap: 8,
     height: 48,
     justifyContent: 'center',
-  },
-  socialButtons: {
-    flexDirection: 'row',
-    gap: 12,
-    justifyContent: 'space-between',
-    marginBottom: 24,
+    marginBottom: 10,
   },
   socialButtonText: {
     fontSize: 16,
@@ -504,8 +615,8 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   subtitle: {
-    fontSize: 16,
-    marginBottom: 20,
+    fontSize: 13,
+    marginBottom: 12,
     textAlign: 'center',
   },
   textInput: {
@@ -517,9 +628,43 @@ const styles = StyleSheet.create({
     paddingRight: 48,
   },
   title: {
-    fontSize: 28,
+    fontSize: 22,
     fontWeight: 'bold',
-    marginBottom: 6,
+    marginBottom: 2,
     textAlign: 'center',
+  },
+  errorContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#fef2f2',
+    borderWidth: 1,
+    borderColor: '#fecaca',
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    marginBottom: 12,
+    marginTop: 8,
+  },
+  errorText: {
+    flex: 1,
+    fontSize: 14,
+    lineHeight: 20,
+  },
+  dismissButton: {
+    marginLeft: 8,
+    padding: 4,
+  },
+  dismissText: {
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  errorMessage: {
+    marginBottom: 12,
+    marginTop: 8,
+  },
+  socialErrorMessage: {
+    marginBottom: 8,
+    marginTop: 4,
   },
 });

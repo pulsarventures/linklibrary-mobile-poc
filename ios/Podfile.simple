@@ -1,0 +1,36 @@
+require_relative '../node_modules/react-native/scripts/react_native_pods'
+require_relative '../node_modules/@react-native-community/cli-platform-ios/native_modules'
+
+platform :ios, '12.4'
+prepare_react_native_project!
+
+target 'linklibrary_mobile' do
+  config = use_native_modules!
+
+  use_react_native!(
+    :path => config[:reactNativePath],
+    :app_path => "#{Pod::Config.instance.installation_root}/..",
+    :fabric_enabled => false,
+    :hermes_enabled => true
+  )
+
+  # Firebase
+  pod 'Firebase/Core'
+  pod 'Firebase/Auth'
+
+  post_install do |installer|
+    react_native_post_install(
+      installer,
+      config[:reactNativePath],
+      :mac_catalyst_enabled => false
+    )
+    
+    installer.pods_project.targets.each do |target|
+      target.build_configurations.each do |config|
+        config.build_settings['RCT_NEW_ARCH_ENABLED'] = '0'
+        config.build_settings['RCT_FABRIC_ENABLED'] = '0'
+        config.build_settings['RCT_TURBO_MODULE_ENABLED'] = '0'
+      end
+    end
+  end
+end

@@ -1,36 +1,37 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Image, ImageProps, View, ActivityIndicator, StyleSheet } from 'react-native';
+import React, { useEffect, useRef, useState } from 'react';
+import { ActivityIndicator, Image, ImageProps, StyleSheet, View } from 'react-native';
+
 import { useTheme } from '@/theme';
 
-interface CachedImageProps extends Omit<ImageProps, 'source'> {
-  src: string;
-  fallback?: React.ReactNode;
-  onLoad?: () => void;
-  onError?: () => void;
-  showLoadingIndicator?: boolean;
-}
+type CachedImageProps = {
+  readonly fallback?: React.ReactNode;
+  readonly onError?: () => void;
+  readonly onLoad?: () => void;
+  readonly showLoadingIndicator?: boolean;
+  readonly src: string;
+} & Omit<ImageProps, 'source'>
 
 // Simple in-memory cache for images
-const imageCache = new Map<string, { loaded: boolean; error: boolean }>();
+const imageCache = new Map<string, { error: boolean; loaded: boolean; }>();
 
 export function CachedImage({ 
-  src, 
   fallback, 
-  onLoad, 
   onError, 
-  showLoadingIndicator = true,
+  onLoad, 
+  showLoadingIndicator = true, 
+  src,
   style,
   ...props 
 }: CachedImageProps) {
   const { colors } = useTheme();
-  const [imageState, setImageState] = useState<'loading' | 'loaded' | 'error'>(() => {
+  const [imageState, setImageState] = useState<'error' | 'loaded' | 'loading'>(() => {
     const cached = imageCache.get(src);
     if (cached?.loaded) return 'loaded';
     if (cached?.error) return 'error';
     return 'loading';
   });
 
-  const imageRef = useRef<Image>(null);
+  const imageReference = useRef<Image>(null);
 
   useEffect(() => {
     if (!src) {
@@ -56,13 +57,13 @@ export function CachedImage({
   }, [src, onLoad, onError]);
 
   const handleLoad = () => {
-    imageCache.set(src, { loaded: true, error: false });
+    imageCache.set(src, { error: false, loaded: true });
     setImageState('loaded');
     onLoad?.();
   };
 
   const handleError = () => {
-    imageCache.set(src, { loaded: false, error: true });
+    imageCache.set(src, { error: true, loaded: false });
     setImageState('error');
     onError?.();
   };
@@ -80,22 +81,22 @@ export function CachedImage({
   if (imageState === 'loading' && showLoadingIndicator) {
     return (
       <View style={[styles.container, style]}>
-        <ActivityIndicator size="small" color={colors.text.primary} />
+        <ActivityIndicator color={colors.text.primary} size="small" />
       </View>
     );
   }
 
   return (
     <Image
-      ref={imageRef}
+      onError={handleError}
+      onLoad={handleLoad}
+      ref={imageReference}
       source={{ uri: src }}
       style={[
         styles.image,
         imageState === 'loading' && styles.loading,
         style,
       ]}
-      onLoad={handleLoad}
-      onError={handleError}
       {...props}
     />
   );
@@ -103,19 +104,19 @@ export function CachedImage({
 
 const styles = StyleSheet.create({
   container: {
-    justifyContent: 'center',
     alignItems: 'center',
+    justifyContent: 'center',
+  },
+  fallback: {
+    borderRadius: 8,
+    height: '100%',
+    width: '100%',
   },
   image: {
-    width: '100%',
     height: '100%',
+    width: '100%',
   },
   loading: {
     opacity: 0,
-  },
-  fallback: {
-    width: '100%',
-    height: '100%',
-    borderRadius: 8,
   },
 }); 

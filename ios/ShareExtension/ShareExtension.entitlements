@@ -4,7 +4,7 @@
 <dict>
 	<key>com.apple.security.application-groups</key>
 	<array>
-		<string>group.com.pulsarventures.linklibraryai</string>
+		<string>group.com.pulsarventures.linklibrary.ai</string>
 	</array>
 </dict>
 </plist>

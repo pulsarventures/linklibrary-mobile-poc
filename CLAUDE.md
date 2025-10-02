@@ -191,9 +191,49 @@ npm run clean:build
 - Test token refresh logic
 - Check network interceptors
 
+## API Endpoint Conventions
+**Standard: No trailing slashes on any endpoints**
+
+As of the latest backend update, all API endpoints accept both with and without trailing slashes. For consistency, we use no trailing slashes throughout the codebase.
+
+```typescript
+// ✅ Standard endpoint patterns (no trailing slashes)
+apiClient.post('/tags', data);         // Create tag
+apiClient.get('/tags', params);        // List tags
+apiClient.get(`/tags/${id}`);          // Get single tag
+apiClient.put(`/tags/${id}`, data);    // Update tag
+apiClient.delete(`/tags/${id}`);       // Delete tag
+
+apiClient.post('/links', data);        // Create link  
+apiClient.get('/links', params);       // List links
+apiClient.get(`/links/${id}`);         // Get single link
+apiClient.put(`/links/${id}`, data);   // Update link
+apiClient.delete(`/links/${id}`);      // Delete link
+
+apiClient.post('/collections', data);  // Create collection
+apiClient.get('/collections', params); // List collections
+apiClient.get(`/collections/${id}`);   // Get single collection
+apiClient.put(`/collections/${id}`, data); // Update collection
+apiClient.delete(`/collections/${id}`);// Delete collection
+```
+
+**Historical Note:** Previously, the backend would 307 redirect collection endpoints from non-trailing to trailing slash URLs, causing authentication headers to be dropped. This has been fixed server-side.
+
+## Authentication Token Handling
+The API returns epoch timestamps for token expiration (not duration in seconds):
+- `access_token_expires_at` - Unix epoch timestamp in seconds
+- `refresh_token_expires_at` - Unix epoch timestamp in seconds
+
+These must be multiplied by 1000 when storing to convert to JavaScript milliseconds:
+```typescript
+const accessTokenExpiry = tokenData.access_token_expires_at * 1000;
+const refreshTokenExpiry = tokenData.refresh_token_expires_at * 1000;
+```
+
 ## Important Notes
 - Always use `--legacy-peer-deps` with npm install (TypeScript ESLint peer dependency conflicts)
 - Run `npm run lint` before committing
 - Test on both iOS and Android before pushing
 - Share Extension is iOS-only feature
 - Keep React Native at 0.78.2 (newer versions may break Share Extension)
+- Token expiry times from API are epoch timestamps, not durations

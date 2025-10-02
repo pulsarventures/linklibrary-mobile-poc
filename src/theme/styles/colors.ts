@@ -105,91 +105,97 @@ export const getColorScheme = (color: ColorOption  ): ColorScheme => {
 
 export const LIGHT_COLORS: ThemeColors = {
   accent: {
-    primary: '#000000'
+    primary: '#F25D15',  // Web brand orange
+    secondary: '#236CE2' // Web brand blue
   },
   background: {
     error: '#fef2f2',
-    primary: '#ffffff',
-    secondary: '#f8f9fa',
-    subtle: '#f8f9fa',
-    surface: '#ffffff',
-    tertiary: '#e5e7eb'
+    primary: '#ffffff',    // Pure white from web
+    secondary: '#f4f4f5',  // Light gray from web
+    subtle: '#f4f4f5',     // Muted background from web
+    surface: '#ffffff',    // Card background from web
+    tertiary: '#e4e4e7'    // Border color from web
   },
   border: {
-    primary: '#e5e7eb'
+    primary: '#e4e4e7'     // Web border color
   },
-  card: '#ffffff',
+  card: '#ffffff',         // Web card background
   error: '#ef4444',
-  muted: '#f8f9fa',
-  success: '#22c55e',
+  muted: '#f4f4f5',        // Web muted background
+  success: '#16a34a',      // Web success green
   text: {
     error: '#ef4444',
     inverse: '#ffffff',
-    primary: '#000000',
-    secondary: '#6b7280',
+    primary: '#0a0a0a',    // Web near black
+    secondary: '#71717a',  // Web muted text
     tertiary: '#9ca3af'
   }
 };
 
 export const DARK_COLORS: ThemeColors = {
   accent: {
-    primary: '#ffffff'
+    primary: '#FF6B35',    // Web brighter orange for dark
+    secondary: '#3B82F6'   // Web brighter blue for dark
   },
   background: {
     error: '#450a0a',
-    primary: '#1a1b1f',    // Dark blue-gray background like in screenshots
-    secondary: '#252730',   // Slightly lighter for cards/surfaces
-    subtle: '#2d2f38',     // For subtle backgrounds
-    surface: '#252730',    // Card backgrounds
-    tertiary: '#373943'    // For borders and dividers
+    primary: '#0c0a0f',    // Web very dark blue
+    secondary: '#2d3748',  // Web dark gray
+    subtle: '#2d3748',     // Web muted dark background
+    surface: '#0c0a0f',    // Web dark card background
+    tertiary: '#2d3748'    // Web dark border
   },
   border: {
-    primary: '#373943'     // Subtle border color
+    primary: '#2d3748'     // Web dark border
   },
-  card: '#252730',         // Card background matching screenshots
-  error: '#ef4444',
-  muted: '#373943',
-  success: '#22c55e',
+  card: '#0c0a0f',         // Web dark card background
+  error: '#b91c1c',        // Web darker red
+  muted: '#2d3748',        // Web muted dark background
+  success: '#16a34a',      // Web success green
   text: {
-    error: '#ef4444',
-    inverse: '#1a1b1f',
-    primary: '#ffffff',     // White text for good contrast
-    secondary: '#a1a1aa',   // Light gray for secondary text
-    tertiary: '#71717a'     // Muted gray for tertiary text
+    error: '#b91c1c',      // Web darker red
+    inverse: '#0c0a0f',    // Web dark background
+    primary: '#f8fafc',    // Web near white
+    secondary: '#94a3b8',  // Web muted light text
+    tertiary: '#71717a'    // Web muted gray
   }
 };
 
 export type ColorTheme = 'dark' | 'light';
 
-// Light theme colors (default)
+// Light theme colors (default) - Updated to match web design
 export const PRIMARY_COLORS = {
-  background: "#FFFFFF",           // White background
-  border: "#E5E7EB",             // Light gray border
+  background: "#FFFFFF",           // Pure white from web
+  border: "#E4E4E7",             // Web border color
   error: "#EF4444",               // Red error
   overlay: "rgba(0, 0, 0, 0.5)",   // Modal overlays
-  primary: "#000000",             // Black primary
-  primaryGradient: ["#000000", "#374151"], // Black to dark gray gradient
-  secondary: "#6B7280",           // Gray secondary
+  primary: "#F25D15",             // Web brand orange
+  primaryGradient: ["#236CE2", "#F25D15"], // Web blue to orange gradient
+  secondary: "#71717A",           // Web muted text
   social: {
     apple: {
       background: "#000000",
-      border: "#374151",
+      border: "#2D3748",          // Web dark border
       text: "#FFFFFF"
     },
     google: {
       background: "#FFFFFF",
-      border: "#E5E7EB",
-      text: "#000000"
+      border: "#E4E4E7",          // Web border
+      text: "#0A0A0A"             // Web near black
     }
   },
-  success: "#10B981",             // Green success
-  surface: "#F8F9FA",             // Very light gray surface
+  success: "#16A34A",             // Web success green
+  surface: "#F4F4F5",             // Web light gray surface
   text: {
-    muted: "#9CA3AF",             // Light gray text
-    primary: "#000000",           // Black text
-    secondary: "#6B7280"         // Medium gray text
+    muted: "#71717A",             // Web muted text
+    primary: "#0A0A0A",           // Web near black
+    secondary: "#71717A"          // Web muted text
   },
-  warning: "#F59E0B"             // Orange warning
+  warning: "#F59E0B",             // Orange warning
+  // Web brand colors
+  accentOrange: "#F25D15",        // Main brand orange
+  accentCerulean: "#236CE2",      // Brand blue
+  logoPink: "#E25C64"             // Brand pink
 } as const;
 
 export type Colors = typeof PRIMARY_COLORS; 

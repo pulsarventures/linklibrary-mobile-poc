@@ -63,10 +63,29 @@ export const useCollectionsStore = create<CollectionsState>()(
           if (!isAuthenticated) {
             throw new Error('Authentication required. Please log in.');
           }
-          await CollectionsApiService.deleteCollection(id);
+          
+          // Store the collection for potential rollback
+          const deletedCollection = get().collections.find(c => c.id === id);
+          
+          // Optimistically remove the collection immediately
           set((s) => ({
             collections: s.collections.filter((c) => c.id !== id)
           }));
+          
+          try {
+            // Delete on backend
+            await CollectionsApiService.deleteCollection(id);
+          } catch (error) {
+            // Rollback on error - restore the collection
+            if (deletedCollection) {
+              set((s) => ({
+                collections: [...s.collections, deletedCollection].sort((a, b) => 
+                  new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+                )
+              }));
+            }
+            throw error; // Re-throw to handle in UI
+          }
         },
         error: null,
 
@@ -85,8 +104,8 @@ export const useCollectionsStore = create<CollectionsState>()(
 
           // Don't fetch if not authenticated
           if (!isAuthenticated) {
-            // User not authenticated
-            set({ error: 'Authentication required. Please log in.', loading: false });
+            // User not authenticated - reset store and return silently
+            get().resetStore();
             return;
           }
 
@@ -110,26 +129,53 @@ export const useCollectionsStore = create<CollectionsState>()(
           }));
 
           try {
-            // Fetching collections
-            const response = await CollectionsApiService.getCollections(parameters);
-            set({
-              collections: response.items ?? [],
-              currentParams: parameters,
-              lastFetchTime: Date.now(),
-              loaded: true,
-              loading: false,
-            });
-            // Fetch successful
-          } catch (error) {
-            console.error('🔍 FETCHCOLLECTIONS ERROR:', error);
-            // If auth error, reset the store
-            if (error instanceof Error && 
-               (error.message.includes('Authentication required') || 
-                error.message.includes('Session expired'))) {
-              get().resetStore();
+            let lastError: Error;
+
+            // Retry logic for timeouts and server errors
+            for (let attempt = 1; attempt <= 3; attempt++) {
+              try {
+                // Fetching collections
+                const response = await CollectionsApiService.getCollections(parameters);
+                set({
+                  collections: response.items ?? [],
+                  currentParams: parameters,
+                  lastFetchTime: Date.now(),
+                  loaded: true,
+                  loading: false,
+                });
+                // Fetch successful
+                return;
+              } catch (error) {
+                lastError = error instanceof Error ? error : new Error('Unknown error');
+
+                // If auth error, reset the store and don't retry
+                if (lastError.message.includes('Authentication required') ||
+                    lastError.message.includes('Session expired')) {
+                  get().resetStore();
+                  throw lastError;
+                }
+
+                // Only retry for timeout/server errors
+                const shouldRetry = lastError.message.includes('timeout') ||
+                                  lastError.message.includes('Server error') ||
+                                  lastError.message.includes('504') ||
+                                  lastError.message.includes('502') ||
+                                  lastError.message.includes('503');
+
+                if (!shouldRetry || attempt === 3) {
+                  console.error(`🔍 FETCHCOLLECTIONS ERROR (attempt ${attempt}):`, lastError);
+                  break;
+                }
+
+                // Wait before retrying (exponential backoff)
+                const delay = attempt === 1 ? 1000 : attempt === 2 ? 3000 : 5000;
+                console.warn(`🔍 FETCHCOLLECTIONS retry ${attempt} in ${delay}ms:`, lastError.message);
+                await new Promise(resolve => setTimeout(resolve, delay));
+              }
             }
-            set({ error: error instanceof Error ? error.message : 'Failed to fetch collections', loading: false });
-            throw error;
+
+            set({ error: lastError.message, loading: false });
+            throw lastError;
           } finally {
             set((s) => {
               const r = new Set(s.activeRequests);

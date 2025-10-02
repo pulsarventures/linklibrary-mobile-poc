@@ -6,13 +6,13 @@ export type ApiError = {
 
 export type AuthResponse = {
   access_token: string;
-  access_token_expires_in: number;
   access_token_expires_at?: number; // New epoch timestamp from API
+  access_token_expires_in: number;
   is_revoked: boolean;
   message?: string;
   refresh_token: string;
-  refresh_token_expires_in: number;
   refresh_token_expires_at?: number; // New epoch timestamp from API
+  refresh_token_expires_in: number;
   token_type: string;
   user: User;
 }

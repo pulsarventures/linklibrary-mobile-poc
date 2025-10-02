@@ -6,8 +6,8 @@ import { Platform, StyleSheet, TouchableOpacity, View } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { SPACING } from '@/theme/styles/spacing';
 import { useTheme } from '@/theme';
+import { SPACING } from '@/theme/styles/spacing';
 
 import { IconByVariant } from '@/components/atoms';
 import { Text } from '@/components/ui/Text';
@@ -34,9 +34,9 @@ function CustomTabBar({ descriptors, navigation, state }: BottomTabBarProps) {
     <View style={[
       styles.container, 
       { 
-        paddingBottom: insets.bottom,
         backgroundColor: colors.background.primary,
-        borderTopColor: colors.border.primary
+        borderTopColor: colors.border.primary,
+        paddingBottom: insets.bottom
       }
     ]}>
       {visibleRoutes.map((route, index) => {
@@ -70,41 +70,55 @@ function CustomTabBar({ descriptors, navigation, state }: BottomTabBarProps) {
             style={styles.tab}
           >
             {isFocused && !isSearchTab ? (
-              <LinearGradient
-                colors={isDark ? ['#ffffff', '#a1a1aa'] : ['#000000', '#374151']}
-                end={{ x: 1, y: 0 }}
-                start={{ x: 0, y: 0 }}
-                style={styles.activeIndicator}
+              <View
+                style={[
+                  styles.activeIndicator,
+                  { backgroundColor: isDark ? '#3B82F6' : '#236CE2' }
+                ]}
               />
             ) : null}
-            
+
             {isSearchTab ? (
-              <LinearGradient
-                colors={isDark ? ['#4a4a4a', '#2a2a2a'] : [colors.accent.primary, colors.accent.primary + 'AA']}
-                end={{ x: 1, y: 1 }}
-                start={{ x: 0, y: 0 }}
-                style={styles.searchButton}
+              <View
+                style={[
+                  styles.searchButton,
+                  {
+                    backgroundColor: colors.background.primary,
+                    borderWidth: 2,
+                    borderColor: colors.text.tertiary,
+                    marginTop: -35
+                  }
+                ]}
               >
-                <IconByVariant
-                  color={isDark ? '#ffffff' : colors.text.inverse}
-                  name={TAB_ICONS[route.name] || 'message-circle'}
-                  size={24}
-                />
-              </LinearGradient>
+                <View
+                  style={[
+                    styles.searchButtonInner,
+                    {
+                      backgroundColor: isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.05)',
+                    }
+                  ]}
+                >
+                  <IconByVariant
+                    color={colors.text.tertiary}
+                    name={TAB_ICONS[route.name] || 'message-circle'}
+                    size={24}
+                  />
+                </View>
+              </View>
             ) : (
               <IconByVariant
-                color={isFocused ? colors.text.primary : colors.text.tertiary}
+                color={isFocused ? (isDark ? '#3B82F6' : '#236CE2') : colors.text.tertiary}
                 name={TAB_ICONS[route.name] || 'link'}
                 size={isFocused ? 24 : 22}
               />
             )}
-            
+
             {!isSearchTab && (
               <Text
                 style={[
                   styles.label,
                   {
-                    color: isFocused ? colors.text.primary : colors.text.tertiary,
+                    color: isFocused ? (isDark ? '#3B82F6' : '#236CE2') : colors.text.tertiary,
                     fontWeight: isFocused ? '600' : '500'
                   }
                 ]}
@@ -153,6 +167,13 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 12,
     width: 52,
+  },
+  searchButtonInner: {
+    alignItems: 'center',
+    borderRadius: 24,
+    height: 48,
+    justifyContent: 'center',
+    width: 48,
   },
   tab: {
     alignItems: 'center',

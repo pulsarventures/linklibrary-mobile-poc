@@ -4,6 +4,7 @@ import { apiClient } from './api/client';
 
 export const TagsApiService = {
   async createTag(data: Pick<Tag, 'color' | 'name'>): Promise<Tag> {
+    console.log('🏷️ Creating tag via API:', data);
     return apiClient.post('/tags', data);
   },
 

@@ -1,27 +1,29 @@
 import 'react-native-gesture-handler';
 
+import ShareReceiver from '@/share/ShareReceiver'; // Android share handling
+import { setupErrorHandling } from '@/utils/errorHandler';
+import './utils/clearLogoutFlagNow'; // Import for global debugging utilities
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import i18n from 'i18next';
 import React, { useEffect, useRef, useState } from 'react';
 import { I18nextProvider } from 'react-i18next';
-import { ActivityIndicator, View } from 'react-native';
+import { ActivityIndicator, Text, View } from 'react-native';
+import { AppState, Linking, NativeModules } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { enableScreens } from 'react-native-screens';
 import Toast from 'react-native-toast-message';
+import { getToastConfig, getText1Style, getText2Style } from '@/utils/toastConfig';
 
+import { useAuthStore } from '@/hooks/domain/user/useAuthStore';
+import { useBackgroundDataLoader } from '@/hooks/useBackgroundDataLoader';
 import ApplicationNavigator from '@/navigation/Application';
+import { navigationRef } from '@/navigation/paths';
+import { storageService } from '@/services/storage';
 import { ThemeProvider } from '@/theme';
 import { initializeI18n } from '@/translations';
 
 import { ErrorBoundary } from '@/components/organisms';
-
-import { setupErrorHandling } from '@/utils/errorHandler';
-import ShareReceiver from '@/share/ShareReceiver'; // Android share handling
-import { AppState, Linking, NativeModules } from 'react-native';
-
-import { useAuthStore } from '@/hooks/domain/user/useAuthStore';
-import { navigationRef } from '@/navigation/paths';
-import { useBackgroundDataLoader } from '@/hooks/useBackgroundDataLoader';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const { AppGroupsModule } = NativeModules;
 // Remove expensive native module logging on every startup
@@ -42,31 +44,19 @@ enableScreens();
 export const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      retry: 1, // Reduce retries for faster failure handling
-      staleTime: 5 * 60 * 1000, // 5 minutes
       gcTime: 30 * 60 * 1000, // 30 minutes - keep data longer
       placeholderData: (previousData: unknown) => previousData || [],
+      retry: 1, // Reduce retries for faster failure handling
       select: (data) => data || [],
+      staleTime: 5 * 60 * 1000, // 5 minutes
       // Enable background refetch for better UX
-      refetchOnWindowFocus: false,
       refetchOnMount: 'always',
+      refetchOnWindowFocus: false,
     },
   },
 });
 
 // Component that uses QueryClient hooks - must be inside QueryClientProvider
-function AppContent() {
-  // Initialize background data loading for better UX
-  useBackgroundDataLoader();
-
-  return (
-    <>
-      <ApplicationNavigator />
-      <Toast />
-    </>
-  );
-}
-
 function App() {
   const [isI18nInitialized, setIsI18nInitialized] = useState(false);
   const pendingSharedUrl = useRef<null | string>(null);
@@ -82,51 +72,124 @@ function App() {
     });
   }, []);
 
+  // FIX: Clear stuck logout flag on app startup ONLY if valid tokens exist
+  useEffect(() => {
+    const clearStuckLogoutFlag = async () => {
+      try {
+        // Add timeout to prevent app freeze if storage is slow
+        const timeoutPromise = new Promise((_, reject) =>
+          setTimeout(() => reject(new Error('Logout flag check timeout')), 3000)
+        );
+
+        const checkPromise = (async () => {
+          const hasLoggedOut = await AsyncStorage.getItem('@has_logged_out');
+          if (hasLoggedOut === 'true') {
+            // Check if there are valid tokens before clearing the logout flag
+            const accessToken = await storageService.getAccessToken();
+            const refreshToken = await storageService.getRefreshToken();
+            const isAccessTokenValid = await storageService.isAccessTokenValid();
+
+            if (accessToken && refreshToken && isAccessTokenValid) {
+              console.log('🔧 FIXING STUCK LOGOUT FLAG - Valid tokens found, clearing logout flag');
+              await AsyncStorage.removeItem('@has_logged_out');
+              console.log('✅ Stuck logout flag cleared successfully');
+            } else {
+              console.log('🔒 LOGOUT FLAG PRESERVED - No valid tokens found, keeping user logged out');
+
+              // If we're supposed to be logged out but Google thinks we're signed in, clear Google state
+              try {
+                const { hasPreviousSignIn } = await import('@/services/auth/googleAuth');
+                const isGoogleSignedIn = await hasPreviousSignIn();
+                if (isGoogleSignedIn) {
+                  console.log('🔐 Clearing Google sign-in state due to logout flag');
+                  const { signOutFromGoogle } = await import('@/services/auth/googleAuth');
+                  await signOutFromGoogle();
+                }
+              } catch (googleError) {
+                console.log('⚠️ Could not clear Google state:', googleError);
+              }
+            }
+          }
+        })();
+
+        await Promise.race([checkPromise, timeoutPromise]);
+      } catch (error) {
+        if (error instanceof Error && error.message === 'Logout flag check timeout') {
+          console.warn('⚠️ Logout flag check timed out - continuing app startup');
+        } else {
+          console.error('Failed to clear stuck logout flag:', error);
+        }
+      }
+    };
+
+    clearStuckLogoutFlag();
+  }, []);
+
   // Share handling functions - these don't need QueryClient
   const handleSharedUrl = (url: string) => {
-    console.log('🔴🔴🔴 handleSharedUrl called with:', url);
+    if (__DEV__) {
+      console.log('🔴🔴🔴 handleSharedUrl called with:', url);
+    }
     
     // Validate URL first
-    if (!url?.startsWith('http')) {
-      console.log('🔴🔴🔴 Invalid URL, not http/https');
+    if (!url.startsWith('http')) {
+      if (__DEV__) {
+        console.log('🔴🔴🔴 Invalid URL, not http/https');
+      }
       return;
     }
     
     // Check if user is authenticated
     const { initialized, isAuthenticated } = useAuthStore.getState();
-    console.log('🔴🔴🔴 Auth state:', { initialized, isAuthenticated });
+    if (__DEV__) {
+      console.log('🔴🔴🔴 Auth state:', { initialized, isAuthenticated });
+    }
     
     if (!initialized) {
       // Store the URL to process later when auth is initialized
-      console.log('🔴🔴🔴 Auth not initialized, storing URL for later');
+      if (__DEV__) {
+        console.log('🔴🔴🔴 Auth not initialized, storing URL for later');
+      }
       pendingSharedUrl.current = url;
       return;
     }
     
     if (!isAuthenticated) {
       // Store the URL to process after user logs in
-      console.log('🔴🔴🔴 User not authenticated, storing URL for later');
+      if (__DEV__) {
+        console.log('🔴🔴🔴 User not authenticated, storing URL for later');
+      }
       pendingSharedUrl.current = url;
       return;
     }
     
     // Navigate to Add screen with shared URL
-    console.log('🔴🔴🔴 All checks passed, navigating to Add screen');
+    if (__DEV__) {
+      console.log('🔴🔴🔴 All checks passed, navigating to Add screen');
+    }
     navigateToAddScreen(url);
   };
 
   // Check for shared content from iOS share extension
   const checkForSharedContent = async () => {
-    console.log('🔴🔴🔴 checkForSharedContent called');
+    if (__DEV__) {
+      console.log('🔴🔴🔴 checkForSharedContent called');
+    }
     try {
       if (!AppGroupsModule) {
-        console.log('🔴🔴🔴 NO AppGroupsModule - iOS share extension not available');
+        if (__DEV__) {
+          console.log('🔴🔴🔴 NO AppGroupsModule - iOS share extension not available');
+        }
         return;
       }
 
-      console.log('🔴🔴🔴 Calling AppGroupsModule.getSharedContent()');
+      if (__DEV__) {
+        console.log('🔴🔴🔴 Calling AppGroupsModule.getSharedContent()');
+      }
       const sharedData = await AppGroupsModule.getSharedContent();
-      console.log('🔴🔴🔴 Shared data received:', JSON.stringify(sharedData));
+      if (__DEV__) {
+        console.log('🔴🔴🔴 Shared data received:', JSON.stringify(sharedData));
+      }
       
       if (sharedData) {
         let url = '';
@@ -141,17 +204,25 @@ function App() {
         }
         
         if (url) {
-          console.log('🔴🔴🔴 Found URL to share:', url);
+          if (__DEV__) {
+            console.log('🔴🔴🔴 Found URL to share:', url);
+          }
           handleSharedUrl(url);
           // Clear the shared data after processing
-          AppGroupsModule.clearSharedContent?.().catch((err: any) => 
-            console.log('🔴🔴🔴 Error clearing shared content:', err)
-          );
+          AppGroupsModule.clearSharedContent?.().catch((error: any) => {
+            if (__DEV__) {
+              console.log('🔴🔴🔴 Error clearing shared content:', error);
+            }
+          });
         } else {
-          console.log('🔴🔴🔴 No URL found in shared data');
+          if (__DEV__) {
+            console.log('🔴🔴🔴 No URL found in shared data');
+          }
         }
       } else {
-        console.log('🔴🔴🔴 No shared data available');
+        if (__DEV__) {
+          console.log('🔴🔴🔴 No shared data available');
+        }
       }
     } catch (error) {
       console.error('🔴🔴🔴 Error checking for shared content:', error);
@@ -159,17 +230,34 @@ function App() {
   };
 
   const navigateToAddScreen = (url: string) => {
-    console.log('🔴🔴🔴 navigateToAddScreen called with URL:', url);
-    console.log('🔴🔴🔴 Navigation ready?', navigationRef.isReady());
+    if (__DEV__) {
+      console.log('🔴🔴🔴 navigateToAddScreen called with URL:', url);
+      console.log('🔴🔴🔴 Navigation ready?', navigationRef.isReady());
+    }
+    
+    // Check if user is authenticated
+    const { initialized, isAuthenticated } = useAuthStore.getState();
+    
+    if (!isAuthenticated || !initialized) {
+      if (__DEV__) {
+        console.log('🔴🔴🔴 User not authenticated, saving URL for later');
+      }
+      pendingSharedUrl.current = url;
+      return;
+    }
     
     if (navigationRef.isReady()) {
       try {
-        console.log('🔴🔴🔴 Executing navigation to Main > Add');
+        if (__DEV__) {
+          console.log('🔴🔴🔴 Executing navigation to Main > Add');
+        }
         navigationRef.navigate('Main', {
-          screen: 'Add',
-          params: { sharedUrl: url }
+          params: { sharedUrl: url },
+          screen: 'Add'
         });
-        console.log('🔴🔴🔴 Navigation command completed');
+        if (__DEV__) {
+          console.log('🔴🔴🔴 Navigation command completed');
+        }
       } catch (error) {
         console.error('🔴🔴🔴 Error navigating to Add screen:', error);
         // Fallback: try direct navigation to Add
@@ -180,13 +268,26 @@ function App() {
         }
       }
     } else {
-      console.log('🔴🔴🔴 Navigation not ready, setting up listener');
+      if (__DEV__) {
+        console.log('🔴🔴🔴 Navigation not ready, setting up listener');
+      }
       // If navigation isn't ready, wait for it
       const unsubscribe = navigationRef.addListener('state', () => {
+        // Re-check authentication before navigating
+        const { isAuthenticated: isAuth } = useAuthStore.getState();
+        if (!isAuth) {
+          if (__DEV__) {
+            console.log('🔴🔴🔴 User not authenticated in listener, saving URL');
+          }
+          pendingSharedUrl.current = url;
+          unsubscribe();
+          return;
+        }
+        
         try {
           navigationRef.navigate('Main', {
-            screen: 'Add',
-            params: { sharedUrl: url }
+            params: { sharedUrl: url },
+            screen: 'Add'
           });
           unsubscribe();
         } catch (error) {
@@ -205,13 +306,11 @@ function App() {
   // Monitor auth state and process pending URL when user becomes authenticated
   useEffect(() => {
     const unsubscribe = useAuthStore.subscribe((state) => {
-      if (state.isAuthenticated && state.initialized) {
-        // Process pending shared URL
-        if (pendingSharedUrl.current) {
+      if (state.isAuthenticated && state.initialized && // Process pending shared URL
+        pendingSharedUrl.current) {
           navigateToAddScreen(pendingSharedUrl.current);
           pendingSharedUrl.current = null;
         }
-      }
     });
 
     return unsubscribe;
@@ -221,35 +320,35 @@ function App() {
   useEffect(() => {
     const handleAppStateChange = (nextAppState: string) => {
       if (nextAppState === 'active') {
-        console.log('🔴🔴🔴 App became active, checking for shared content');
+        if (__DEV__) {
+          console.log('🔴🔴🔴 App became active, checking for shared content');
+        }
         // Check for shared content when app becomes active
-        // Try multiple times in case share extension is still saving
-        setTimeout(() => checkForSharedContent(), 100);
+        // Only check once to avoid performance issues
         setTimeout(() => checkForSharedContent(), 500);
-        setTimeout(() => checkForSharedContent(), 1000);
       }
     };
 
-    // Check for shared content on mount with multiple attempts
-    console.log('🔴🔴🔴 App mounted, starting share content checks');
-    setTimeout(() => checkForSharedContent(), 500);
+    // Check for shared content on mount with single attempt
+    if (__DEV__) {
+      console.log('🔴🔴🔴 App mounted, starting share content checks');
+    }
     setTimeout(() => checkForSharedContent(), 1000);
-    setTimeout(() => checkForSharedContent(), 2000);
     
-    // TEST: Save test data and then read it
-    setTimeout(async () => {
-      console.log('🔴🔴🔴 TEST: Saving test data to App Group');
-      try {
-        await AppGroupsModule.testSaveSharedContent();
-        console.log('🔴🔴🔴 TEST: Test data saved, now reading it');
-        setTimeout(() => checkForSharedContent(), 100);
-      } catch (error) {
-        console.error('🔴🔴🔴 TEST: Failed to save test data:', error);
-      }
-    }, 3000);
+    // TEST: Save test data and then read it (DISABLED - only for testing)
+    // setTimeout(async () => {
+    //   console.log('🔴🔴🔴 TEST: Saving test data to App Group');
+    //   try {
+    //     await AppGroupsModule.testSaveSharedContent();
+    //     console.log('🔴🔴🔴 TEST: Test data saved, now reading it');
+    //     setTimeout(() => checkForSharedContent(), 100);
+    //   } catch (error) {
+    //     console.error('🔴🔴🔴 TEST: Failed to save test data:', error);
+    //   }
+    // }, 3000);
 
     const appStateSubscription = AppState.addEventListener('change', handleAppStateChange);
-    return () => appStateSubscription?.remove();
+    return () => { appStateSubscription.remove(); };
   }, []);
 
   // Handle deep link URL scheme
@@ -277,7 +376,7 @@ function App() {
       handleDeepLink(url);
     });
 
-    return () => linkingSubscription?.remove();
+    return () => { linkingSubscription.remove(); };
   }, []);
 
   if (!isI18nInitialized) {
@@ -301,6 +400,45 @@ function App() {
         </GestureHandlerRootView>
       </ErrorBoundary>
     </I18nextProvider>
+  );
+}
+
+function AppContent() {
+  // Initialize background data loading for better UX
+  useBackgroundDataLoader();
+
+  return (
+    <>
+      <ApplicationNavigator />
+      <Toast 
+        config={{
+          success: (props) => (
+            <View style={getToastConfig().success(props)}>
+              <Text style={getText1Style()}>{props.text1}</Text>
+              <Text style={getText2Style()}>{props.text2}</Text>
+            </View>
+          ),
+          error: (props) => (
+            <View style={getToastConfig().error(props)}>
+              <Text style={getText1Style()}>{props.text1}</Text>
+              <Text style={getText2Style()}>{props.text2}</Text>
+            </View>
+          ),
+          info: (props) => (
+            <View style={getToastConfig().info(props)}>
+              <Text style={getText1Style()}>{props.text1}</Text>
+              <Text style={getText2Style()}>{props.text2}</Text>
+            </View>
+          ),
+          warning: (props) => (
+            <View style={getToastConfig().warning(props)}>
+              <Text style={getText1Style()}>{props.text1}</Text>
+              <Text style={getText2Style()}>{props.text2}</Text>
+            </View>
+          ),
+        }}
+      />
+    </>
   );
 }
 

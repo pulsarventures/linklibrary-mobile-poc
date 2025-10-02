@@ -1,6 +1,6 @@
 import { fireEvent, render, screen } from '@testing-library/react-native';
 import { Button, Text, View } from 'react-native';
-import { MMKV } from 'react-native-mmkv';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import { ThemeProvider, useTheme } from '@/theme';
 
@@ -21,10 +21,15 @@ function TestChildComponent() {
 }
 
 describe('ThemeProvider', () => {
-  let storage: MMKV;
+  let storage: any;
 
   beforeEach(() => {
-    storage = new MMKV();
+    storage = {
+      set: jest.fn(),
+      getString: jest.fn(),
+      delete: jest.fn(),
+      clearAll: jest.fn(),
+    };
   });
 
   it('initializes with the default theme when no theme is defined in storage', () => {
@@ -37,8 +42,8 @@ describe('ThemeProvider', () => {
     expect(screen.getByText('default')).toBeTruthy();
   });
 
-  it('loads the theme from storage if defined', () => {
-    storage.set('theme', 'dark');
+  it('loads the theme from storage if defined', async () => {
+    storage.getString.mockResolvedValue('dark');
 
     render(
       <ThemeProvider storage={storage}>

@@ -3,17 +3,17 @@ import * as Keychain from 'react-native-keychain';
 
 export type TokenData = {
   access_token: string;
-  access_token_expires_in: number;
   access_token_expires_at?: number; // New epoch timestamp from API
+  access_token_expires_in: number;
   is_revoked: boolean;
   refresh_token: string;
-  refresh_token_expires_in: number;
   refresh_token_expires_at?: number; // New epoch timestamp from API
+  refresh_token_expires_in: number;
   token_type: string;
 }
 
 class SecureStorageService {
-  private static readonly SERVICE_NAME = 'com.pulsarventures.linklibraryai.auth';
+  private static readonly SERVICE_NAME = 'com.pulsarventures.linklibrary.ai.auth';
   
   private keychainAvailable = false; // Temporarily disable Keychain to avoid issues
   private lastValidityCheck = 0;
@@ -287,11 +287,11 @@ class SecureStorageService {
       // Verify the tokens were stored correctly
       const storedTokens = await this.getTokens();
       console.log('🔐 SECURE STORAGE: Verification - stored tokens:', {
-        accessTokenLength: storedTokens?.access_token?.length,
+        accessTokenLength: storedTokens?.access_token.length,
         hasAccessToken: !!storedTokens?.access_token,
         hasRefreshToken: !!storedTokens?.refresh_token,
         hasTokens: !!storedTokens,
-        refreshTokenLength: storedTokens?.refresh_token?.length
+        refreshTokenLength: storedTokens?.refresh_token.length
       });
       
     } catch (error) {

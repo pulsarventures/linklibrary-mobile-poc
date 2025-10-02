@@ -1,20 +1,26 @@
-import { GOOGLE_CLIENT_ID, IOS_CLIENT_ID, ANDROID_CLIENT_ID } from '@env';
-import { GoogleSignin, statusCodes, type User } from '@react-native-google-signin/google-signin';
-
+import { Platform } from 'react-native';
 import { safeErrorLog } from '@/utils/errorHandler';
+import { ANDROID_CLIENT_ID, GOOGLE_CLIENT_ID, IOS_CLIENT_ID } from '@env';
+import { GoogleSignin, statusCodes, type User } from '@react-native-google-signin/google-signin';
 
 // Initialize Google Sign-In
 if (!GOOGLE_CLIENT_ID || !IOS_CLIENT_ID || !ANDROID_CLIENT_ID) {
   throw new Error('Google Sign-In client IDs are not configured in environment variables');
 }
 
+// Google Sign-In Configuration
+
 GoogleSignin.configure({
-  webClientId: GOOGLE_CLIENT_ID,
-  iosClientId: IOS_CLIENT_ID,
   androidClientId: ANDROID_CLIENT_ID,
-  offlineAccess: true,
-  scopes: ['profile', 'email'],
   forceCodeForRefreshToken: true,
+  iosClientId: IOS_CLIENT_ID,
+  offlineAccess: false, // Disable offline access to prevent auto-restore
+  scopes: ['profile', 'email'],
+  webClientId: GOOGLE_CLIENT_ID,
+  // Force specific iOS client ID to override any cached config
+  ...(Platform.OS === 'ios' && {
+    iosClientId: '991185990145-70rnjqp744bkosp0e03nh97j4camu8mj.apps.googleusercontent.com'
+  })
 });
 
 type GoogleSignInResult = {
@@ -114,25 +120,30 @@ export async function signInWithGoogle(): Promise<GoogleSignInResult> {
       const code = (error as any).code;
       
       switch (code) {
-        case statusCodes.SIGN_IN_CANCELLED:
+        case statusCodes.SIGN_IN_CANCELLED: {
           throw new Error('Google Sign-In was cancelled by user');
-        case statusCodes.IN_PROGRESS:
+        }
+        case statusCodes.IN_PROGRESS: {
           throw new Error('Google Sign-In already in progress');
-        case statusCodes.PLAY_SERVICES_NOT_AVAILABLE:
+        }
+        case statusCodes.PLAY_SERVICES_NOT_AVAILABLE: {
           throw new Error('Google Play Services not available on this device');
-        case statusCodes.SIGN_IN_REQUIRED:
+        }
+        case statusCodes.SIGN_IN_REQUIRED: {
           throw new Error('User needs to sign in to Google first');
-        default:
+        }
+        default: {
           // Check for Android activity null error
-          if (error.message?.includes('activity is null')) {
+          if (error.message.includes('activity is null')) {
             throw new Error('Android Activity not ready. Please try again in a moment.');
           }
           throw new Error(`Google Sign-In failed with code: ${code} - ${error.message}`);
+        }
       }
     }
     
     // Handle Android-specific "activity is null" error
-    if (error instanceof Error && error.message?.includes('activity is null')) {
+    if (error instanceof Error && error.message.includes('activity is null')) {
       throw new Error('Android Activity not ready. Please try again in a moment.');
     }
     
@@ -142,17 +153,47 @@ export async function signInWithGoogle(): Promise<GoogleSignInResult> {
 
 export async function signOutFromGoogle(): Promise<void> {
   try {
+    // Starting Google Sign-Out process
+    
     // Check if user is currently signed in by trying to get current user
     const currentUser = await GoogleSignin.getCurrentUser();
     
     if (!currentUser) {
-      console.log('User not signed in to Google, skipping Google sign out');
+      // User not signed in to Google, skipping sign out
       return;
     }
     
+    // User found, proceeding with Google sign out
+    
+    // Step 1: Sign out from Google
     await GoogleSignin.signOut();
+    // Google Sign-Out completed
+    
+    // Step 2: Revoke access tokens
     await GoogleSignin.revokeAccess();
-    console.log('Google Sign-Out successful');
+    console.log('✅ Google access revoked');
+    
+    // Step 3: Clear any cached tokens (if method exists)
+    try {
+      // Note: clearCachedToken might not be available in all versions
+      if (typeof GoogleSignin.clearCachedToken === 'function') {
+        await GoogleSignin.clearCachedToken();
+        console.log('✅ Google cached tokens cleared');
+      } else {
+        console.log('ℹ️ clearCachedToken method not available');
+      }
+    } catch (clearError) {
+      console.log('⚠️ Could not clear cached tokens:', clearError);
+    }
+    
+    // Step 4: Verify sign out
+    const isStillSignedIn = await GoogleSignin.isSignedIn();
+    if (isStillSignedIn) {
+      console.warn('⚠️ User still appears to be signed in after sign out');
+    } else {
+      console.log('✅ Google Sign-Out verification successful');
+    }
+    
   } catch (error) {
     // Handle specific Google sign-out errors
     if (error instanceof Error && 'code' in error) {

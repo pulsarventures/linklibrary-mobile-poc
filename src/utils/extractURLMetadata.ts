@@ -1,9 +1,9 @@
-interface URLMetadata {
-  title?: string;
+type URLMetadata = {
   description?: string;
-  image?: string;
   favicon?: string;
+  image?: string;
   siteName?: string;
+  title?: string;
 }
 
 // Real metadata extractor that actually scrapes websites - React Native version
@@ -12,30 +12,6 @@ class MetadataExtractor {
   private static readonly CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 
   // React Native doesn't have CORS issues, so we can fetch directly
-  private static async fetchDirectly(url: string): Promise<Response | null> {
-    try {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => { controller.abort(); }, 8000);
-      
-      const response = await fetch(url, {
-        signal: controller.signal,
-        headers: {
-          'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-          'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 15_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.0 Mobile/15E148 Safari/604.1',
-        }
-      });
-      
-      clearTimeout(timeoutId);
-      
-      if (response.ok) {
-        return response;
-      }
-    } catch (error) {
-    }
-
-    return null;
-  }
-
   public static async extract(url: string): Promise<URLMetadata> {
     try {
       // Check cache first
@@ -49,7 +25,7 @@ class MetadataExtractor {
       
       if (response) {
         try {
-          let html = await response.text();
+          const html = await response.text();
           if (html && html.length > 100) {
             // Debug: check if HTML contains meta description
             if (url.includes('youtube.com')) {
@@ -75,10 +51,34 @@ class MetadataExtractor {
     }
   }
 
+  private static async fetchDirectly(url: string): Promise<null | Response> {
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => { controller.abort(); }, 8000);
+      
+      const response = await fetch(url, {
+        headers: {
+          'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+          'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 15_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.0 Mobile/15E148 Safari/604.1',
+        },
+        signal: controller.signal
+      });
+      
+      clearTimeout(timeoutId);
+      
+      if (response.ok) {
+        return response;
+      }
+    } catch {
+    }
+
+    return null;
+  }
+
   private static async getFavicon(url: string): Promise<string> {
     try {
       // React Native's URL doesn't have hostname property, extract it manually
-      const urlMatch = url.match(/^https?:\/\/([^\/]+)/);
+      const urlMatch = /^https?:\/\/([^/]+)/.exec(url);
       const domain = urlMatch ? urlMatch[1] : 'unknown';
       
       // Use Google's favicon service - it always returns a default icon if none found
@@ -123,57 +123,55 @@ class MetadataExtractor {
         getMetaContent(/<meta\s+content=["']([^"']+)["']\s+name=["']description["']/i);
 
       // For YouTube specifically, try to extract video description from JSON data
-      if (url.includes('youtube.com')) {
-        if (!description || description === 'Enjoy the videos and music you love, upload original content, and share it all with friends, family, and the world on YouTube.') {
+      if (url.includes('youtube.com') && (!description || description === 'Enjoy the videos and music you love, upload original content, and share it all with friends, family, and the world on YouTube.')) {
           
           // Try multiple patterns to extract video description
           const descriptionPatterns = [
-            /"shortDescription":"([^"]+)"/i,
-            /"description":{"simpleText":"([^"]+)"}/i,
-            /"videoDetails":[^}]*"shortDescription":"([^"]+)"/i,
-            /"content":"([^"]+)"[^}]*"videoPrimaryInfoRenderer"/i,
-            /"expandedDescriptionBodyText":[^}]*"simpleText":"([^"]+)"/i,
-            /"attributedDescriptionBodyText":[^}]*"content":"([^"]+)"/i
+            /"shortdescription":"([^"]+)"/i,
+            /"description":{"simpletext":"([^"]+)"}/i,
+            /"videodetails":[^}]*"shortdescription":"([^"]+)"/i,
+            /"content":"([^"]+)"[^}]*"videoprimaryinforenderer"/i,
+            /"expandeddescriptionbodytext":[^}]*"simpletext":"([^"]+)"/i,
+            /"attributeddescriptionbodytext":[^}]*"content":"([^"]+)"/i
           ];
           
           for (const pattern of descriptionPatterns) {
             const match = html.match(pattern);
             if (match && match[1] && match[1].trim() && match[1].length > 10) {
               description = match[1]
-                .replace(/\\n/g, '\n')
-                .replace(/\\"/g, '"')
-                .replace(/\\\\/g, '\\')
-                .replace(/\\u[\d\w]{4}/gi, '')
+                .replaceAll(String.raw`\n`, '\n')
+                .replaceAll(String.raw`\"`, '"')
+                .replaceAll('\\\\', '\\')
+                .replaceAll(/\\u\w{4}/gi, '')
                 .trim();
               
               // Limit length for mobile display
               if (description.length > 200) {
-                description = description.substring(0, 197) + '...';
+                description = description.slice(0, 197) + '...';
               }
               
               break;
             }
           }
         }
-      }
 
       // If no description found in meta tags, try to extract from main content
       if (!description) {
         // Try to find main content
-        const mainContentMatch = html.match(/<main[^>]*>([^]*?)<\/main>/i) ||
-          html.match(/<article[^>]*>([^]*?)<\/article>/i) ||
-          html.match(/<div[^>]*?(?:class|id)=["'](?:main|content|article)[^>]*>([^]*?)<\/div>/i);
+        const mainContentMatch = (/<main[^>]*>([^]*?)<\/main>/i.exec(html)) ||
+          (/<article[^>]*>([^]*?)<\/article>/i.exec(html)) ||
+          (/<div[^>]*?(?:class|id)=["'](?:main|content|article)[^>]*>([^]*?)<\/div>/i.exec(html));
 
         if (mainContentMatch) {
           // Extract text from the first paragraph or div
-          const firstParagraph = mainContentMatch[1].match(/<p[^>]*>([^<]+)<\/p>/i) ||
-            mainContentMatch[1].match(/<div[^>]*>([^<]+)<\/div>/i);
+          const firstParagraph = (/<p[^>]*>([^<]+)<\/p>/i.exec(mainContentMatch[1])) ||
+            (/<div[^>]*>([^<]+)<\/div>/i.exec(mainContentMatch[1]));
           
           if (firstParagraph) {
             description = firstParagraph[1].trim();
             // Limit description length
             if (description.length > 200) {
-              description = description.substring(0, 197) + '...';
+              description = description.slice(0, 197) + '...';
             }
           }
         }
@@ -187,7 +185,7 @@ class MetadataExtractor {
         undefined;
 
       // Extract site name
-      const urlMatch = url.match(/^https?:\/\/([^\/]+)/);
+      const urlMatch = /^https?:\/\/([^/]+)/.exec(url);
       const hostname = urlMatch ? urlMatch[1] : 'unknown';
       
       const siteName =
@@ -201,43 +199,43 @@ class MetadataExtractor {
       let cleanDescription = description;
 
       if (cleanTitle) {
-        cleanTitle = cleanTitle.replace(/\s*[|\-–]\s*[^|\-–]*$/, "").trim();
+        cleanTitle = cleanTitle.replace(/\s*[|–\-]\s*[^|–\-]*$/, "").trim();
         cleanTitle = cleanTitle
-          .replace(/&amp;/g, "&")
-          .replace(/&lt;/g, "<")
-          .replace(/&gt;/g, ">")
-          .replace(/&quot;/g, '"')
-          .replace(/&#39;/g, "'")
-          .replace(/&#x27;/g, "'")
-          .replace(/&nbsp;/g, " ")
-          .replace(/&hellip;/g, "...")
-          .replace(/&mdash;/g, "—")
-          .replace(/&ndash;/g, "–");
+          .replaceAll('&amp;', "&")
+          .replaceAll('&lt;', "<")
+          .replaceAll('&gt;', ">")
+          .replaceAll('&quot;', '"')
+          .replaceAll('&#39;', "'")
+          .replaceAll('&#x27;', "'")
+          .replaceAll('&nbsp;', " ")
+          .replaceAll('&hellip;', "...")
+          .replaceAll('&mdash;', "—")
+          .replaceAll('&ndash;', "–");
       }
 
       if (cleanDescription) {
         cleanDescription = cleanDescription
-          .replace(/&amp;/g, "&")
-          .replace(/&lt;/g, "<")
-          .replace(/&gt;/g, ">")
-          .replace(/&quot;/g, '"')
-          .replace(/&#39;/g, "'")
-          .replace(/&#x27;/g, "'")
-          .replace(/&nbsp;/g, " ")
-          .replace(/&hellip;/g, "...")
-          .replace(/&mdash;/g, "—")
-          .replace(/&ndash;/g, "–");
+          .replaceAll('&amp;', "&")
+          .replaceAll('&lt;', "<")
+          .replaceAll('&gt;', ">")
+          .replaceAll('&quot;', '"')
+          .replaceAll('&#39;', "'")
+          .replaceAll('&#x27;', "'")
+          .replaceAll('&nbsp;', " ")
+          .replaceAll('&hellip;', "...")
+          .replaceAll('&mdash;', "—")
+          .replaceAll('&ndash;', "–");
       }
 
       // Get favicon with new method
       const favicon = await this.getFavicon(url);
 
       const result = {
-        title: cleanTitle || undefined,
         description: cleanDescription || undefined,
+        favicon,
         image: image || undefined,
         siteName: siteName || undefined,
-        favicon,
+        title: cleanTitle || undefined,
       };
 
       return result;
@@ -248,43 +246,47 @@ class MetadataExtractor {
   }
 
   // Generate fallback only when extraction completely fails
+  static clearCache(): void {
+    this.cache.clear();
+  }
+
   private static generateFallback(url: string): URLMetadata {
     try {
       // React Native's URL doesn't have hostname property, extract it manually
-      const urlMatch = url.match(/^https?:\/\/([^\/]+)/);
+      const urlMatch = /^https?:\/\/([^/]+)/.exec(url);
       const hostname = urlMatch ? urlMatch[1] : 'unknown';
       const domain = hostname.replace('www.', '');
 
       // Smart fallbacks for known domains
       const domainDescriptions: Record<string, string> = {
+        'amazon.com': 'Amazon product page',
+        'apple.com': 'Apple product or service',
+        'bbc.com': 'News article from BBC',
+        'clockandzones.com': 'Clock and Zones - World time zones',
         'cnn.com': 'News article from CNN',
         'edition.cnn.com': 'News article from CNN',
-        'bbc.com': 'News article from BBC',
-        'nytimes.com': 'Article from The New York Times',
-        'github.com': 'GitHub repository or page',
-        'stackoverflow.com': 'Stack Overflow question or answer',
-        'reddit.com': 'Reddit post or discussion',
-        'twitter.com': 'Twitter post',
-        'x.com': 'X (Twitter) post',
-        'linkedin.com': 'LinkedIn profile or post',
-        'medium.com': 'Medium article',
-        'youtube.com': 'YouTube video',
-        'youtu.be': 'YouTube video',
-        'wikipedia.org': 'Wikipedia article',
-        'amazon.com': 'Amazon product page',
-        'google.com': 'Google search or service',
         'facebook.com': 'Facebook page or post',
+        'github.com': 'GitHub repository or page',
+        'google.com': 'Google search or service',
         'instagram.com': 'Instagram post',
-        'tiktok.com': 'TikTok video',
-        'netflix.com': 'Netflix content',
-        'spotify.com': 'Spotify music or podcast',
-        'apple.com': 'Apple product or service',
-        'microsoft.com': 'Microsoft product or service',
-        'vercel.com': 'Vercel deployment or service',
-        'netlify.com': 'Netlify deployment or service',
+        'linkedin.com': 'LinkedIn profile or post',
         'linklibrary.ai': 'LinkLibrary - Organize and manage your links',
-        'clockandzones.com': 'Clock and Zones - World time zones',
+        'medium.com': 'Medium article',
+        'microsoft.com': 'Microsoft product or service',
+        'netflix.com': 'Netflix content',
+        'netlify.com': 'Netlify deployment or service',
+        'nytimes.com': 'Article from The New York Times',
         'playwright.dev': 'Fast and reliable end-to-end testing for modern web apps',
+        'reddit.com': 'Reddit post or discussion',
+        'spotify.com': 'Spotify music or podcast',
+        'stackoverflow.com': 'Stack Overflow question or answer',
+        'tiktok.com': 'TikTok video',
+        'twitter.com': 'Twitter post',
+        'vercel.com': 'Vercel deployment or service',
+        'wikipedia.org': 'Wikipedia article',
+        'x.com': 'X (Twitter) post',
+        'youtu.be': 'YouTube video',
+        'youtube.com': 'YouTube video',
       };
 
       const description = domainDescriptions[domain] || `Website from ${domain}`;
@@ -295,26 +297,22 @@ class MetadataExtractor {
         'playwright.dev': 'Fast and reliable end-to-end testing for modern web apps',
       };
 
-      const title = domainTitles[domain] || siteName.charAt(0).toUpperCase() + siteName.slice(1).replace(/[-_]/g, ' ');
+      const title = domainTitles[domain] || siteName.charAt(0).toUpperCase() + siteName.slice(1).replaceAll(/[_-]/g, ' ');
 
       return {
-        title: title,
         description: description,
-        siteName: siteName,
         favicon: `https://www.google.com/s2/favicons?domain=${domain}&sz=32`,
+        siteName: siteName,
+        title: title,
       };
     } catch {
       return {
-        title: 'External Link',
         description: 'External website',
-        siteName: 'Unknown',
         favicon: 'https://www.google.com/s2/favicons?domain=unknown&sz=32',
+        siteName: 'Unknown',
+        title: 'External Link',
       };
     }
-  }
-
-  static clearCache(): void {
-    this.cache.clear();
   }
 }
 

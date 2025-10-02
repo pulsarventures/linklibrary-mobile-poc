@@ -6,15 +6,17 @@ import { Circle, Path, Polyline, Rect, Svg } from 'react-native-svg';
 
 export type IconName =
   | 'add'
+  | 'alert-circle'
   | 'apple'
   | 'bell'
   | 'check'
+  | 'chevron-down'
   | 'close'
   | 'collection'
   | 'device'
   | 'edit'
-  | 'eye'
   | 'external'
+  | 'eye'
   | 'fire'
   | 'google'
   | 'grid'
@@ -33,8 +35,8 @@ export type IconName =
   | 'search'
   | 'send'
   | 'settings'
-  | 'star'
   | 'star-outline'
+  | 'star'
   | 'sun'
   | 'tag'
   | 'theme'
@@ -58,6 +60,35 @@ export const icons: Record<IconName, React.FC<SvgProps>> = {
       strokeLinejoin="round"
       strokeWidth={2}
     />
+  )),
+
+  'alert-circle': createIcon((color) => (
+    <>
+      <Circle
+        cx={12}
+        cy={12}
+        r={10}
+        fill="none"
+        stroke={color}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+      />
+      <Path
+        d="M12 8V12"
+        stroke={color}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+      />
+      <Path
+        d="M12 16H12.01"
+        stroke={color}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+      />
+    </>
   )),
 
   apple: createIcon((color) => (
@@ -99,6 +130,16 @@ export const icons: Record<IconName, React.FC<SvgProps>> = {
   check: createIcon((color) => (
     <Path
       d="M20 6L9 17L4 12"
+      stroke={color}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth={2}
+    />
+  )),
+
+  'chevron-down': createIcon((color) => (
+    <Path
+      d="M6 9L12 15L18 9"
       stroke={color}
       strokeLinecap="round"
       strokeLinejoin="round"
@@ -175,6 +216,34 @@ export const icons: Record<IconName, React.FC<SvgProps>> = {
       />
       <Path
         d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"
+        fill="none"
+        stroke={color}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+      />
+    </>
+  )),
+  external: createIcon((color) => (
+    <>
+      <Path
+        d="M21 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h6"
+        fill="none"
+        stroke={color}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+      />
+      <Path
+        d="m21 3-9 9"
+        fill="none"
+        stroke={color}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+      />
+      <Path
+        d="M15 3h6v6"
         fill="none"
         stroke={color}
         strokeLinecap="round"
@@ -448,10 +517,53 @@ export const icons: Record<IconName, React.FC<SvgProps>> = {
       />
     </>
   )),
+  'message-circle': createIcon((color) => (
+    <>
+      <Path
+        d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"
+        fill="none"
+        stroke={color}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+      />
+      <Path
+        d="M8 12h.01"
+        stroke={color}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+      />
+      <Path
+        d="M12 12h.01"
+        stroke={color}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+      />
+      <Path
+        d="M16 12h.01"
+        stroke={color}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+      />
+    </>
+  )),
   moon: createIcon((color) => (
     <Path
       d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"
       fill="none"
+      stroke={color}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth={2}
+    />
+  )),
+  play: createIcon((color) => (
+    <Path
+      d="M5 3L19 12L5 21V3Z"
+      fill={color}
       stroke={color}
       strokeLinecap="round"
       strokeLinejoin="round"
@@ -665,77 +777,6 @@ export const icons: Record<IconName, React.FC<SvgProps>> = {
       <Path
         d="M12 11C14.2091 11 16 9.20914 16 7C16 4.79086 14.2091 3 12 3C9.79086 3 8 4.79086 8 7C8 9.20914 9.79086 11 12 11Z"
         fill="none"
-        stroke={color}
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth={2}
-      />
-    </>
-  )),
-  play: createIcon((color) => (
-    <Path
-      d="M5 3L19 12L5 21V3Z"
-      fill={color}
-      stroke={color}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth={2}
-    />
-  )),
-  external: createIcon((color) => (
-    <>
-      <Path
-        d="M21 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h6"
-        fill="none"
-        stroke={color}
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth={2}
-      />
-      <Path
-        d="m21 3-9 9"
-        fill="none"
-        stroke={color}
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth={2}
-      />
-      <Path
-        d="M15 3h6v6"
-        fill="none"
-        stroke={color}
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth={2}
-      />
-    </>
-  )),
-  'message-circle': createIcon((color) => (
-    <>
-      <Path
-        d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"
-        fill="none"
-        stroke={color}
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth={2}
-      />
-      <Path
-        d="M8 12h.01"
-        stroke={color}
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth={2}
-      />
-      <Path
-        d="M12 12h.01"
-        stroke={color}
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth={2}
-      />
-      <Path
-        d="M16 12h.01"
         stroke={color}
         strokeLinecap="round"
         strokeLinejoin="round"

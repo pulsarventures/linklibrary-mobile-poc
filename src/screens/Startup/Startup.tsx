@@ -18,11 +18,12 @@ function Startup({ navigation }: RootScreenProps<'Startup'>) {
   useEffect(() => {
     const initialize = async () => {
       try {
+        // Just call initializeAuth - it handles the logout flag internally
+        // Navigation happens automatically based on isAuthenticated state
         await initializeAuth();
       } catch (error) {
         console.error('Initialization error:', error);
-        // Force mark as initialized even if auth fails
-        // This ensures we don't get stuck on the startup screen
+        // Don't navigate manually - let the state drive navigation
       }
     };
 
@@ -34,7 +35,7 @@ function Startup({ navigation }: RootScreenProps<'Startup'>) {
   useEffect(() => {
     if (initialized && !isLoading) {
       if (isAuthenticated) {
-        navigation.replace(Paths.Main, { screen: Paths.Links, params: {} });
+        navigation.replace(Paths.Main, { params: {}, screen: Paths.Links });
       } else {
         navigation.replace(Paths.Login);
       }

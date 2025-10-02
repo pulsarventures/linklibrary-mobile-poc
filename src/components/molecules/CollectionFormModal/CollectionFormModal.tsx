@@ -165,7 +165,7 @@ export function CollectionFormModal({
               style={[
                 styles.headerButton,
                 styles.addButton,
-                { backgroundColor: isDark ? '#6b7280' : '#000000' },
+                { backgroundColor: '#F25D15' },
                 (loading || !name.trim()) && { opacity: 0.7 }
               ]}
             >
@@ -268,7 +268,7 @@ export function CollectionFormModal({
 
 const styles = StyleSheet.create({
   addButton: {
-    backgroundColor: '#007AFF',
+    backgroundColor: '#F25D15',
   },
   buttonText: {
     fontSize: 13,

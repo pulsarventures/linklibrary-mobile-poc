@@ -1,19 +1,21 @@
+import { getCategories, getIconsByCategory, IconOption } from '@/utils/icon-options';
 import React, { useState } from 'react';
-import { View, StyleSheet, ScrollView, TouchableOpacity, Text } from 'react-native';
+import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+
 import { useTheme } from '@/theme';
 import { SPACING } from '@/theme/styles/spacing';
-import { IconByVariant } from '@/components/atoms';
-import { IconOption, getCategories, getIconsByCategory } from '@/utils/icon-options';
 
-interface IconPickerProps {
-  selectedIcon?: string;
-  onIconSelect?: (icon: IconOption) => void;
-  showCategories?: boolean;
+import { IconByVariant } from '@/components/atoms';
+
+type IconPickerProps = {
+  readonly onIconSelect?: (icon: IconOption) => void;
+  readonly selectedIcon?: string;
+  readonly showCategories?: boolean;
 }
 
 export function IconPicker({ 
-  selectedIcon, 
   onIconSelect, 
+  selectedIcon, 
   showCategories = true 
 }: IconPickerProps) {
   const { colors } = useTheme();
@@ -33,17 +35,16 @@ export function IconPicker({
   return (
     <View style={styles.container}>
       {/* Category Selector */}
-      {showCategories && (
-        <View style={styles.categoryContainer}>
+      {showCategories ? <View style={styles.categoryContainer}>
           <ScrollView 
-            horizontal 
+            contentContainerStyle={styles.categoryScroll} 
+            horizontal
             showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.categoryScroll}
           >
             {categories.map((category) => (
               <TouchableOpacity
                 key={category}
-                onPress={() => handleCategoryPress(category)}
+                onPress={() => { handleCategoryPress(category); }}
                 style={[
                   styles.categoryButton,
                   { 
@@ -69,19 +70,18 @@ export function IconPicker({
               </TouchableOpacity>
             ))}
           </ScrollView>
-        </View>
-      )}
+        </View> : null}
 
       {/* Icon Grid */}
       <ScrollView 
-        style={styles.iconScroll}
         showsVerticalScrollIndicator={false}
+        style={styles.iconScroll}
       >
         <View style={styles.iconGrid}>
           {iconsInCategory.map((icon) => (
             <TouchableOpacity
               key={icon.label}
-              onPress={() => handleIconPress(icon)}
+              onPress={() => { handleIconPress(icon); }}
               style={[
                 styles.iconButton,
                 { 
@@ -93,11 +93,12 @@ export function IconPicker({
               ]}
             >
               <IconByVariant
+                color={selectedIcon === icon.label ? colors.text.inverse : icon.color || colors.text.primary}
                 name={icon.icon}
                 size={24}
-                color={selectedIcon === icon.label ? colors.text.inverse : icon.color || colors.text.primary}
               />
               <Text
+                numberOfLines={1}
                 style={[
                   styles.iconLabel,
                   { 
@@ -106,7 +107,6 @@ export function IconPicker({
                       : colors.text.secondary 
                   }
                 ]}
-                numberOfLines={1}
               >
                 {icon.label}
               </Text>
@@ -119,8 +119,12 @@ export function IconPicker({
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
+  categoryButton: {
+    borderRadius: 8,
+    borderWidth: 1,
+    marginRight: SPACING.sm,
+    paddingHorizontal: SPACING.md,
+    paddingVertical: SPACING.sm,
   },
   categoryContainer: {
     marginBottom: SPACING.md,
@@ -128,39 +132,35 @@ const styles = StyleSheet.create({
   categoryScroll: {
     paddingHorizontal: SPACING.md,
   },
-  categoryButton: {
-    paddingHorizontal: SPACING.md,
-    paddingVertical: SPACING.sm,
-    borderRadius: 8,
-    borderWidth: 1,
-    marginRight: SPACING.sm,
-  },
   categoryText: {
     fontSize: 14,
     fontWeight: '500',
   },
-  iconScroll: {
+  container: {
     flex: 1,
+  },
+  iconButton: {
+    alignItems: 'center',
+    borderRadius: 12,
+    borderWidth: 1,
+    height: 80,
+    justifyContent: 'center',
+    padding: SPACING.sm,
+    width: 80,
   },
   iconGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    paddingHorizontal: SPACING.md,
     gap: SPACING.sm,
-  },
-  iconButton: {
-    width: 80,
-    height: 80,
-    borderRadius: 12,
-    borderWidth: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: SPACING.sm,
+    paddingHorizontal: SPACING.md,
   },
   iconLabel: {
     fontSize: 12,
-    textAlign: 'center',
-    marginTop: SPACING.xs,
     fontWeight: '500',
+    marginTop: SPACING.xs,
+    textAlign: 'center',
+  },
+  iconScroll: {
+    flex: 1,
   },
 }); 

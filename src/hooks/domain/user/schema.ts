@@ -29,13 +29,15 @@ export type RegisterCredentials = z.infer<typeof registerCredentialsSchema>;
 
 export const authResponseSchema = z.object({
   access_token: z.string(),
+  access_token_expires_at: z.number(), // Epoch timestamp
   access_token_expires_in: z.number(),
   is_revoked: z.boolean(),
   message: z.string().optional(),
   refresh_token: z.string(),
+  refresh_token_expires_at: z.number(), // Epoch timestamp
   refresh_token_expires_in: z.number(),
   token_type: z.string(),
-  user: userSchema,
+  user: userSchema.optional(), // User is optional on refresh
 });
 
 export type AuthResponse = z.infer<typeof authResponseSchema>;

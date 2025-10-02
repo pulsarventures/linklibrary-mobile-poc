@@ -2,22 +2,22 @@ import type { User } from '@/hooks/domain/user/schema';
 import type { RootStackParamList } from '@/navigation/types';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
+import { authApiService } from '@/services/auth-api.service';
+import { signInWithGoogle } from '@/services/auth/googleAuth';
+import { signInWithApple } from '@/services/auth/appleAuth';
+import { storageService } from '@/services/storage';
+import { safeErrorLog } from '@/utils/errorHandler';
 import { useNavigation } from '@react-navigation/native';
 import React, { useState } from 'react';
 import { ActivityIndicator, Alert, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { Image } from 'react-native';
 
 import { useAuthStore } from '@/hooks/domain/user/useAuthStore';
 import { useTheme } from '@/theme';
 
 import { IconByVariant } from '@/components/atoms';
-import { Image } from 'react-native';
 import { SafeScreen } from '@/components/templates';
-import { Container, Input, Text } from '@/components/ui';
-
-import { authApiService } from '@/services/auth-api.service';
-import { signInWithGoogle } from '@/services/auth/googleAuth';
-import { storageService } from '@/services/storage';
-import { safeErrorLog } from '@/utils/errorHandler';
+import { Button, Container, Input, Text } from '@/components/ui';
 
 type SignUpScreenNavigationProperty = NativeStackNavigationProp<RootStackParamList>;
 
@@ -34,6 +34,7 @@ export function SignUp() {
   });
   const [isLoading, setIsLoading] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
+  const [isAppleLoading, setIsAppleLoading] = useState(false);
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -47,6 +48,27 @@ export function SignUp() {
 
     if (formData.password !== formData.confirmPassword) {
       Alert.alert('Error', 'Passwords do not match');
+      return;
+    }
+
+    // Password validation
+    if (formData.password.length < 8) {
+      Alert.alert('Error', 'Password must be at least 8 characters long');
+      return;
+    }
+
+    if (!/[A-Z]/.test(formData.password)) {
+      Alert.alert('Error', 'Password must contain at least one uppercase letter');
+      return;
+    }
+
+    if (!/[a-z]/.test(formData.password)) {
+      Alert.alert('Error', 'Password must contain at least one lowercase letter');
+      return;
+    }
+
+    if (!/[0-9]/.test(formData.password)) {
+      Alert.alert('Error', 'Password must contain at least one number');
       return;
     }
 
@@ -68,35 +90,34 @@ export function SignUp() {
 
   const handleGoogleSignUp = async () => {
     try {
-      console.log('🔵 Starting Google Sign-Up process...');
+      // Starting Google Sign-Up process
       setIsGoogleLoading(true);
       setAuthTransition(true);
       
       // Add a small delay to ensure the loading state is visible
       await new Promise(resolve => setTimeout(resolve, 300));
       
-      console.log('🔵 Calling signInWithGoogle...');
+      // Calling signInWithGoogle
       const googleResult = await signInWithGoogle();
-      console.log('🔵 Google Sign-In successful, result:', { 
-        email: googleResult.email, 
-        hasToken: !!googleResult.token 
-      });
+      // Google Sign-In successful
       
-      console.log('🔵 Calling backend Google Sign-In API...');
+      // Calling backend Google Sign-In API
       const authResult = await authApiService.googleSignIn(googleResult.token);
-      console.log('🔵 Backend API successful, storing tokens...');
+      // Backend API successful, storing tokens
 
+      // Calculate expires_at from expires_in if not provided
+      const now = Math.floor(Date.now() / 1000); // Current time in seconds
       await storageService.storeTokens({
         access_token: authResult.access_token,
+        access_token_expires_at: authResult.access_token_expires_at || (now + authResult.access_token_expires_in),
         access_token_expires_in: authResult.access_token_expires_in,
-        access_token_expires_at: authResult.access_token_expires_at, // New epoch timestamp
         is_revoked: authResult.is_revoked,
         refresh_token: authResult.refresh_token,
+        refresh_token_expires_at: authResult.refresh_token_expires_at || (now + authResult.refresh_token_expires_in),
         refresh_token_expires_in: authResult.refresh_token_expires_in,
-        refresh_token_expires_at: authResult.refresh_token_expires_at, // New epoch timestamp
         token_type: authResult.token_type,
       });
-      console.log('🔵 Tokens stored successfully');
+      // Tokens stored successfully
 
       const user: User = {
         avatar: authResult.user.avatar || null,
@@ -116,11 +137,11 @@ export function SignUp() {
         isLoading: false,
         user,
       });
-      console.log('🔵 Auth store updated successfully');
+      // Auth store updated successfully
 
       // Keep the loading state for a smooth transition
       await new Promise(resolve => setTimeout(resolve, 500));
-      console.log('🔵 Google Sign-Up process completed successfully');
+      // Google Sign-Up process completed successfully
       
     } catch (error) {
       safeErrorLog('🔴 Google Sign-Up failed at step', error);
@@ -129,6 +150,87 @@ export function SignUp() {
       setAuthTransition(false);
     } finally {
       setIsGoogleLoading(false);
+    }
+  };
+
+  const handleAppleSignUp = async () => {
+    try {
+      // Starting Apple Sign-Up process
+      setIsAppleLoading(true);
+      setAuthTransition(true);
+      
+      // Add a small delay to ensure the loading state is visible
+      await new Promise(resolve => setTimeout(resolve, 300));
+      
+      // Calling signInWithApple
+      const appleResult = await signInWithApple();
+      // Apple Sign-In successful
+      
+      // Calling backend Apple Sign-In API
+      
+      // Parse the full name into firstName and lastName
+      let nameObject = null;
+      if (appleResult.fullName) {
+        const nameParts = appleResult.fullName.trim().split(' ');
+        nameObject = {
+          firstName: nameParts[0] || '',
+          lastName: nameParts.slice(1).join(' ') || '',
+        };
+      }
+      
+      const authResult = await authApiService.appleSignIn(
+        appleResult.identityToken,
+        appleResult.authorizationCode,
+        appleResult.email,
+        nameObject
+      );
+      // Backend API successful, storing tokens
+
+      // Calculate expires_at from expires_in if not provided
+      const now = Math.floor(Date.now() / 1000); // Current time in seconds
+      await storageService.storeTokens({
+        access_token: authResult.access_token,
+        access_token_expires_at: authResult.access_token_expires_at || (now + authResult.access_token_expires_in),
+        access_token_expires_in: authResult.access_token_expires_in,
+        is_revoked: authResult.is_revoked,
+        refresh_token: authResult.refresh_token,
+        refresh_token_expires_at: authResult.refresh_token_expires_at || (now + authResult.refresh_token_expires_in),
+        refresh_token_expires_in: authResult.refresh_token_expires_in,
+        token_type: authResult.token_type,
+      });
+      // Tokens stored successfully
+
+      const user: User = {
+        avatar: authResult.user.avatar || null,
+        created_at: authResult.user.created_at,
+        email: authResult.user.email,
+        full_name: authResult.user.full_name,
+        id: Number.parseInt(authResult.user.id.toString()),
+        is_active: authResult.user.is_active,
+        is_verified: authResult.user.is_verified,
+      };
+
+      // Update auth store
+      useAuthStore.setState({
+        error: null,
+        initialized: true,
+        isAuthenticated: true,
+        isLoading: false,
+        user,
+      });
+      // Auth store updated successfully
+
+      // Keep the loading state for a smooth transition
+      await new Promise(resolve => setTimeout(resolve, 500));
+      // Apple Sign-Up process completed successfully
+      
+    } catch (error) {
+      safeErrorLog('🔴 Apple Sign-Up failed at step', error);
+      
+      Alert.alert('Apple Sign-Up Failed', `Please try again. Error: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      setAuthTransition(false);
+    } finally {
+      setIsAppleLoading(false);
     }
   };
 
@@ -164,9 +266,9 @@ export function SignUp() {
           {/* Logo */}
           <View style={styles.logoContainer}>
                           <Image 
-                source={require('@/theme/assets/images/app.png')} 
                 resizeMode="cover" 
-                style={[styles.logo, { overflow: 'hidden', borderRadius: 8 }]} 
+                source={require('@/theme/assets/images/app.png')} 
+                style={[styles.logo, { borderRadius: 8, overflow: 'hidden' }]} 
               />
           </View>
 
@@ -227,6 +329,8 @@ export function SignUp() {
               <View style={styles.inputContainer}>
                 <IconByVariant color={colors.text.tertiary} name="lock" size={20} style={styles.inputIcon} />
                 <Input
+                  autoCapitalize="none"
+                  autoCorrect={false}
                   onChangeText={(text) => { setFormData({ ...formData, password: text }); }}
                   placeholder="Create a strong password"
                   placeholderTextColor={colors.text.tertiary}
@@ -253,6 +357,8 @@ export function SignUp() {
               <View style={styles.inputContainer}>
                 <IconByVariant color={colors.text.tertiary} name="lock" size={20} style={styles.inputIcon} />
                 <Input
+                  autoCapitalize="none"
+                  autoCorrect={false}
                   onChangeText={(text) => { setFormData({ ...formData, confirmPassword: text }); }}
                   placeholder="Confirm your password"
                   placeholderTextColor={colors.text.tertiary}
@@ -298,23 +404,15 @@ export function SignUp() {
             </TouchableOpacity>
 
             {/* Create Account Button */}
-            <TouchableOpacity
+            <Button
               disabled={isLoading}
               onPress={handleSignUp}
-              style={[
-                styles.signUpButton,
-                { backgroundColor: colors.accent.primary },
-                isLoading && { opacity: 0.7 }
-              ]}
+              variant="primary"
+              loading={isLoading}
+              style={styles.signUpButton}
             >
-              {isLoading ? (
-                <ActivityIndicator color={colors.text.inverse} size="small" />
-              ) : (
-                <Text style={[styles.signUpButtonText, { color: colors.text.inverse }]}>
-                  Create account
-                </Text>
-              )}
-            </TouchableOpacity>
+              Create account
+            </Button>
 
             {/* Divider */}
             <View style={styles.divider}>
@@ -329,7 +427,8 @@ export function SignUp() {
               onPress={handleGoogleSignUp}
               style={[styles.socialButton, { 
                 backgroundColor: colors.background.secondary,
-                borderColor: colors.border.primary
+                borderColor: colors.border.primary,
+                marginBottom: 12
               }]}
             >
               {isGoogleLoading ? (
@@ -338,7 +437,27 @@ export function SignUp() {
                 <>
                   <IconByVariant name="google" size={20} />
                   <Text style={[styles.socialButtonText, { color: colors.text.primary }]}>
-                    Google
+                    Sign up with Google
+                  </Text>
+                </>
+              )}
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              disabled={isAppleLoading}
+              onPress={handleAppleSignUp}
+              style={[styles.socialButton, { 
+                backgroundColor: '#000000',
+                borderColor: colors.border.primary
+              }]}
+            >
+              {isAppleLoading ? (
+                <ActivityIndicator color="#FFFFFF" size="small" />
+              ) : (
+                <>
+                  <IconByVariant name="apple" size={20} color="#FFFFFF" />
+                  <Text style={[styles.socialButtonText, { color: '#FFFFFF' }]}>
+                    Sign up with Apple
                   </Text>
                 </>
               )}
@@ -365,14 +484,14 @@ export function SignUp() {
 const styles = StyleSheet.create({
   checkbox: {
     alignItems: 'center',
-    borderRadius: 4,
+    borderRadius: 3,
     borderWidth: 2,
     flexShrink: 0,
-    height: 20,
+    height: 16,
     justifyContent: 'center',
-    marginRight: 12,
-    marginTop: 2,
-    width: 20,
+    marginRight: 10,
+    marginTop: 1,
+    width: 16,
   },
   container: {
     flex: 1,
@@ -385,25 +504,25 @@ const styles = StyleSheet.create({
   divider: {
     alignItems: 'center',
     flexDirection: 'row',
-    marginBottom: 18,
+    marginBottom: 8,
   },
   dividerLine: {
     flex: 1,
     height: 1,
   },
   dividerText: {
-    fontSize: 14,
+    fontSize: 12,
     fontWeight: '500',
-    paddingHorizontal: 16,
+    paddingHorizontal: 12,
   },
   eyeIcon: {
     position: 'absolute',
-    right: 16,
-    top: 14,
+    right: 14,
+    top: 11,
     zIndex: 1,
   },
   fieldContainer: {
-    marginBottom: 16,
+    marginBottom: 4,
   },
   form: {
     width: '100%',
@@ -412,15 +531,15 @@ const styles = StyleSheet.create({
     position: 'relative',
   },
   inputIcon: {
-    left: 16,
+    left: 14,
     position: 'absolute',
-    top: 14,
+    top: 11,
     zIndex: 1,
   },
   label: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: '600',
-    marginBottom: 8,
+    marginBottom: 6,
   },
   loadingContent: {
     alignItems: 'center',
@@ -435,72 +554,72 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   loadingText: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: '500',
     textAlign: 'center',
   },
   logo: {
-    height: 32,
-    width: 32,
+    height: 60,
+    width: 60,
   },
   logoContainer: {
     alignItems: 'center',
-    marginBottom: 20,
+    marginBottom: 12,
   },
   logoWrapper: {
     alignItems: 'center',
-    borderRadius: 16,
-    height: 64,
+    borderRadius: 12,
+    height: 48,
     justifyContent: 'center',
-    width: 64,
+    width: 48,
   },
   scrollContent: {
     flexGrow: 1,
     justifyContent: 'center',
-    paddingHorizontal: 24,
-    paddingVertical: 20,
+    paddingHorizontal: 20,
+    paddingVertical: 12,
   },
   signInLink: {
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: '600',
   },
   signInRow: {
     alignItems: 'center',
     flexDirection: 'row',
     justifyContent: 'center',
-    paddingBottom: 20,
+    paddingBottom: 12,
   },
   signInText: {
-    fontSize: 14,
+    fontSize: 13,
   },
   signUpButton: {
     alignItems: 'center',
-    borderRadius: 12,
-    height: 48,
+    borderRadius: 10,
+    height: 42,
     justifyContent: 'center',
-    marginBottom: 18,
+    marginBottom: 6,
   },
   signUpButtonText: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: '600',
   },
   socialButton: {
     alignItems: 'center',
-    borderRadius: 12,
+    borderRadius: 10,
     borderWidth: 1,
     flexDirection: 'row',
-    gap: 8,
-    height: 48,
+    gap: 6,
+    height: 42,
     justifyContent: 'center',
-    marginBottom: 18,
+    marginBottom: 4,
   },
   socialButtonText: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: '500',
   },
   subtitle: {
-    fontSize: 16,
-    marginBottom: 20,
+    fontSize: 12,
+    marginBottom: 8,
     textAlign: 'center',
   },
   termsLink: {
@@ -509,25 +628,25 @@ const styles = StyleSheet.create({
   termsRow: {
     alignItems: 'flex-start',
     flexDirection: 'row',
-    marginBottom: 18,
+    marginBottom: 6,
   },
   termsText: {
     flex: 1,
-    fontSize: 14,
-    lineHeight: 20,
+    fontSize: 11,
+    lineHeight: 14,
   },
   textInput: {
-    borderRadius: 12,
+    borderRadius: 10,
     borderWidth: 1,
-    fontSize: 16,
-    height: 48,
-    paddingLeft: 48,
-    paddingRight: 48,
+    fontSize: 14,
+    height: 42,
+    paddingLeft: 42,
+    paddingRight: 42,
   },
   title: {
-    fontSize: 28,
+    fontSize: 18,
     fontWeight: 'bold',
-    marginBottom: 6,
+    marginBottom: 1,
     textAlign: 'center',
   },
 }); 

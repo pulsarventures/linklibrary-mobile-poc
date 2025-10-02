@@ -13,8 +13,8 @@ import { SPACING } from '@/theme/styles/spacing';
 import { useTheme } from '@/theme/ThemeProvider/ThemeProvider';
 
 import { IconByVariant } from '@/components/atoms';
-import { SearchBar } from '@/components/molecules/SearchBar';
 import { TagFormModal, TagItem } from '@/components/molecules';
+import { SearchBar } from '@/components/molecules/SearchBar';
 import { SafeScreen } from '@/components/templates';
 
 export default function Tags() {
@@ -54,10 +54,6 @@ export default function Tags() {
           onPress: async () => {
             try {
               await deleteTag(tag.id);
-              Toast.show({
-                text1: 'Tag deleted successfully',
-                type: 'success',
-              });
             } catch (error) {
               console.error('Failed to delete tag:', error);
               Toast.show({
@@ -82,10 +78,6 @@ export default function Tags() {
   const handleCreateTagSubmit = async (data: { color?: string; name: string; }) => {
     try {
       await createTag({ color: data.color || 'gray', name: data.name });
-      Toast.show({
-        text1: 'Tag created successfully',
-        type: 'success',
-      });
       setShowFormModal(false);
     } catch (error) {
       console.error('Failed to create tag:', error);
@@ -102,10 +94,6 @@ export default function Tags() {
     
     try {
       await updateTag({ data: { color: data.color || 'gray', name: data.name }, id: editingTag.id });
-      Toast.show({
-        text1: 'Tag updated successfully',
-        type: 'success',
-      });
       setShowFormModal(false);
       setEditingTag(null);
     } catch (error) {
@@ -160,7 +148,7 @@ export default function Tags() {
   }
 
   // Handle empty search results
-  if (searchQuery.trim() && !filteredTags?.length) {
+  if (searchQuery.trim() && filteredTags.length === 0) {
     return (
       <SafeScreen>
         <View style={styles.outerContainer}>
@@ -226,7 +214,7 @@ export default function Tags() {
       <TouchableOpacity
         activeOpacity={0.8}
         onPress={handleCreateTag}
-        style={[styles.floatingButton, { backgroundColor: isDark ? '#6b7280' : '#000000' }]}
+        style={[styles.floatingButton, { backgroundColor: isDark ? '#FF6B35' : '#F25D15' }]}
       >
         <IconByVariant
           color="#ffffff"
@@ -255,10 +243,6 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: SPACING.lg,
     paddingTop: SPACING.md,
-  },
-  outerContainer: {
-    backgroundColor: 'transparent',
-    flex: 1,
   },
   createButton: {
     height: 40,
@@ -297,5 +281,9 @@ const styles = StyleSheet.create({
   },
   list: {
     flexGrow: 1,
+  },
+  outerContainer: {
+    backgroundColor: 'transparent',
+    flex: 1,
   },
 }); 

@@ -1,13 +1,13 @@
 import { create } from 'zustand';
 
-interface SharedUrlState {
-  sharedUrl: string | null;
-  setSharedUrl: (url: string | null) => void;
+type SharedUrlState = {
   clearSharedUrl: () => void;
+  setSharedUrl: (url: null | string) => void;
+  sharedUrl: null | string;
 }
 
 export const useSharedUrlStore = create<SharedUrlState>((set) => ({
+  clearSharedUrl: () => { set({ sharedUrl: null }); },
+  setSharedUrl: (url: null | string) => { set({ sharedUrl: url }); },
   sharedUrl: null,
-  setSharedUrl: (url: string | null) => set({ sharedUrl: url }),
-  clearSharedUrl: () => set({ sharedUrl: null }),
 })); 

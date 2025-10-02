@@ -5,5 +5,6 @@ export * from './IconPicker';
 export * from './LinkFormModal';
 export * from './LinkThumbnail';
 export * from './SearchBar';
+export * from './SwipeableCard';
 export * from './TagFormModal';
 export * from './TagItem/TagItem';

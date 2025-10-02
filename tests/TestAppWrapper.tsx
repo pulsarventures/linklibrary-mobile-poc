@@ -1,3 +1,4 @@
+import { queryClient } from '@/App';
 import { QueryClientProvider } from '@tanstack/react-query';
 import i18n from 'i18next';
 import { type PropsWithChildren, useEffect, useState } from 'react';
@@ -6,8 +7,6 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 import { ThemeProvider } from '@/theme';
 import { initializeI18n } from '@/translations';
-
-import { queryClient } from '@/App';
 
 function TestAppWrapper({ children }: PropsWithChildren) {
   const [isI18nInitialized, setIsI18nInitialized] = useState(false);

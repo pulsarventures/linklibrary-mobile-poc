@@ -82,8 +82,8 @@ android {
         applicationId "com.pulsarventures.linklibraryai"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 35
-        versionName "1.0.35"
+        versionCode 47
+        versionName "1.0.47"
         manifestPlaceholders = [
             'android.app.lib_name': 'app-name'
         ]
