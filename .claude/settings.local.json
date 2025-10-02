@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run ios:*)",
+      "Bash(npm install:*)",
+      "Bash(ruby --version)",
+      "Bash(gem install:*)",
+      "Bash(gem:*)",
+      "Bash(/opt/homebrew/lib/ruby/gems/3.3.0/bin/pod --version)",
+      "Bash(xcodebuild:*)",
+      "Bash(open ios/linklibrary_mobile.xcworkspace)",
+      "Bash(./fix_object_version.sh:*)",
+      "Bash(/opt/homebrew/lib/ruby/gems/3.3.0/bin/pod install)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
