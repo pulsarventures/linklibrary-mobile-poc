@@ -84,3 +84,10 @@ ios/linklibrary_mobile.xcworkspace/xcuserdata/
 ios/Pods/
 ios/build/
 ios/*.xcworkspace/xcuserdata/
+
+# IDE and AI assistant files
+.cursor/
+.claude/
+
+# Documentation (if you want to exclude it)
+docs/
