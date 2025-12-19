@@ -12,7 +12,14 @@ import { handleLoginError, type LoginError } from '@/utils/loginErrorHandler';
 import { useNavigation } from '@react-navigation/native';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { ActivityIndicator, Alert, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
+import {
+  ActivityIndicator,
+  Alert,
+  ScrollView,
+  StyleSheet,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import { Image } from 'react-native';
 
 import { useAuthStore } from '@/hooks/domain/user/useAuthStore';
@@ -23,7 +30,8 @@ import { IconByVariant } from '@/components/atoms';
 import { SafeScreen } from '@/components/templates';
 import { Button, Container, Input, Text } from '@/components/ui';
 
-type LoginScreenNavigationProperty = NativeStackNavigationProp<RootStackParamList>;
+type LoginScreenNavigationProperty =
+  NativeStackNavigationProp<RootStackParamList>;
 
 export function Login() {
   const { t } = useTranslation();
@@ -60,17 +68,20 @@ export function Login() {
 
     try {
       setIsLoading(true);
-      
+
       // CRITICAL: Clear logout flag BEFORE login to ensure tokens can be stored
       await AsyncStorage.removeItem('@has_logged_out');
       // Cleared logout flag before login attempt
-      
+
       // Attempting login
       await login({ password, username: email });
       // Login successful - no toast needed
     } catch (error: any) {
       safeErrorLog('Login failed', error);
-      console.error('Login error:', error instanceof Error ? error.message : 'Unknown error');
+      console.error(
+        'Login error:',
+        error instanceof Error ? error.message : 'Unknown error',
+      );
       const parsedError = handleLoginError(error);
       setLoginError(parsedError);
     } finally {
@@ -84,18 +95,18 @@ export function Login() {
       setIsGoogleLoading(true);
       setGoogleError(null);
       setAuthTransition(true);
-      
+
       // CRITICAL: Clear logout flag BEFORE Google sign-in
       await AsyncStorage.removeItem('@has_logged_out');
       // Cleared logout flag before Google sign-in
-      
+
       // Add a small delay to ensure the loading state is visible
-      await new Promise(resolve => setTimeout(resolve, 300));
-      
+      await new Promise((resolve) => setTimeout(resolve, 300));
+
       // Calling signInWithGoogle
       const googleResult = await signInWithGoogle();
       // Google Sign-In successful
-      
+
       // Calling auth store socialAuth
       await socialAuth({
         email: googleResult.email,
@@ -106,12 +117,14 @@ export function Login() {
       // Auth store socialAuth completed successfully
 
       // Keep the loading state for a smooth transition
-      await new Promise(resolve => setTimeout(resolve, 500));
+      await new Promise((resolve) => setTimeout(resolve, 500));
       // Google Sign-In process completed successfully
-
     } catch (error) {
-      console.error('Google Sign-In failed:', error instanceof Error ? error.message : 'Unknown error');
-      
+      console.error(
+        'Google Sign-In failed:',
+        error instanceof Error ? error.message : 'Unknown error',
+      );
+
       const parsedError = handleLoginError(error);
       setGoogleError(parsedError);
       setAuthTransition(false);
@@ -126,20 +139,20 @@ export function Login() {
       setIsAppleLoading(true);
       setAppleError(null);
       setAuthTransition(true);
-      
+
       // CRITICAL: Clear logout flag BEFORE Apple sign-in
       await AsyncStorage.removeItem('@has_logged_out');
       // Cleared logout flag before Apple sign-in
-      
+
       // Add a small delay to ensure the loading state is visible
-      await new Promise(resolve => setTimeout(resolve, 300));
-      
+      await new Promise((resolve) => setTimeout(resolve, 300));
+
       // Calling signInWithApple
       const appleResult = await signInWithApple();
       // Apple Sign-In successful
-      
+
       // Calling backend Apple Sign-In API directly
-      
+
       // Parse the full name into firstName and lastName
       let nameObject = null;
       if (appleResult.fullName) {
@@ -149,28 +162,32 @@ export function Login() {
           lastName: nameParts.slice(1).join(' ') || '',
         };
       }
-      
+
       const authResult = await authApiService.appleSignIn(
         appleResult.identityToken,
         appleResult.authorizationCode,
         appleResult.email,
-        nameObject
+        nameObject,
       );
       // Backend API successful, storing tokens
 
-      // Calculate expires_at from expires_in if not provided  
+      // Calculate expires_at from expires_in if not provided
       const now = Math.floor(Date.now() / 1000); // Current time in seconds
       await storageService.storeTokens({
         access_token: authResult.access_token,
-        access_token_expires_at: authResult.access_token_expires_at || (now + authResult.access_token_expires_in),
+        access_token_expires_at:
+          authResult.access_token_expires_at ||
+          now + authResult.access_token_expires_in,
         access_token_expires_in: authResult.access_token_expires_in,
         is_revoked: authResult.is_revoked,
         refresh_token: authResult.refresh_token,
-        refresh_token_expires_at: authResult.refresh_token_expires_at || (now + authResult.refresh_token_expires_in),
+        refresh_token_expires_at:
+          authResult.refresh_token_expires_at ||
+          now + authResult.refresh_token_expires_in,
         refresh_token_expires_in: authResult.refresh_token_expires_in,
         token_type: authResult.token_type,
       });
-      
+
       if (authResult.user) {
         const user: User = {
           avatar: authResult.user.avatar || null,
@@ -196,12 +213,14 @@ export function Login() {
       // Auth store socialAuth completed successfully
 
       // Keep the loading state for a smooth transition
-      await new Promise(resolve => setTimeout(resolve, 500));
+      await new Promise((resolve) => setTimeout(resolve, 500));
       // Apple Sign-In process completed successfully
-
     } catch (error) {
-      console.error('Apple Sign-In failed:', error instanceof Error ? error.message : 'Unknown error');
-      
+      console.error(
+        'Apple Sign-In failed:',
+        error instanceof Error ? error.message : 'Unknown error',
+      );
+
       const parsedError = handleLoginError(error);
       setAppleError(parsedError);
       setAuthTransition(false);
@@ -214,10 +233,15 @@ export function Login() {
   if (authTransition) {
     return (
       <SafeScreen>
-        <View style={[styles.loadingOverlay, { backgroundColor: colors.background.primary }]}>
+        <View
+          style={[
+            styles.loadingOverlay,
+            { backgroundColor: colors.background.primary },
+          ]}
+        >
           <View style={styles.loadingContent}>
-            <ActivityIndicator 
-              color={colors.accent.primary} 
+            <ActivityIndicator
+              color={colors.accent.primary}
               size="large"
               style={styles.loadingSpinner}
             />
@@ -232,20 +256,23 @@ export function Login() {
 
   return (
     <SafeScreen>
-      <ScrollView 
+      <ScrollView
         contentContainerStyle={styles.scrollContent}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
-        style={[styles.container, { backgroundColor: colors.background.primary }]}
+        style={[
+          styles.container,
+          { backgroundColor: colors.background.primary },
+        ]}
       >
         <View style={styles.content}>
           {/* Logo */}
           <View style={styles.logoContainer}>
-                          <Image 
-                resizeMode="cover" 
-                source={require('@/theme/assets/images/app.png')} 
-                style={[styles.logo, { borderRadius: 8, overflow: 'hidden' }]} 
-              />
+            <Image
+              resizeMode="cover"
+              source={require('@/theme/assets/images/app.png')}
+              style={[styles.logo, { borderRadius: 8, overflow: 'hidden' }]}
+            />
           </View>
 
           {/* Title */}
@@ -260,9 +287,16 @@ export function Login() {
           <View style={styles.form}>
             {/* Email */}
             <View style={styles.fieldContainer}>
-              <Text style={[styles.label, { color: colors.text.primary }]}>Email</Text>
+              <Text style={[styles.label, { color: colors.text.primary }]}>
+                Email
+              </Text>
               <View style={styles.inputContainer}>
-                <IconByVariant color={colors.text.tertiary} name="mail" size={20} style={styles.inputIcon} />
+                <IconByVariant
+                  color={colors.text.tertiary}
+                  name="mail"
+                  size={20}
+                  style={styles.inputIcon}
+                />
                 <Input
                   autoCapitalize="none"
                   keyboardType="email-address"
@@ -275,11 +309,17 @@ export function Login() {
                   }}
                   placeholder="Enter your e-mail"
                   placeholderTextColor={colors.text.tertiary}
-                  style={[styles.textInput, { 
-                    backgroundColor: colors.background.secondary,
-                    borderColor: loginError?.type === 'validation' && !email ? colors.error : colors.border.primary,
-                    color: colors.text.primary
-                  }]}
+                  style={[
+                    styles.textInput,
+                    {
+                      backgroundColor: colors.background.secondary,
+                      borderColor:
+                        loginError?.type === 'validation' && !email
+                          ? colors.error
+                          : colors.border.primary,
+                      color: colors.text.primary,
+                    },
+                  ]}
                   value={email}
                 />
               </View>
@@ -287,9 +327,16 @@ export function Login() {
 
             {/* Password */}
             <View style={styles.fieldContainer}>
-              <Text style={[styles.label, { color: colors.text.primary }]}>Password</Text>
+              <Text style={[styles.label, { color: colors.text.primary }]}>
+                Password
+              </Text>
               <View style={styles.inputContainer}>
-                <IconByVariant color={colors.text.tertiary} name="lock" size={20} style={styles.inputIcon} />
+                <IconByVariant
+                  color={colors.text.tertiary}
+                  name="lock"
+                  size={20}
+                  style={styles.inputIcon}
+                />
                 <Input
                   autoCapitalize="none"
                   autoCorrect={false}
@@ -303,42 +350,71 @@ export function Login() {
                   placeholder="Enter your password"
                   placeholderTextColor={colors.text.tertiary}
                   secureTextEntry={!showPassword}
-                  style={[styles.textInput, {
-                    backgroundColor: colors.background.secondary,
-                    borderColor: loginError?.type === 'validation' && !password ? colors.error : colors.border.primary,
-                    color: colors.text.primary
-                  }]}
+                  style={[
+                    styles.textInput,
+                    {
+                      backgroundColor: colors.background.secondary,
+                      borderColor:
+                        loginError?.type === 'validation' && !password
+                          ? colors.error
+                          : colors.border.primary,
+                      color: colors.text.primary,
+                    },
+                  ]}
                   value={password}
                 />
-                <TouchableOpacity 
-                  onPress={() => { setShowPassword(!showPassword); }}
+                <TouchableOpacity
+                  onPress={() => {
+                    setShowPassword(!showPassword);
+                  }}
                   style={styles.eyeIcon}
                 >
-                  <IconByVariant color={colors.text.tertiary} name="eye" size={20} />
+                  <IconByVariant
+                    color={colors.text.tertiary}
+                    name="eye"
+                    size={20}
+                  />
                 </TouchableOpacity>
               </View>
             </View>
 
             {/* Remember Me & Forgot Password */}
             <View style={styles.optionsRow}>
-              <TouchableOpacity 
-                onPress={() => { setRememberMe(!rememberMe); }}
+              <TouchableOpacity
+                onPress={() => {
+                  setRememberMe(!rememberMe);
+                }}
                 style={styles.checkboxRow}
               >
-                <View style={[
-                  styles.checkbox,
-                  { borderColor: colors.border.primary },
-                  rememberMe && { backgroundColor: colors.accent.primary, borderColor: colors.accent.primary }
-                ]}>
-                  {rememberMe ? <IconByVariant color={colors.text.inverse} name="check" size={12} /> : null}
+                <View
+                  style={[
+                    styles.checkbox,
+                    { borderColor: colors.border.primary },
+                    rememberMe && {
+                      backgroundColor: colors.accent.primary,
+                      borderColor: colors.accent.primary,
+                    },
+                  ]}
+                >
+                  {rememberMe ? (
+                    <IconByVariant
+                      color={colors.text.inverse}
+                      name="check"
+                      size={12}
+                    />
+                  ) : null}
                 </View>
-                <Text style={[styles.checkboxLabel, { color: colors.text.primary }]}>
+                <Text
+                  style={[styles.checkboxLabel, { color: colors.text.primary }]}
+                >
                   Remember me
                 </Text>
               </TouchableOpacity>
-              
+
               <TouchableOpacity>
-                <Text style={[styles.forgotLink, { color: colors.accent.primary }]}>
+                <Text
+                  style={[styles.forgotLink, { color: colors.accent.primary }]}
+                >
                   Forgot password?
                 </Text>
               </TouchableOpacity>
@@ -350,11 +426,16 @@ export function Login() {
                 <Text style={[styles.errorText, { color: colors.error }]}>
                   {loginError.message}
                 </Text>
-                <TouchableOpacity 
+                <TouchableOpacity
                   onPress={() => setLoginError(null)}
                   style={styles.dismissButton}
                 >
-                  <Text style={[styles.dismissText, { color: colors.text.secondary }]}>
+                  <Text
+                    style={[
+                      styles.dismissText,
+                      { color: colors.text.secondary },
+                    ]}
+                  >
                     ✕
                   </Text>
                 </TouchableOpacity>
@@ -374,27 +455,49 @@ export function Login() {
 
             {/* Divider */}
             <View style={styles.divider}>
-              <View style={[styles.dividerLine, { backgroundColor: colors.border.primary }]} />
-              <Text style={[styles.dividerText, { color: colors.text.secondary }]}>Or</Text>
-              <View style={[styles.dividerLine, { backgroundColor: colors.border.primary }]} />
+              <View
+                style={[
+                  styles.dividerLine,
+                  { backgroundColor: colors.border.primary },
+                ]}
+              />
+              <Text
+                style={[styles.dividerText, { color: colors.text.secondary }]}
+              >
+                Or
+              </Text>
+              <View
+                style={[
+                  styles.dividerLine,
+                  { backgroundColor: colors.border.primary },
+                ]}
+              />
             </View>
 
             {/* Social Buttons */}
             <TouchableOpacity
               disabled={isGoogleLoading}
               onPress={handleGoogleSignIn}
-              style={[styles.socialButton, { 
-                backgroundColor: colors.background.secondary,
-                borderColor: colors.border.primary,
-                marginBottom: 12
-              }]}
+              style={[
+                styles.socialButton,
+                {
+                  backgroundColor: colors.background.secondary,
+                  borderColor: colors.border.primary,
+                  marginBottom: 12,
+                },
+              ]}
             >
               {isGoogleLoading ? (
                 <ActivityIndicator color="#4285F4" size="small" />
               ) : (
                 <>
                   <IconByVariant name="google" size={20} />
-                  <Text style={[styles.socialButtonText, { color: colors.text.primary }]}>
+                  <Text
+                    style={[
+                      styles.socialButtonText,
+                      { color: colors.text.primary },
+                    ]}
+                  >
                     Sign in with Google
                   </Text>
                 </>
@@ -406,10 +509,13 @@ export function Login() {
             <TouchableOpacity
               disabled={isAppleLoading}
               onPress={handleAppleSignIn}
-              style={[styles.socialButton, { 
-                backgroundColor: '#000000',
-                borderColor: colors.border.primary
-              }]}
+              style={[
+                styles.socialButton,
+                {
+                  backgroundColor: '#000000',
+                  borderColor: colors.border.primary,
+                },
+              ]}
             >
               {isAppleLoading ? (
                 <ActivityIndicator color="#FFFFFF" size="small" />
@@ -427,11 +533,19 @@ export function Login() {
 
             {/* Sign Up Link */}
             <View style={styles.signUpRow}>
-              <Text style={[styles.signUpText, { color: colors.text.secondary }]}>
+              <Text
+                style={[styles.signUpText, { color: colors.text.secondary }]}
+              >
                 Don't have an account?{' '}
               </Text>
-              <TouchableOpacity onPress={() => { navigation.navigate('SignUp'); }}>
-                <Text style={[styles.signUpLink, { color: colors.accent.primary }]}>
+              <TouchableOpacity
+                onPress={() => {
+                  navigation.navigate('SignUp');
+                }}
+              >
+                <Text
+                  style={[styles.signUpLink, { color: colors.accent.primary }]}
+                >
                   Sign up
                 </Text>
               </TouchableOpacity>

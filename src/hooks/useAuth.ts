@@ -1,6 +1,12 @@
 import type { User } from '@/hooks/domain/user/schema';
-import type { ApiError, LoginRequest, RegisterRequest, SocialAuthRequest } from '@/services/api/types';
+import type {
+  ApiError,
+  LoginRequest,
+  RegisterRequest,
+  SocialAuthRequest,
+} from '@/services/api/types';
 
+import * as Keychain from 'react-native-keychain';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { authApiService } from '@/services/auth-api.service';
 import { storageService } from '@/services/storage';
@@ -13,7 +19,7 @@ type AuthState = {
   isAuthenticated: boolean;
   isLoading: boolean;
   user: null | User;
-}
+};
 
 export function useAuth() {
   const [state, setState] = useState<AuthState>({
@@ -24,7 +30,7 @@ export function useAuth() {
   });
 
   const setUser = (user: null | User) => {
-    setState(previous => ({
+    setState((previous) => ({
       ...previous,
       isAuthenticated: !!user,
       user,
@@ -32,24 +38,26 @@ export function useAuth() {
   };
 
   const setLoading = (isLoading: boolean) => {
-    setState(previous => ({ ...previous, isLoading }));
+    setState((previous) => ({ ...previous, isLoading }));
   };
 
   const setError = (error: null | string) => {
-    setState(previous => ({ ...previous, error }));
+    setState((previous) => ({ ...previous, error }));
   };
 
-  const clearError = () => { setError(null); };
+  const clearError = () => {
+    setError(null);
+  };
 
   const login = async (data: LoginRequest): Promise<void> => {
     try {
       setLoading(true);
       setError(null);
-      
+
       // CRITICAL: Clear logout flag before login - must happen BEFORE any API calls
       await AsyncStorage.removeItem('@has_logged_out');
       console.log('🔓 Cleared logout flag before login');
-      
+
       const response = await authApiService.login(data);
       await storageService.storeTokens({
         access_token: response.access_token,
@@ -61,7 +69,26 @@ export function useAuth() {
         refresh_token_expires_in: response.refresh_token_expires_in,
         token_type: response.token_type,
       });
-      
+      try {
+        await Keychain.setGenericPassword(
+          'token_data',
+          JSON.stringify(response.access_token),
+          {
+            accessGroup: 'group.com.pulsarventures.linklibrary.ai',
+            accessible: Keychain.ACCESSIBLE.WHEN_UNLOCKED,
+            service: 'com.linklibrary.auth',
+          },
+        );
+        console.log(
+          '✅ Tokens stored in Keychain (generic) successfully',
+          response.access_token,
+        );
+      } catch (error) {
+        console.error(
+          '❌ Failed to store tokens in Keychain (generic):',
+          error,
+        );
+      }
       useAuthStore.setState({
         error: null,
         initialized: true,
@@ -83,7 +110,7 @@ export function useAuth() {
     try {
       setLoading(true);
       setError(null);
-      
+
       const response = await authApiService.register(data);
       await storageService.storeTokens({
         access_token: response.access_token,
@@ -95,7 +122,7 @@ export function useAuth() {
         refresh_token_expires_in: response.refresh_token_expires_in,
         token_type: response.token_type,
       });
-      
+
       useAuthStore.setState({
         error: null,
         initialized: true,
@@ -117,7 +144,7 @@ export function useAuth() {
     try {
       setLoading(true);
       setError(null);
-      
+
       // Use the auth store logout which handles everything
       await useAuthStore.getState().logout();
       setUser(null);
@@ -134,7 +161,7 @@ export function useAuth() {
     try {
       setLoading(true);
       setError(null);
-      
+
       const response = await authApiService.googleSignIn(data.token);
       await storageService.storeTokens({
         access_token: response.access_token,
@@ -146,7 +173,7 @@ export function useAuth() {
         refresh_token_expires_in: response.refresh_token_expires_in,
         token_type: response.token_type,
       });
-      
+
       useAuthStore.setState({
         error: null,
         initialized: true,
@@ -168,7 +195,7 @@ export function useAuth() {
     try {
       setLoading(true);
       setError(null);
-      
+
       const response = await authApiService.me();
       useAuthStore.setState({
         error: null,
@@ -191,18 +218,18 @@ export function useAuth() {
   useEffect(() => {
     const { isAuthenticated, isLoading, user } = useAuthStore.getState();
     setUser(user);
-    setState(previous => ({ ...previous, isAuthenticated, isLoading }));
-    
+    setState((previous) => ({ ...previous, isAuthenticated, isLoading }));
+
     // Subscribe to auth store changes
     const unsubscribe = useAuthStore.subscribe((state) => {
       setUser(state.user);
-      setState(previous => ({ 
-        ...previous, 
-        isAuthenticated: state.isAuthenticated, 
-        isLoading: state.isLoading 
+      setState((previous) => ({
+        ...previous,
+        isAuthenticated: state.isAuthenticated,
+        isLoading: state.isLoading,
       }));
     });
-    
+
     return unsubscribe;
   }, []);
 
@@ -215,4 +242,4 @@ export function useAuth() {
     register,
     socialAuth,
   };
-} 
+}

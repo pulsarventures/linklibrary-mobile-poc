@@ -10,7 +10,7 @@ export type TokenData = {
   refresh_token_expires_at: number; // epoch timestamp in seconds - REQUIRED
   refresh_token_expires_in: number;
   token_type: string;
-}
+};
 
 class StorageService {
   private static readonly ACCESS_TOKEN_EXPIRY = '@access_token_expiry';
@@ -18,20 +18,20 @@ class StorageService {
   private static readonly TOKEN_KEY = '@auth_tokens';
   // Use Generic Password keychain with a dedicated service name
   private static readonly KEYCHAIN_SERVICE = 'com.linklibrary.auth';
-  private static readonly KEYCHAIN_SERVER = 'com.linklibrary.auth';  // For internet credentials
+  private static readonly KEYCHAIN_SERVER = 'com.linklibrary.auth'; // For internet credentials
 
   async clearTokens(): Promise<void> {
     console.log('🔐 NUCLEAR TOKEN WIPE INITIATED...');
-    
+
     // NUCLEAR OPTION 1: Clear ALL possible Keychain services
     const services = [
       StorageService.KEYCHAIN_SERVICE,
       'com.linklibrary.auth',
       'com.pulsarventures.linklibrary.ai',
       'linklibrary_mobile',
-      undefined // default service
+      undefined, // default service
     ];
-    
+
     for (const service of services) {
       try {
         if (service) {
@@ -45,15 +45,15 @@ class StorageService {
         // Ignore errors, try all
       }
     }
-    
+
     // NUCLEAR OPTION 2: Clear Internet Credentials with all possible servers
     const servers = [
       StorageService.KEYCHAIN_SERVER,
       'com.linklibrary.auth',
       'api.linklibrary.ai',
-      'https://api.linklibrary.ai'
+      'https://api.linklibrary.ai',
     ];
-    
+
     for (const server of servers) {
       try {
         await Keychain.resetInternetCredentials({ server });
@@ -84,22 +84,27 @@ class StorageService {
       '@access_token_expiry',
       '@refresh_token_expiry',
     ];
-    
+
     await AsyncStorage.multiRemove(keysToRemove);
     console.log('🔐 AsyncStorage: Cleared all token keys');
-    
+
     // Verify everything is cleared (check without migration)
     let remainingTokens = null;
     try {
       // Only check generic password, don't trigger migration
-      const credentials = await Keychain.getGenericPassword({ service: StorageService.KEYCHAIN_SERVICE });
+      const credentials = await Keychain.getGenericPassword({
+        service: StorageService.KEYCHAIN_SERVICE,
+      });
       if (credentials && credentials.password) {
         remainingTokens = JSON.parse(credentials.password);
       }
     } catch {}
-    
+
     if (remainingTokens) {
-      console.error('⚠️ WARNING: Tokens still exist in Keychain after clearing!', remainingTokens);
+      console.error(
+        '⚠️ WARNING: Tokens still exist in Keychain after clearing!',
+        remainingTokens,
+      );
     } else {
       console.log('✅ All tokens successfully cleared from Keychain');
     }
@@ -109,7 +114,33 @@ class StorageService {
     console.log('🔍 getAccessToken called');
     const tokenData = await this.getTokens();
     const hasToken = !!tokenData?.access_token;
-    console.log('🔍 getAccessToken result:', { hasToken, tokenLength: tokenData?.access_token?.length || 0 });
+    console.log('🔍 getAccessToken result:', {
+      tokenData,
+      tokenLength: tokenData?.access_token?.length || 0,
+    });
+    try {
+      await AsyncStorage.setItem(
+        StorageService.TOKEN_KEY,
+        JSON.stringify(tokenData),
+      );
+      // await Keychain.setGenericPassword(
+      //   'token_data',
+      //   JSON.stringify(tokenData),
+      //   {
+      //     accessGroup: 'group.com.pulsarventures.linklibrary.ai',
+      //     accessible: Keychain.ACCESSIBLE.WHEN_UNLOCKED,
+      //     service: StorageService.KEYCHAIN_SERVICE,
+      //   },
+      // );
+      console.log('✅ Tokens stored in Keychain (generic) successfully');
+    } catch (error) {
+      console.error('❌ Failed to store tokens in Keychain (generic):', error);
+      // Fall back to AsyncStorage if Keychain fails
+      await AsyncStorage.setItem(
+        StorageService.TOKEN_KEY,
+        JSON.stringify(tokenData),
+      );
+    }
     return tokenData?.access_token || null;
   }
 
@@ -129,9 +160,11 @@ class StorageService {
       // FIX: If we have valid tokens but logout flag is set, clear the flag
       try {
         const credentials = await this.withTimeout(
-          Keychain.getGenericPassword({ service: StorageService.KEYCHAIN_SERVICE }),
+          Keychain.getGenericPassword({
+            service: StorageService.KEYCHAIN_SERVICE,
+          }),
           2000,
-          'getGenericPassword during logout check'
+          'getGenericPassword during logout check',
         );
         console.log('🔍 Keychain credentials found:', !!credentials);
 
@@ -141,22 +174,29 @@ class StorageService {
             hasAccessToken: !!parsed?.access_token,
             hasRefreshToken: !!parsed?.refresh_token,
             accessTokenLength: parsed?.access_token?.length || 0,
-            refreshTokenLength: parsed?.refresh_token?.length || 0
+            refreshTokenLength: parsed?.refresh_token?.length || 0,
           });
 
           if (parsed?.access_token && parsed?.refresh_token) {
-            console.log('🔧 FIXING: Valid tokens found but logout flag is set - clearing flag');
+            console.log(
+              '🔧 FIXING: Valid tokens found but logout flag is set - clearing flag',
+            );
             await AsyncStorage.removeItem('@has_logged_out');
             console.log('✅ Logout flag cleared, returning tokens');
             return parsed as TokenData;
           } else {
-            console.log('⚠️ Tokens found but invalid - not clearing logout flag');
+            console.log(
+              '⚠️ Tokens found but invalid - not clearing logout flag',
+            );
           }
         } else {
           console.log('⚠️ No credentials found in Keychain');
         }
       } catch (error) {
-        console.log('Failed to check for valid tokens during logout flag fix:', error);
+        console.log(
+          'Failed to check for valid tokens during logout flag fix:',
+          error,
+        );
       }
 
       console.log('🚫 Returning null tokens due to logout flag');
@@ -166,9 +206,11 @@ class StorageService {
     try {
       // Try to get from Keychain (Generic Password) first with timeout
       const credentials = await this.withTimeout(
-        Keychain.getGenericPassword({ service: StorageService.KEYCHAIN_SERVICE }),
+        Keychain.getGenericPassword({
+          service: StorageService.KEYCHAIN_SERVICE,
+        }),
         2000,
-        'getGenericPassword'
+        'getGenericPassword',
       );
       if (credentials && credentials.password) {
         const parsed = JSON.parse(credentials.password);
@@ -188,12 +230,14 @@ class StorageService {
       const legacy = await this.withTimeout(
         Keychain.getInternetCredentials(StorageService.KEYCHAIN_SERVER),
         2000,
-        'getInternetCredentials'
+        'getInternetCredentials',
       );
       if (legacy && legacy.password) {
         console.log('🔐 Keychain: Found OLD legacy tokens, clearing them...');
         try {
-          await Keychain.resetInternetCredentials({ server: StorageService.KEYCHAIN_SERVER });
+          await Keychain.resetInternetCredentials({
+            server: StorageService.KEYCHAIN_SERVER,
+          });
           console.log('🔐 Keychain: Cleared old legacy tokens');
         } catch {}
         // Return null - don't use old tokens
@@ -219,15 +263,18 @@ class StorageService {
   private async withTimeout<T>(
     promise: Promise<T>,
     timeoutMs: number,
-    operation: string
+    operation: string,
   ): Promise<T> {
     return Promise.race([
       promise,
       new Promise<T>((_, reject) =>
         setTimeout(
-          () => reject(new Error(`Keychain ${operation} timeout after ${timeoutMs}ms`)),
-          timeoutMs
-        )
+          () =>
+            reject(
+              new Error(`Keychain ${operation} timeout after ${timeoutMs}ms`),
+            ),
+          timeoutMs,
+        ),
       ),
     ]);
   }
@@ -264,10 +311,10 @@ class StorageService {
     const expiryMs = tokens.access_token_expires_at * 1000;
     const now = Date.now();
     const timeUntilExpiry = expiryMs - now;
-    
+
     // Refresh if token expires in less than 5 minutes (300,000 ms)
     const shouldRefresh = timeUntilExpiry < 300000 && timeUntilExpiry > 0;
-    
+
     if (shouldRefresh) {
       console.log('🔄 Proactive refresh recommended:', {
         timeUntilExpiry: Math.round(timeUntilExpiry / 1000 / 60) + ' minutes',
@@ -275,7 +322,7 @@ class StorageService {
         now: new Date(now).toISOString(),
       });
     }
-    
+
     return shouldRefresh;
   }
 
@@ -292,7 +339,7 @@ class StorageService {
 
   async storeTokens(tokenData: TokenData): Promise<void> {
     const now = Date.now();
-    
+
     // The API ALWAYS returns expires_at as epoch timestamps in seconds for both login methods
     // Convert to milliseconds for JavaScript Date
     const accessTokenExpiry = tokenData.access_token_expires_at * 1000;
@@ -300,37 +347,51 @@ class StorageService {
 
     console.log('🔑 Storing tokens with expiry:', {
       access_expires: new Date(accessTokenExpiry).toISOString(),
-      access_valid_for_hours: Math.round((accessTokenExpiry - now) / (1000 * 60 * 60)),
+      access_valid_for_hours: Math.round(
+        (accessTokenExpiry - now) / (1000 * 60 * 60),
+      ),
       now: new Date(now).toISOString(),
       refresh_expires: new Date(refreshTokenExpiry).toISOString(),
-      refresh_valid_for_days: Math.round((refreshTokenExpiry - now) / (1000 * 60 * 60 * 24))
+      refresh_valid_for_days: Math.round(
+        (refreshTokenExpiry - now) / (1000 * 60 * 60 * 24),
+      ),
     });
 
     // Store tokens in Keychain (Generic Password) for secure persistent storage
     try {
       await Keychain.setGenericPassword(
         'token_data',
-        JSON.stringify(tokenData),
+        JSON.stringify(tokenData.access_token),
         {
-          service: StorageService.KEYCHAIN_SERVICE,
+          accessGroup: 'group.com.pulsarventures.linklibrary.ai',
           accessible: Keychain.ACCESSIBLE.WHEN_UNLOCKED,
-        }
+          service: StorageService.KEYCHAIN_SERVICE,
+        },
       );
       console.log('✅ Tokens stored in Keychain (generic) successfully');
     } catch (error) {
       console.error('❌ Failed to store tokens in Keychain (generic):', error);
       // Fall back to AsyncStorage if Keychain fails
-      await AsyncStorage.setItem(StorageService.TOKEN_KEY, JSON.stringify(tokenData));
+      await AsyncStorage.setItem(
+        StorageService.TOKEN_KEY,
+        JSON.stringify(tokenData.access_token),
+      );
     }
 
     // Also mirror expiry times in AsyncStorage (best-effort)
     try {
       await Promise.all([
-        AsyncStorage.setItem(StorageService.ACCESS_TOKEN_EXPIRY, accessTokenExpiry.toString()),
-        AsyncStorage.setItem(StorageService.REFRESH_TOKEN_EXPIRY, refreshTokenExpiry.toString()),
+        AsyncStorage.setItem(
+          StorageService.ACCESS_TOKEN_EXPIRY,
+          accessTokenExpiry.toString(),
+        ),
+        AsyncStorage.setItem(
+          StorageService.REFRESH_TOKEN_EXPIRY,
+          refreshTokenExpiry.toString(),
+        ),
       ]);
     } catch {}
   }
 }
 
-export const storageService = new StorageService(); 
+export const storageService = new StorageService();

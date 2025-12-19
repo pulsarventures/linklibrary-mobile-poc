@@ -1,9 +1,10 @@
 import 'react-native-gesture-handler';
 
+import * as Keychain from 'react-native-keychain';
+
 import ShareReceiver from '@/share/ShareReceiver'; // Android share handling
 import { setupErrorHandling } from '@/utils/errorHandler';
 import './utils/clearLogoutFlagNow'; // Import for global debugging utilities
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import i18n from 'i18next';
 import React, { useEffect, useRef, useState } from 'react';
 import { I18nextProvider } from 'react-i18next';
@@ -12,7 +13,11 @@ import { AppState, Linking, NativeModules } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { enableScreens } from 'react-native-screens';
 import Toast from 'react-native-toast-message';
-import { getToastConfig, getText1Style, getText2Style } from '@/utils/toastConfig';
+import {
+  getToastConfig,
+  getText1Style,
+  getText2Style,
+} from '@/utils/toastConfig';
 
 import { useAuthStore } from '@/hooks/domain/user/useAuthStore';
 import { useBackgroundDataLoader } from '@/hooks/useBackgroundDataLoader';
@@ -22,9 +27,15 @@ import { storageService } from '@/services/storage';
 import { ThemeProvider } from '@/theme';
 import { initializeI18n } from '@/translations';
 
+import { useCollectionsStore } from './hooks/domain/collections/useCollectionsStore';
+
 import { ErrorBoundary } from '@/components/organisms';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
+import { LinksApiService } from '@/services/links-api.service';
+import { useCreateLink } from '@/hooks/api/useLinks';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { useMutation } from '@tanstack/react-query';
 const { AppGroupsModule } = NativeModules;
 // Remove expensive native module logging on every startup
 
@@ -60,13 +71,62 @@ export const queryClient = new QueryClient({
 function App() {
   const [isI18nInitialized, setIsI18nInitialized] = useState(false);
   const pendingSharedUrl = useRef<null | string>(null);
+  const { isAuthenticated } = useAuthStore();
+  const createLinkMutation = useCreateLink();
+  const {
+    collections,
+    createCollection,
+    deleteCollection,
+    error,
+    fetchCollections,
+    loading,
+    updateCollection,
+  } = useCollectionsStore();
 
+  useEffect(() => {
+    if (isAuthenticated) {
+      console.log('isAuthenticated: Fetching collections...');
+      fetchCollections();
+    }
+  });
+  console.log('collectionLoad------->>>>', collections);
+  useEffect(() => {
+    const saveDefaultCollection = async () => {
+      if (!collections || collections.length === 0) return;
+
+      const defaultCol = collections.find(
+        (c) => c.name?.toLowerCase() === 'default',
+      );
+
+      console.log('defaultCol', defaultCol);
+
+      const value_token = await AsyncStorage.getItem('@auth_tokens');
+
+      console.log('value_token++++++++  ', value_token);
+      let accessToken: string | null = null;
+
+      if (value_token) {
+        const tokenObj = JSON.parse(value_token);
+        accessToken = tokenObj.access_token;
+      }
+
+      console.log('accessToken:', accessToken);
+      if (defaultCol?.id) {
+        await AsyncStorage.setItem(
+          'default_collection_id',
+          String(defaultCol.id),
+        );
+      }
+    };
+
+    saveDefaultCollection();
+  }, [collections]);
   useEffect(() => {
     // Initialize i18n in background, don't block UI
     setIsI18nInitialized(true); // Show UI immediately
-    
+
     // Initialize i18n asynchronously
-    initializeI18n().catch(error => {
+    initializeI18n().catch((error) => {
       console.error('Failed to initialize i18n:', error);
       // Translations might not work but app will still function
     });
@@ -78,7 +138,10 @@ function App() {
       try {
         // Add timeout to prevent app freeze if storage is slow
         const timeoutPromise = new Promise((_, reject) =>
-          setTimeout(() => reject(new Error('Logout flag check timeout')), 3000)
+          setTimeout(
+            () => reject(new Error('Logout flag check timeout')),
+            3000,
+          ),
         );
 
         const checkPromise = (async () => {
@@ -87,22 +150,33 @@ function App() {
             // Check if there are valid tokens before clearing the logout flag
             const accessToken = await storageService.getAccessToken();
             const refreshToken = await storageService.getRefreshToken();
-            const isAccessTokenValid = await storageService.isAccessTokenValid();
+            const isAccessTokenValid =
+              await storageService.isAccessTokenValid();
 
             if (accessToken && refreshToken && isAccessTokenValid) {
-              console.log('🔧 FIXING STUCK LOGOUT FLAG - Valid tokens found, clearing logout flag');
+              console.log(
+                '🔧 FIXING STUCK LOGOUT FLAG - Valid tokens found, clearing logout flag',
+              );
               await AsyncStorage.removeItem('@has_logged_out');
               console.log('✅ Stuck logout flag cleared successfully');
             } else {
-              console.log('🔒 LOGOUT FLAG PRESERVED - No valid tokens found, keeping user logged out');
+              console.log(
+                '🔒 LOGOUT FLAG PRESERVED - No valid tokens found, keeping user logged out',
+              );
 
               // If we're supposed to be logged out but Google thinks we're signed in, clear Google state
               try {
-                const { hasPreviousSignIn } = await import('@/services/auth/googleAuth');
+                const { hasPreviousSignIn } = await import(
+                  '@/services/auth/googleAuth'
+                );
                 const isGoogleSignedIn = await hasPreviousSignIn();
                 if (isGoogleSignedIn) {
-                  console.log('🔐 Clearing Google sign-in state due to logout flag');
-                  const { signOutFromGoogle } = await import('@/services/auth/googleAuth');
+                  console.log(
+                    '🔐 Clearing Google sign-in state due to logout flag',
+                  );
+                  const { signOutFromGoogle } = await import(
+                    '@/services/auth/googleAuth'
+                  );
                   await signOutFromGoogle();
                 }
               } catch (googleError) {
@@ -114,8 +188,13 @@ function App() {
 
         await Promise.race([checkPromise, timeoutPromise]);
       } catch (error) {
-        if (error instanceof Error && error.message === 'Logout flag check timeout') {
-          console.warn('⚠️ Logout flag check timed out - continuing app startup');
+        if (
+          error instanceof Error &&
+          error.message === 'Logout flag check timeout'
+        ) {
+          console.warn(
+            '⚠️ Logout flag check timed out - continuing app startup',
+          );
         } else {
           console.error('Failed to clear stuck logout flag:', error);
         }
@@ -130,7 +209,7 @@ function App() {
     if (__DEV__) {
       console.log('🔴🔴🔴 handleSharedUrl called with:', url);
     }
-    
+
     // Validate URL first
     if (!url.startsWith('http')) {
       if (__DEV__) {
@@ -138,13 +217,13 @@ function App() {
       }
       return;
     }
-    
+
     // Check if user is authenticated
     const { initialized, isAuthenticated } = useAuthStore.getState();
     if (__DEV__) {
       console.log('🔴🔴🔴 Auth state:', { initialized, isAuthenticated });
     }
-    
+
     if (!initialized) {
       // Store the URL to process later when auth is initialized
       if (__DEV__) {
@@ -153,7 +232,7 @@ function App() {
       pendingSharedUrl.current = url;
       return;
     }
-    
+
     if (!isAuthenticated) {
       // Store the URL to process after user logs in
       if (__DEV__) {
@@ -162,12 +241,16 @@ function App() {
       pendingSharedUrl.current = url;
       return;
     }
-    
+
     // Navigate to Add screen with shared URL
     if (__DEV__) {
       console.log('🔴🔴🔴 All checks passed, navigating to Add screen');
     }
     navigateToAddScreen(url);
+  };
+
+  const collectionLoad = () => {
+    console.log('collectionLoad------->>>>', collections);
   };
 
   // Check for shared content from iOS share extension
@@ -178,7 +261,9 @@ function App() {
     try {
       if (!AppGroupsModule) {
         if (__DEV__) {
-          console.log('🔴🔴🔴 NO AppGroupsModule - iOS share extension not available');
+          console.log(
+            '🔴🔴🔴 NO AppGroupsModule - iOS share extension not available',
+          );
         }
         return;
       }
@@ -190,7 +275,7 @@ function App() {
       if (__DEV__) {
         console.log('🔴🔴🔴 Shared data received:', JSON.stringify(sharedData));
       }
-      
+
       if (sharedData) {
         let url = '';
         if (sharedData.type === 'url') {
@@ -202,12 +287,50 @@ function App() {
             url = urlMatch[0];
           }
         }
-        
+
         if (url) {
           if (__DEV__) {
             console.log('🔴🔴🔴 Found URL to share:', url);
           }
-          handleSharedUrl(url);
+          if (sharedData.isFromAction == true) {
+            console.log(
+              '+++++++++++++++++++++++++++++++++ isfrom action',
+              sharedData.isFromAction,
+            );
+            const metadata = await LinksApiService.extractMetadata(url);
+            console.log('Extracted metadata from API:', metadata);
+            const truncatedSummary = metadata.summary
+              ? metadata.summary.length > 1000
+                ? metadata.summary.substring(0, 997) + '...'
+                : metadata.summary
+              : '';
+            const value = await AsyncStorage.getItem('default_collection_id');
+            console.log('default_collection_id++++++++  ', value); // string | null
+            const value_token = await AsyncStorage.getItem('@auth_tokens');
+            console.log('value_token++++++++  ', value_token);
+            const testData = {
+              collection_id: value,
+              is_favorite: false,
+              notes: metadata.notes,
+              summary: truncatedSummary,
+              tag_ids: [],
+              title: metadata.title,
+              url: url,
+            };
+            try {
+              console.log(
+                '🧪 Calling createLinkMutation.mutateAsync with:',
+                testData,
+              );
+              const result = await createLinkMutation.mutateAsync(testData);
+              console.log('🧪 ✅ Create link successful:', result);
+            } catch (error) {
+              console.error('🧪 ❌ Create link failed:', error);
+            }
+          } else {
+            handleSharedUrl(url);
+          }
+          // handleSharedUrl(url);
           // Clear the shared data after processing
           AppGroupsModule.clearSharedContent?.().catch((error: any) => {
             if (__DEV__) {
@@ -234,10 +357,10 @@ function App() {
       console.log('🔴🔴🔴 navigateToAddScreen called with URL:', url);
       console.log('🔴🔴🔴 Navigation ready?', navigationRef.isReady());
     }
-    
+
     // Check if user is authenticated
     const { initialized, isAuthenticated } = useAuthStore.getState();
-    
+
     if (!isAuthenticated || !initialized) {
       if (__DEV__) {
         console.log('🔴🔴🔴 User not authenticated, saving URL for later');
@@ -245,7 +368,7 @@ function App() {
       pendingSharedUrl.current = url;
       return;
     }
-    
+
     if (navigationRef.isReady()) {
       try {
         if (__DEV__) {
@@ -253,7 +376,7 @@ function App() {
         }
         navigationRef.navigate('Main', {
           params: { sharedUrl: url },
-          screen: 'Add'
+          screen: 'Add',
         });
         if (__DEV__) {
           console.log('🔴🔴🔴 Navigation command completed');
@@ -264,7 +387,10 @@ function App() {
         try {
           (navigationRef as any).navigate('Add', { sharedUrl: url });
         } catch (fallbackError) {
-          console.error('🔴🔴🔴 Fallback navigation also failed:', fallbackError);
+          console.error(
+            '🔴🔴🔴 Fallback navigation also failed:',
+            fallbackError,
+          );
         }
       }
     } else {
@@ -277,17 +403,19 @@ function App() {
         const { isAuthenticated: isAuth } = useAuthStore.getState();
         if (!isAuth) {
           if (__DEV__) {
-            console.log('🔴🔴🔴 User not authenticated in listener, saving URL');
+            console.log(
+              '🔴🔴🔴 User not authenticated in listener, saving URL',
+            );
           }
           pendingSharedUrl.current = url;
           unsubscribe();
           return;
         }
-        
+
         try {
           navigationRef.navigate('Main', {
             params: { sharedUrl: url },
-            screen: 'Add'
+            screen: 'Add',
           });
           unsubscribe();
         } catch (error) {
@@ -306,11 +434,14 @@ function App() {
   // Monitor auth state and process pending URL when user becomes authenticated
   useEffect(() => {
     const unsubscribe = useAuthStore.subscribe((state) => {
-      if (state.isAuthenticated && state.initialized && // Process pending shared URL
-        pendingSharedUrl.current) {
-          navigateToAddScreen(pendingSharedUrl.current);
-          pendingSharedUrl.current = null;
-        }
+      if (
+        state.isAuthenticated &&
+        state.initialized && // Process pending shared URL
+        pendingSharedUrl.current
+      ) {
+        navigateToAddScreen(pendingSharedUrl.current);
+        pendingSharedUrl.current = null;
+      }
     });
 
     return unsubscribe;
@@ -332,9 +463,28 @@ function App() {
     // Check for shared content on mount with single attempt
     if (__DEV__) {
       console.log('🔴🔴🔴 App mounted, starting share content checks');
+      console.log('helloooooooooooooooo testing');
+
+      // const loadCollection = async () => {
+      //   try {
+      //     console.log('loadCollection. called');
+
+      //     const collections = await fetchCollections()
+      //       .then((res) => {
+      //         console.log('res', res);
+      //       })
+      //       .catch((error) => {
+      //         console.log('fetchCollections Error ->', error);
+      //       });
+      //     console.log('collections', collections);
+      //   } catch (error) {
+      //     console.log('collections error', error);
+      //   }
+      // };
+      // loadCollection();
     }
     setTimeout(() => checkForSharedContent(), 1000);
-    
+
     // TEST: Save test data and then read it (DISABLED - only for testing)
     // setTimeout(async () => {
     //   console.log('🔴🔴🔴 TEST: Saving test data to App Group');
@@ -347,8 +497,13 @@ function App() {
     //   }
     // }, 3000);
 
-    const appStateSubscription = AppState.addEventListener('change', handleAppStateChange);
-    return () => { appStateSubscription.remove(); };
+    const appStateSubscription = AppState.addEventListener(
+      'change',
+      handleAppStateChange,
+    );
+    return () => {
+      appStateSubscription.remove();
+    };
   }, []);
 
   // Handle deep link URL scheme
@@ -364,7 +519,7 @@ function App() {
 
     // Delay initial URL check to not block startup
     setTimeout(() => {
-      Linking.getInitialURL().then(url => {
+      Linking.getInitialURL().then((url) => {
         if (url) {
           handleDeepLink(url);
         }
@@ -376,7 +531,9 @@ function App() {
       handleDeepLink(url);
     });
 
-    return () => { linkingSubscription.remove(); };
+    return () => {
+      linkingSubscription.remove();
+    };
   }, []);
 
   if (!isI18nInitialized) {
@@ -410,7 +567,7 @@ function AppContent() {
   return (
     <>
       <ApplicationNavigator />
-      <Toast 
+      <Toast
         config={{
           success: (props) => (
             <View style={getToastConfig().success(props)}>
